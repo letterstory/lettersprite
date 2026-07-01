@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+/* Map Tailwind's semantic tokens to the theme's runtime CSS variables. With
+   `inline`, utilities like `bg-background` / `text-primary` / `font-heading`
+   emit `var(--bg)` etc., so changing the variables on <html> restyles the
+   whole app without a rebuild. */
+@theme inline {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-foreground: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-fg);
+  --color-link: var(--link);
+  --color-heading: var(--heading-color);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-mono);
+}
+
+/* Baseline defaults (the Sleek theme) so the document is fully styled even
+   before the active theme's variables are applied to <html>. Sans-serif. */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f6f7;
+  --fg: #0f0f10;
+  --muted: #6b6b70;
+  --border: #ececee;
+  --primary: #4f46e5;
+  --primary-fg: #ffffff;
+  --link: #4f46e5;
+  --heading-color: #0f0f10;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 0.625rem;
+  --content-width: 42rem;
+  --container-width: 48rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--heading-color);
+    line-height: 1.2;
+    letter-spacing: -0.014em;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-fg);
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+@utility container-content {
+  max-width: var(--content-width);
+  margin-inline: auto;
+  width: 100%;
+}
+
+@utility container-wide {
+  max-width: var(--container-width);
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* Long-form article typography, all driven by theme tokens. */
+@layer components {
+  .prose {
+    color: var(--fg);
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+  .prose > * + * {
+    margin-top: 1.3em;
+  }
+  .prose > *:first-child {
+    margin-top: 0;
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    font-family: var(--font-heading);
+    color: var(--heading-color);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.014em;
+    margin-top: 1.9em;
+    margin-bottom: 0.5em;
+  }
+  .prose h2 { font-size: 1.55em; }
+  .prose h3 { font-size: 1.28em; }
+  .prose h4 { font-size: 1.1em; }
+  .prose p { margin: 0; }
+  .prose a {
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+  .prose a:hover { text-decoration-thickness: 2px; }
+  .prose ul, .prose ol { padding-left: 1.5em; }
+  .prose ul { list-style: disc; }
+  .prose ol { list-style: decimal; }
+  .prose li { margin-top: 0.4em; }
+  .prose li::marker { color: var(--muted); }
+  .prose blockquote {
+    border-left: 2px solid var(--primary);
+    padding-left: 1.25em;
+    color: var(--muted);
+    font-size: 1.05em;
+  }
+  .prose img {
+    border-radius: var(--radius);
+    max-width: 100%;
+    height: auto;
+  }
+  .prose figure figcaption {
+    color: var(--muted);
+    font-size: 0.875em;
+    text-align: center;
+    margin-top: 0.5em;
+  }
+  .prose hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5em 0;
+  }
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--surface);
+    padding: 0.15em 0.4em;
+    border-radius: 0.3em;
+  }
+  .prose pre {
+    font-family: var(--font-mono);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1em 1.25em;
+    overflow-x: auto;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  .prose pre code {
+    background: none;
+    padding: 0;
+    font-size: 1em;
+  }
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+  .prose th, .prose td {
+    border: 1px solid var(--border);
+    padding: 0.5em 0.75em;
+    text-align: left;
+  }
+  .prose th {
+    background: var(--surface);
+    font-weight: 600;
+  }
+}
