@@ -10,10 +10,10 @@ environment variables: **there is no database and no admin panel.**
 
 ## How it works
 
-- **Content** is fetched from the Letterbrace Integrations API (`GET /out`) at
-  **build time** and baked into fully static HTML — no API calls happen at
-  request time. Updating content means triggering a new build. The blog is
-  read-only against Letterbrace — it never writes.
+- **Content** is fetched from the Letterbrace Integrations API
+  (`GET /published`) at **build time** and baked into fully static HTML — no API
+  calls happen at request time. Updating content means triggering a new build.
+  The blog is read-only against Letterbrace — it never writes.
 - **Theming** is a bundle of design tokens (colors, fonts, layout) selected by
   the `THEME` environment variable. Themes are plain data committed to the repo.
 - **Configuration** lives entirely in the environment (`src/env.ts`). To change
@@ -38,7 +38,8 @@ All configuration is via environment variables. See [`.env.example`](./.env.exam
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `LETTERBRACE_API_KEY` | yes | – | `lb_...` key with the `article:read` capability. Scopes the blog to one collection. |
-| `LETTERBRACE_API_URL` | no | `https://letterbrace.com/api/integrations` | API base URL. |
+| `LETTERBRACE_API_URL` | no | `https://app.letterbrace.com/api/integrations` | API base URL. |
+| `LETTERBRACE_COLLECTION_ID` | no | – | Scope the blog to one collection within the org. |
 | `THEME` | no | `sleek` | Name of a theme in `src/themes` (ships with `sleek`). |
 | `SITE_TITLE` | no | `Blog` | Wordmark and metadata title. |
 | `SITE_DESCRIPTION` | no | – | Meta description / index intro. |
@@ -55,10 +56,16 @@ All configuration is via environment variables. See [`.env.example`](./.env.exam
 
 ## Themes
 
-One base theme ships out of the box — **`sleek`** (see
-[`src/themes/sleek.ts`](./src/themes/sleek.ts)): a modern, minimal, clean
-sans-serif look with an indigo accent and a single-column layout. It is the
-canonical template for any additional themes you create.
+Five themes ship out of the box (see [`src/themes`](./src/themes)). Select one
+with `THEME`; `sleek` is the default and the template for new ones.
+
+| Theme | Scheme | Layout | Look |
+| --- | --- | --- | --- |
+| `sleek` | light | list | Modern minimal sans, indigo accent |
+| `classic` | light | list | Warm editorial serif, rust accent |
+| `minimal` | light | grid | Monochrome card grid, geometric sans |
+| `magazine` | light | magazine | Bold display-serif headlines, red accent |
+| `midnight` | dark | list | Dark, soft-blue accent, modern sans |
 
 A theme controls:
 
@@ -66,6 +73,7 @@ A theme controls:
 - **Fonts** — body, heading, and mono (each optionally loaded from Google Fonts).
 - **Shape & measure** — corner radius, reading width, container width.
 - **Layout** — how the index arranges posts: `list`, `grid`, or `magazine`.
+- **Scheme** — `light` or `dark` (keeps native controls and scrollbars in sync).
 
 Switch themes by setting `THEME` in the environment. Fine-tune any theme per
 deployment with the `SITE_*_COLOR` overrides (background, text, heading, link,
@@ -101,14 +109,15 @@ webhook when content changes, or on a schedule.
 
 ## Content model
 
-The Letterbrace `/out` payload is under-documented, so
-[`src/lib/letterbrace/normalize.ts`](./src/lib/letterbrace/normalize.ts) is
-deliberately tolerant: it maps many possible field names (`content`/`body`/
-`html`, `cover_image`/`featured_image`, `published_at`/`created_at`, etc.) onto a
-stable `Post` shape and degrades gracefully when fields are missing. Slugs are
-derived from titles (deduplicated by id). Article HTML is sanitized in
-[`src/lib/sanitize.ts`](./src/lib/sanitize.ts) before rendering. If your real
-payload differs, adjust the normalizer — nothing else needs to change.
+Content comes from Letterbrace's `GET /published` endpoint — the frozen
+published `title` and `content`, plus `slug`, `published_at`, and
+`collection_id`.
+[`src/lib/letterbrace/normalize.ts`](./src/lib/letterbrace/normalize.ts) maps
+that payload onto a stable `Post` shape and is tolerant of missing or renamed
+fields (e.g. it falls back to a `summary` field when no `title` is present).
+Article HTML is sanitized in
+[`src/lib/sanitize.ts`](./src/lib/sanitize.ts) before rendering. If your payload
+differs, adjust the normalizer — nothing else needs to change.
 
 ## Project structure
 
