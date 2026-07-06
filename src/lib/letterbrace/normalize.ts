@@ -91,16 +91,22 @@ export function normalizePost(raw: Raw): Post | null {
   const id = pick(raw, ["id", "article_id", "articleId", "uuid", "_id"]);
   if (!id) return null;
 
-  const title = pick(raw, ["title", "name", "headline"]) ?? "Untitled";
   const content =
     pick(raw, ["content", "body", "html", "body_html", "content_html"]) ?? "";
-  const suppliedExcerpt = pick(raw, [
-    "excerpt",
+  // Letterbrace's /out payload exposes the headline as `summary` (there is no
+  // `title` field). Prefer an explicit title if one ever appears, otherwise use
+  // the summary as the title — and only treat the summary as an excerpt when it
+  // isn't already serving as the title, to avoid showing the same text twice.
+  const explicitTitle = pick(raw, ["title", "name", "headline", "subject"]);
+  const summary = pick(raw, [
     "summary",
+    "excerpt",
     "description",
     "subtitle",
     "dek",
   ]);
+  const title = explicitTitle ?? summary ?? "Untitled";
+  const suppliedExcerpt = explicitTitle ? summary : null;
   const suppliedSlug = pick(raw, ["slug", "permalink", "path"]);
 
   return {

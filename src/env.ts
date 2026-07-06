@@ -42,12 +42,12 @@ export const env = {
   /** Letterbrace Integrations API base, e.g. https://letterbrace.com/api/integrations */
   letterbraceApiUrl: str(
     "LETTERBRACE_API_URL",
-    "https://letterbrace.com/api/integrations",
+    "https://app.letterbrace.com/api/integrations",
   ).replace(/\/$/, ""),
-  /** `lb_...` key. Scopes this blog to one Letterbrace collection/org. */
+  /** `lb_...` key. Scopes this blog to one Letterbrace org. */
   letterbraceApiKey: str("LETTERBRACE_API_KEY"),
-  /** Optional collection UUID. When set, the post list is filtered to it. */
-  collectionId: str("COLLECTION_ID"),
+  /** Optional: restrict the blog to a single collection within the org. */
+  collectionId: str("LETTERBRACE_COLLECTION_ID"),
 
   /** Name of the theme to render (see src/themes). Falls back to the default. */
   theme: str("THEME", "sleek"),
