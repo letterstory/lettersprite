@@ -79,7 +79,9 @@ export async function getPosts(): Promise<Post[]> {
   // No collection connected yet — serve sample posts so the site looks alive.
   if (!hasLetterbraceKey) return samplePosts;
   try {
-    const payload = await apiGet(`/out?limit=${env.postsLimit}`);
+    const params = new URLSearchParams({ limit: String(env.postsLimit) });
+    if (env.collectionId) params.set("collection_id", env.collectionId);
+    const payload = await apiGet(`/out?${params}`);
     const posts = extractArray(payload)
       .map(normalizePost)
       .filter((p): p is Post => p !== null)

@@ -46,6 +46,8 @@ export const env = {
   ).replace(/\/$/, ""),
   /** `lb_...` key. Scopes this blog to one Letterbrace collection/org. */
   letterbraceApiKey: str("LETTERBRACE_API_KEY"),
+  /** Optional collection UUID. When set, the post list is filtered to it. */
+  collectionId: str("COLLECTION_ID"),
 
   /** Name of the theme to render (see src/themes). Falls back to the default. */
   theme: str("THEME", "sleek"),
