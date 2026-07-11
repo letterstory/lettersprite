@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
+import { coverImageFor } from "@/lib/covers";
 import { PostContent } from "@/components/PostContent";
 import { PostMeta } from "@/components/PostMeta";
 
@@ -25,7 +26,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
   const description = post.excerpt || undefined;
   const url = `${env.siteUrl}/posts/${post.slug}`;
-  const images = post.coverImage ? [post.coverImage] : undefined;
+  // Always advertise an image — the Letterbrace cover, or the generated
+  // tessellation fallback (a relative path Next resolves against metadataBase).
+  const images = [coverImageFor(post)];
   return {
     title: post.title,
     description,
@@ -72,13 +75,11 @@ export default async function PostPage({ params }: Params) {
         <PostMeta post={post} className="mt-5 text-sm" />
       </header>
 
-      {post.coverImage && (
-        <img
-          src={post.coverImage}
-          alt=""
-          className="mb-10 w-full rounded-[var(--radius)] object-cover"
-        />
-      )}
+      <img
+        src={coverImageFor(post)}
+        alt=""
+        className="mb-10 w-full rounded-[var(--radius)] object-cover"
+      />
 
       <PostContent html={post.content} />
     </article>
