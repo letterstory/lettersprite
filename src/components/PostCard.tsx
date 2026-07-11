@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
+import { coverImageFor } from "@/lib/covers";
 import { PostMeta } from "./PostMeta";
 
 /** Card used by the grid and magazine layouts. `featured` renders larger. */
@@ -11,26 +12,25 @@ export function PostCard({
   featured?: boolean;
 }) {
   const href = `/posts/${post.slug}`;
+  const cover = coverImageFor(post);
   return (
     <article
       className={`group flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5 ${
         featured ? "sm:flex-row" : ""
       }`}
     >
-      {post.coverImage && (
-        <Link
-          href={href}
-          className={`block overflow-hidden ${featured ? "sm:w-1/2" : ""}`}
-        >
-          <img
-            src={post.coverImage}
-            alt=""
-            className={`w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-              featured ? "h-64 sm:h-full" : "h-48"
-            }`}
-          />
-        </Link>
-      )}
+      <Link
+        href={href}
+        className={`block overflow-hidden ${featured ? "sm:w-1/2" : ""}`}
+      >
+        <img
+          src={cover}
+          alt=""
+          className={`w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+            featured ? "h-64 sm:h-full" : "h-48"
+          }`}
+        />
+      </Link>
       <div className="flex flex-1 flex-col gap-3 p-6">
         {post.tags[0] && (
           <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-primary">

@@ -9,7 +9,9 @@ export const DEFAULT_THEME = sleek.name;
 /**
  * Every theme the `THEME` env var can select, keyed by name. Ships with one
  * base theme; add more by copying `sleek.ts`, importing it above, and
- * registering it here — then set `THEME=<name>` per deployment.
+ * registering it here — then set `THEME=<name>` per deployment. After adding a
+ * theme, run `npm run generate:covers` to produce its fallback cover images
+ * (see `scripts/generate-covers.mts`).
  */
 export const themes: Record<string, Theme> = {
   [sleek.name]: sleek,

@@ -1,12 +1,24 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
+import { coverImageFor } from "@/lib/covers";
 import { PostMeta } from "./PostMeta";
 
 /** Row used by the single-column list layout. */
 export function PostListItem({ post }: { post: Post }) {
   const href = `/posts/${post.slug}`;
+  const cover = coverImageFor(post);
   return (
     <article className="group border-b border-border py-9">
+      <Link
+        href={href}
+        className="mb-5 block overflow-hidden rounded-[var(--radius)]"
+      >
+        <img
+          src={cover}
+          alt=""
+          className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      </Link>
       {post.tags[0] && (
         <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-primary">
           {post.tags[0]}
