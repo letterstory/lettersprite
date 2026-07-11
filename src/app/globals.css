@@ -108,7 +108,6 @@
   .prose h2 { font-size: 1.55em; }
   .prose h3 { font-size: 1.28em; }
   .prose h4 { font-size: 1.1em; }
-  .prose p { margin: 0; }
   .prose a {
     color: var(--link);
     text-decoration: underline;
