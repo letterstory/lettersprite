@@ -5,9 +5,9 @@
 Env-driven, multi-tenant blog. One codebase deployed many times; each deployment
 is configured entirely by environment variables. **No database, no admin panel.**
 
-- **Content**: fetched from the Letterbrace Integrations API (`GET /out`) in
-  `src/lib/letterbrace/`. The payload is under-documented, so `normalize.ts` is
-  deliberately defensive — adjust the field mapping there if the real payload
+- **Content**: fetched from the Letterbrace Integrations API (`GET /published`,
+  the frozen published title + content) in `src/lib/letterbrace/`. `normalize.ts`
+  is deliberately defensive — adjust the field mapping there if the real payload
   differs. Read-only; the blog never writes to Letterbrace.
 - **Theming**: `src/themes/` — each theme is a token bundle selected by the
   `THEME` env var. `src/themes/css.ts` serializes a theme to CSS variables

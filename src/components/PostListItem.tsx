@@ -30,7 +30,9 @@ export function PostListItem({ post }: { post: Post }) {
         </Link>
       </h2>
       <PostMeta post={post} className="mt-2 text-sm" />
-      <p className="mt-3 leading-relaxed text-muted">{post.excerpt}</p>
+      {post.excerpt && (
+        <p className="mt-3 leading-relaxed text-muted">{post.excerpt}</p>
+      )}
       <Link
         href={href}
         className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary"

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { env } from "@/env";
+import { pickFavicon } from "@/lib/favicon";
 import { getActiveTheme } from "@/themes";
 import { googleFontsHref, themeToCssVars } from "@/themes/css";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -10,10 +11,12 @@ import { SiteHeader } from "@/components/SiteHeader";
 export function generateMetadata(): Metadata {
   const title = env.siteTitle;
   const description = env.siteDescription || undefined;
+  const favicon = pickFavicon(title);
   return {
     metadataBase: new URL(env.siteUrl),
     title: { default: title, template: `%s · ${title}` },
     description,
+    icons: favicon ? { icon: [favicon] } : undefined,
     openGraph: {
       type: "website",
       siteName: title,

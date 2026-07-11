@@ -1,5 +1,9 @@
 import { env } from "@/env";
 import type { FontSpec, Theme } from "./types";
+import { classic } from "./classic";
+import { magazine } from "./magazine";
+import { midnight } from "./midnight";
+import { minimal } from "./minimal";
 import { sleek } from "./sleek";
 
 export type { Theme, ThemeColors, FontSpec, LayoutVariant } from "./types";
@@ -7,14 +11,18 @@ export type { Theme, ThemeColors, FontSpec, LayoutVariant } from "./types";
 export const DEFAULT_THEME = sleek.name;
 
 /**
- * Every theme the `THEME` env var can select, keyed by name. Ships with one
- * base theme; add more by copying `sleek.ts`, importing it above, and
+ * Every theme the `THEME` env var can select, keyed by name. Add more by
+ * copying `sleek.ts` (the documented template), importing it above, and
  * registering it here — then set `THEME=<name>` per deployment. After adding a
  * theme, run `npm run generate:covers` to produce its fallback cover images
  * (see `scripts/generate-covers.mts`).
  */
 export const themes: Record<string, Theme> = {
   [sleek.name]: sleek,
+  [classic.name]: classic,
+  [minimal.name]: minimal,
+  [magazine.name]: magazine,
+  [midnight.name]: midnight,
 };
 
 export function listThemes(): Theme[] {
