@@ -41,7 +41,7 @@ export function ShareRow({
   const u = encodeURIComponent(url);
   const t = encodeURIComponent(title);
   return (
-    <div className="flex items-center gap-3">
+    <div className="no-print flex items-center gap-3">
       {withLabel && (
         <span className="kicker mr-1">Share</span>
       )}

@@ -26,10 +26,14 @@ const SECTIONS = [
   "Opinion", "Ideas", "Politics", "Style", "Report", "Interview",
 ];
 
+/** Total word count of the article body. */
+export function wordCount(post: Post): number {
+  return stripHtml(post.content).split(/\s+/).filter(Boolean).length;
+}
+
 /** Estimated reading time in whole minutes (>= 1). */
 export function readingTimeMinutes(post: Post): number {
-  const words = stripHtml(post.content).split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / WPM));
+  return Math.max(1, Math.round(wordCount(post) / WPM));
 }
 
 /** "6 min read" */
@@ -64,6 +68,25 @@ export function modifiedDate(post: Post): string {
 }
 
 /**
+ * Whether to show an "Updated" stamp. True only when Letterbrace supplied BOTH
+ * a real `createdAt` and a later real `updatedAt` — so the stamp always reflects
+ * a genuine revision against a genuine baseline, never a synthesized date.
+ */
+export function isUpdated(post: Post): boolean {
+  return Boolean(
+    post.createdAt && post.updatedAt && post.updatedAt > post.createdAt,
+  );
+}
+
+/** Words past which a piece reads as a "long read" (worth a badge). */
+const LONGREAD_WORDS = 1800;
+
+/** True for substantial features (used to flag a "Long read" badge). */
+export function isLongread(post: Post): boolean {
+  return wordCount(post) >= LONGREAD_WORDS;
+}
+
+/**
  * The "edition" dateline for the masthead — the date of the most recent story,
  * so it's meaningful and deterministic (never a build-time wall-clock read).
  * Falls back to the date anchor when there are no posts.
@@ -73,6 +96,29 @@ export function editionDate(posts: Post[]): string {
     .map((p) => publishDate(p))
     .sort((a, b) => b.localeCompare(a))[0];
   return latest ?? new Date(DATE_ANCHOR).toISOString();
+}
+
+/** Posts in canonical reading order: newest first by (synthesized) publish date. */
+export function orderedByDate(posts: Post[]): Post[] {
+  return [...posts].sort((a, b) => publishDate(b).localeCompare(publishDate(a)));
+}
+
+/**
+ * The stories on either side of `post` in date order, for prev/next article
+ * navigation. `next` is the newer story, `prev` the older one; either can be
+ * null at the ends of the run.
+ */
+export function adjacentPosts(
+  post: Post,
+  all: Post[],
+): { prev: Post | null; next: Post | null } {
+  const ordered = orderedByDate(all);
+  const i = ordered.findIndex((p) => p.id === post.id);
+  if (i === -1) return { prev: null, next: null };
+  return {
+    next: i > 0 ? ordered[i - 1] : null,
+    prev: i < ordered.length - 1 ? ordered[i + 1] : null,
+  };
 }
 
 /** Section / kicker label for a post: its first tag, or a stable synthesized one. */

@@ -15,7 +15,7 @@
 
 import { env } from "@/env";
 import { pickFavicon } from "./favicon";
-import { bylineFor } from "./author";
+import { authorProfile, bylineFor, type Byline } from "./author";
 import { modifiedDate, publishDate, sectionFor } from "./editorial";
 import { absoluteCover, absoluteUrl, postUrl } from "./url";
 import type { Post } from "./letterbrace/types";
@@ -111,6 +111,39 @@ export function breadcrumbLd(post: Post): Json {
       { "@type": "ListItem", position: 1, name: "Home", item: env.siteUrl },
       { "@type": "ListItem", position: 2, name: post.title },
     ],
+  };
+}
+
+/**
+ * A ProfilePage for an author's `/authors/[slug]` page: the Person plus an
+ * ItemList of their stories, so the byline reads as a real staff page to search
+ * engines. Mirrors the visible bio and the article-level `authorNode`.
+ */
+export function authorLd(byline: Byline, posts: Post[], beats: string[]): Json {
+  const url = `${env.siteUrl}/authors/${byline.slug}`;
+  const { bio } = authorProfile(byline, beats);
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "@id": `${url}/#profile`,
+    url,
+    isPartOf: { "@id": SITE_ID },
+    mainEntity: clean({
+      "@type": "Person",
+      "@id": `${url}/#person`,
+      name: byline.name,
+      jobTitle: byline.role,
+      description: bio,
+      url,
+      worksFor: { "@id": ORG_ID },
+    }),
+    hasPart: posts.slice(0, 20).map((p) => ({
+      "@type": "BlogPosting",
+      "@id": `${postUrl(p)}/#article`,
+      url: postUrl(p),
+      headline: headline(p.title),
+      datePublished: publishDate(p),
+    })),
   };
 }
 
