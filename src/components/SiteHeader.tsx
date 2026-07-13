@@ -89,7 +89,7 @@ export async function SiteHeader() {
 
   if (centered) {
     return (
-      <header className="border-b border-border bg-background">
+      <header className="no-print border-b border-border bg-background">
         {topRule && <div className="hero-wash h-1 w-full" />}
         <div className="container-wide px-6">
           {/* Utility row: edition dateline · subscribe */}
@@ -127,7 +127,7 @@ export async function SiteHeader() {
 
   // Modern: single sticky bar, left wordmark + nav + subscribe.
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+    <header className="no-print sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
       {topRule && <div className="hero-wash h-1 w-full" />}
       <div className="container-wide flex items-center justify-between gap-6 px-6 py-3.5">
         <Logo size="md" />

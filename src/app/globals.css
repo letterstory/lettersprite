@@ -302,13 +302,27 @@
     margin-top: 0.6em;
     font-family: var(--font-heading);
   }
+  /* An editorial section break: a centered asterism (dinkus) rather than a
+     full-width rule, the way a print feature separates scenes. */
   .prose hr {
     border: none;
-    height: 1px;
-    background: var(--border);
-    margin: 2.6em 0;
+    height: auto;
+    background: none;
+    margin: 2.4em 0;
+    text-align: center;
   }
-  /* Center a short hr as three dots for an editorial section break. */
+  .prose hr::before {
+    content: "* * *";
+    color: var(--muted);
+    font-family: var(--font-heading);
+    font-size: 1.1em;
+    letter-spacing: 0.5em;
+    padding-left: 0.5em; /* offset trailing letter-spacing so it reads centered */
+  }
+  /* Anchored headings clear the sticky masthead when jumped to from the ToC. */
+  .prose :is(h2, h3) {
+    scroll-margin-top: var(--anchor-offset, 6rem);
+  }
   .prose code {
     font-family: var(--font-mono);
     font-size: 0.85em;
@@ -380,5 +394,245 @@
       transparent 0.5px
     );
     background-size: 4px 4px;
+  }
+}
+
+/* ── In-page navigation: smooth anchor jumps that clear the sticky masthead ── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  :target {
+    scroll-margin-top: var(--anchor-offset, 6rem);
+  }
+}
+
+/* ── Accessibility: skip-to-content link ─────────────────────────────────── */
+@layer components {
+  .skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 100;
+    transform: translateY(-160%);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--primary-fg);
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: transform 0.15s ease;
+  }
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+}
+
+/* ── Article reading furniture — all pure CSS, no client JS ───────────────── */
+@layer components {
+  /* Scroll progress bar, driven by a CSS scroll-driven animation so it needs no
+     JavaScript. Simply absent on browsers without scroll-timeline support. */
+  .reading-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    z-index: 60;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--hero-from), var(--hero-to));
+    pointer-events: none;
+  }
+  @supports (animation-timeline: scroll()) {
+    .reading-progress {
+      animation: rp-grow linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+  @keyframes rp-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Floating "back to top" — a plain #top anchor that reveals itself after the
+     reader scrolls, again via a scroll-driven animation (no scroll listeners).
+     Hidden by default so unsupported browsers simply never show it; the article
+     foot carries a guaranteed text link as the baseline. */
+  .to-top {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    z-index: 55;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    width: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    color: var(--fg);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 22px -8px color-mix(in srgb, var(--fg) 45%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .to-top:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  @supports (animation-timeline: scroll()) {
+    .to-top {
+      animation: tt-reveal linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 400px 640px;
+    }
+  }
+  @keyframes tt-reveal {
+    from {
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  /* Table of contents — a boxed "In this article" card at the head of the body. */
+  .toc {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--surface) 55%, var(--bg));
+    padding: 1.1rem 1.35rem;
+  }
+  .toc-title {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .toc-list {
+    list-style: none;
+    counter-reset: toc;
+  }
+  .toc-item {
+    display: flex;
+    gap: 0.6rem;
+    color: var(--fg-soft);
+  }
+  .toc-item > a {
+    color: inherit;
+  }
+  .toc-item > a:hover {
+    color: var(--link);
+  }
+  .toc-item::before {
+    counter-increment: toc;
+    content: counter(toc) ".";
+    min-width: 1.5ch;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--kicker);
+    font-variant-numeric: tabular-nums;
+  }
+  .toc-sub {
+    margin-left: 1.4rem;
+  }
+  .toc-sub::before {
+    counter-increment: toc 0;
+    content: "—";
+    color: var(--muted);
+  }
+
+  /* End-of-story mark (the printer's "fin" square). */
+  .fin {
+    margin-top: 2.5em;
+    text-align: center;
+    line-height: 0;
+  }
+  .fin::before {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 1px;
+    background: var(--primary);
+  }
+}
+
+/* ── Motion safety ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  /* Disable the scroll-linked reading furniture. The progress bar is decorative
+     (aria-hidden), and the article foot keeps a static "Return to top" link, so
+     removing the floating control loses nothing essential. */
+  .reading-progress {
+    animation: none;
+  }
+  .to-top {
+    display: none;
+  }
+}
+
+/* ── Print / "Save as PDF": a clean, ink-friendly article ────────────────── */
+@media print {
+  /* Hide all site chrome and interactive furniture. */
+  .no-print {
+    display: none !important;
+  }
+  /* Force a light, legible page even for dark themes. The palette lives in an
+     inline style on <html>; author `!important` overrides it for print only. */
+  html {
+    --bg: #ffffff !important;
+    --surface: #ffffff !important;
+    --surface-alt: #ffffff !important;
+    --fg: #111111 !important;
+    --fg-soft: #333333 !important;
+    --muted: #555555 !important;
+    --heading-color: #000000 !important;
+    --border: #cccccc !important;
+    --link: #000000 !important;
+    color-scheme: light !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  article {
+    padding: 0 !important;
+  }
+  .prose {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  /* Surface external link targets on paper. */
+  .prose a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #555;
+    word-break: break-all;
+  }
+  .prose :is(figure, img, blockquote, pre, table) {
+    break-inside: avoid;
+  }
+  .prose :is(h2, h3, h4) {
+    break-after: avoid;
+  }
+  .hero-wash,
+  .hero-tint,
+  .cta-band {
+    background: none !important;
   }
 }

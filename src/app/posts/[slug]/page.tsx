@@ -4,26 +4,39 @@ import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
 import { coverImageFor } from "@/lib/covers";
-import { bylineFor } from "@/lib/author";
+import { authorsFromPosts, bylineFor } from "@/lib/author";
 import {
+  adjacentPosts,
+  allSections,
+  isLongread,
   modifiedDate,
   publishDate,
   readingTimeLabel,
   sectionFor,
   sectionHref,
+  sectionSlug,
+  wordCount,
 } from "@/lib/editorial";
 import { relatedPosts } from "@/lib/related";
+import { sanitizePostHtml } from "@/lib/sanitize";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
+import { buildToc } from "@/lib/toc";
 import { postUrl } from "@/lib/url";
 import { formatDate } from "@/lib/format";
 import { getActiveTheme } from "@/themes";
+import { AuthorBio } from "@/components/AuthorBio";
+import { BackToTop } from "@/components/BackToTop";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { PostContent } from "@/components/PostContent";
 import { PostMeta } from "@/components/PostMeta";
+import { PostNav } from "@/components/PostNav";
+import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedPosts } from "@/components/RelatedPosts";
 import { ShareRow } from "@/components/ShareRow";
+import { TableOfContents } from "@/components/TableOfContents";
+import { TopicTags } from "@/components/TopicTags";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -89,20 +102,41 @@ export default async function PostPage({ params }: Params) {
   const theme = getActiveTheme();
   const allPosts = await getPosts();
   const related = relatedPosts(post, allPosts, 3);
+  const { prev, next } = adjacentPosts(post, allPosts);
   const section = sectionFor(post);
   const iso = publishDate(post);
   const feature = theme.article === "feature";
   const dropCap = Boolean(theme.features?.dropCap);
+
+  // Sanitize once, then inject heading anchors and extract the outline for the
+  // table of contents — all at build time.
+  const { html: bodyHtml, headings } = buildToc(sanitizePostHtml(post.content));
+
+  // The author's full body of work (for the bio card + "view all") and the
+  // beats they cover, kept identical to the /authors/[slug] page.
+  const byline = bylineFor(post);
+  const authorPosts =
+    authorsFromPosts(allPosts).find((a) => a.slug === byline.slug)?.posts ?? [post];
+  const authorBeats = [...new Set(authorPosts.map((p) => sectionFor(p)))];
+
+  const linkableSlugs = allSections(allPosts).map((s) => sectionSlug(s));
+  const words = wordCount(post);
 
   return (
     <>
       <JsonLd data={articleLd(post)} />
       <JsonLd data={breadcrumbLd(post)} />
 
-      <article className="px-6 py-10">
+      <ReadingProgress />
+      <BackToTop />
+
+      <article id="top" className="px-6 py-10">
         {/* Header, constrained to the reading measure */}
         <header className="container-content">
-          <nav className="mb-6 flex items-center gap-2 text-xs text-muted">
+          <nav
+            aria-label="Breadcrumb"
+            className="no-print mb-6 flex items-center gap-2 text-xs text-muted"
+          >
             <Link href="/" className="ul-link hover:text-foreground">
               Home
             </Link>
@@ -112,20 +146,29 @@ export default async function PostPage({ params }: Params) {
             </Link>
           </nav>
 
-          <Kicker post={post} className="mb-3 text-sm" />
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <Kicker post={post} className="text-sm" />
+            {isLongread(post) && <span className="pill">Long read</span>}
+          </div>
           <h1
-            className={`${feature ? "display" : "font-display"} text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl md:text-5xl`}
+            className={`${feature ? "display" : "font-display"} text-3xl font-black leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl`}
           >
             {post.title}
           </h1>
           {post.excerpt && (
-            <p className="mt-5 text-xl leading-relaxed text-fg-soft">
+            <p className="dek mt-5 text-xl leading-relaxed text-fg-soft text-pretty">
               {post.excerpt}
             </p>
           )}
 
           <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-y border-border py-4">
-            <PostMeta post={post} variant="byline" readingTime />
+            <PostMeta
+              post={post}
+              variant="byline"
+              readingTime
+              linkAuthor
+              showUpdated
+            />
             <ShareRow url={postUrl(post)} title={post.title} />
           </div>
         </header>
@@ -140,21 +183,48 @@ export default async function PostPage({ params }: Params) {
             className="w-full rounded-[var(--radius)] object-cover"
           />
           <figcaption className="mt-2.5 text-xs text-muted">
-            {section} · {formatDate(iso)} · {readingTimeLabel(post)}
+            {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+            {words.toLocaleString("en-US")} words
           </figcaption>
         </figure>
 
         {/* Body */}
         <div className="container-content mt-10">
-          <PostContent html={post.content} dropCap={dropCap} />
+          <TableOfContents headings={headings} className="mb-10" />
 
-          <div className="mt-12">
+          <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+
+          {/* End-of-story mark (the printer's "fin"). */}
+          <div className="fin" aria-hidden />
+
+          <TopicTags
+            tags={post.tags}
+            linkableSlugs={linkableSlugs}
+            className="mt-10"
+          />
+
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
             <ShareRow url={postUrl(post)} title={post.title} withLabel />
+            <a
+              href="#top"
+              className="no-print kicker kicker-muted ul-link hover:text-primary"
+            >
+              Return to top ↑
+            </a>
           </div>
 
+          <AuthorBio
+            byline={byline}
+            beats={authorBeats}
+            storyCount={authorPosts.length}
+            className="mt-12"
+          />
+
           {env.newsletterEnabled && (
-            <NewsletterCTA variant="inline" className="mt-12" />
+            <NewsletterCTA variant="inline" className="mt-12 no-print" />
           )}
+
+          <PostNav prev={prev} next={next} className="mt-12 no-print" />
 
           <RelatedPosts posts={related} label={`More in ${section}`} />
         </div>

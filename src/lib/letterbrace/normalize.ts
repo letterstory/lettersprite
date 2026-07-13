@@ -73,11 +73,45 @@ function toTags(raw: Raw): string[] {
     .filter((t): t is string => Boolean(t && t.trim()));
 }
 
+/**
+ * Tokens that upstream systems emit in place of a real name — a stringified
+ * `undefined`/`null`, a placeholder dash, etc. Matched whole-word so legitimate
+ * names are never touched.
+ */
+const NULLISH_NAME = /^(?:undefined|null|nan|n\/?a|none|nil|unknown|-|–|—|\.)$/i;
+
+/**
+ * Clean an author string coming from the API. Upstream name concatenation can
+ * leave literal `"undefined"`/`"null"` fragments (e.g. `"Jane undefined"`,
+ * `"undefined undefined"`, a bare `"null"`), which must never render as a
+ * byline. Strips a leading "By ", drops nullish word fragments, and returns
+ * `null` when nothing usable remains — so the caller degrades to the
+ * deterministic synthesized staff writer instead.
+ */
+export function cleanAuthorName(raw: string): string | null {
+  const withoutPrefix = raw.replace(/^\s*by[:\s]+/i, "").trim();
+  if (!withoutPrefix) return null;
+  const kept = withoutPrefix
+    .split(/\s+/)
+    .filter((w) => !NULLISH_NAME.test(w.replace(/[.,;]+$/, "")))
+    .join(" ")
+    .trim();
+  if (!kept || NULLISH_NAME.test(kept)) return null;
+  return kept;
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
-  if (direct) return direct;
-  if (raw.author && typeof raw.author === "object") {
-    return asString((raw.author as Raw).name);
+  if (direct) return cleanAuthorName(direct);
+  const a = raw.author;
+  if (a && typeof a === "object") {
+    const o = a as Raw;
+    const name =
+      asString(o.name) ??
+      [asString(o.first_name ?? o.firstName), asString(o.last_name ?? o.lastName)]
+        .filter(Boolean)
+        .join(" ");
+    return name ? cleanAuthorName(name) : null;
   }
   return null;
 }

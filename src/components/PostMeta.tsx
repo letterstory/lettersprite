@@ -1,6 +1,12 @@
+import Link from "next/link";
 import { formatDate } from "@/lib/format";
 import { bylineFor } from "@/lib/author";
-import { publishDate, readingTimeLabel } from "@/lib/editorial";
+import {
+  isUpdated,
+  modifiedDate,
+  publishDate,
+  readingTimeLabel,
+} from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 
 /**
@@ -19,17 +25,33 @@ export function PostMeta({
   variant = "inline",
   readingTime = false,
   showAvatar = false,
+  linkAuthor = false,
+  showUpdated = false,
 }: {
   post: Post;
   className?: string;
   variant?: "inline" | "byline";
   readingTime?: boolean;
   showAvatar?: boolean;
+  /** Link the byline name to the author's `/authors/[slug]` page. */
+  linkAuthor?: boolean;
+  /** Append an "Updated {date}" stamp when the post has a real later revision. */
+  showUpdated?: boolean;
 }) {
   const byline = bylineFor(post);
   const iso = publishDate(post);
   const date = formatDate(iso);
   const read = readingTimeLabel(post);
+  const updated = showUpdated && isUpdated(post);
+  const updatedIso = updated ? modifiedDate(post) : "";
+
+  const name = linkAuthor ? (
+    <Link href={`/authors/${byline.slug}`} className="ul-link hover:text-foreground">
+      {byline.name}
+    </Link>
+  ) : (
+    byline.name
+  );
 
   if (variant === "byline") {
     return (
@@ -43,13 +65,19 @@ export function PostMeta({
         </span>
         <div className="leading-tight">
           <div className="font-heading text-sm font-semibold text-foreground">
-            {byline.name}
+            {name}
           </div>
           <div className="text-xs text-muted">
             {byline.role}
             {" · "}
             <time dateTime={iso}>{date}</time>
             {readingTime && <> · {read}</>}
+            {updated && (
+              <>
+                {" · "}
+                <span>Updated <time dateTime={updatedIso}>{formatDate(updatedIso)}</time></span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -69,7 +97,7 @@ export function PostMeta({
           {byline.initials}
         </span>
       )}
-      <span className="font-medium text-foreground">{byline.name}</span>
+      <span className="font-medium text-foreground">{name}</span>
       <span aria-hidden>·</span>
       <time dateTime={iso}>{date}</time>
       {readingTime && (

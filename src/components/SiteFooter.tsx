@@ -20,7 +20,7 @@ export async function SiteFooter() {
   const established = env.established && `Est. ${env.established}`;
 
   return (
-    <footer className="mt-20">
+    <footer className="no-print mt-20">
       {env.newsletterEnabled && (
         <div id="newsletter" className="scroll-mt-24 bg-surface-alt py-14">
           <div className="container-wide px-6">

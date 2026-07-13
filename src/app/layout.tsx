@@ -83,8 +83,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <JsonLd data={siteGraphLd()} />
       </head>
       <body className="flex min-h-full flex-col antialiased">
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <SiteHeader />
-        <main className="w-full flex-1">{children}</main>
+        <main id="main" tabIndex={-1} aria-label="Main content" className="w-full flex-1">
+          {children}
+        </main>
         <SiteFooter />
       </body>
     </html>

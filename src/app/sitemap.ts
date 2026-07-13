@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
 import { allSections, publishDate, sectionSlug } from "@/lib/editorial";
+import { authorsFromPosts } from "@/lib/author";
 import { absoluteCover } from "@/lib/url";
 
 export const dynamic = "force-static";
@@ -29,6 +30,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
+  const authorEntries: MetadataRoute.Sitemap = authorsFromPosts(posts).map((a) => ({
+    url: `${env.siteUrl}/authors/${a.slug}`,
+    lastModified: latest,
+    changeFrequency: "weekly",
+    priority: 0.4,
+  }));
+
   return [
     {
       url: env.siteUrl,
@@ -37,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     ...sectionEntries,
+    ...authorEntries,
     ...postEntries,
   ];
 }
