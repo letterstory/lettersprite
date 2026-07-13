@@ -7,36 +7,64 @@
 @theme inline {
   --color-background: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
   --color-foreground: var(--fg);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-fg);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
   --color-link: var(--link);
   --color-heading: var(--heading-color);
+  --color-kicker: var(--kicker);
+  /* Derived, always-coherent tones (computed from the palette below). */
+  --color-tint: var(--tint);
+  --color-tint-strong: var(--tint-strong);
+  --color-fg-soft: var(--fg-soft);
+  --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
 }
 
-/* Baseline defaults (the Sleek theme) so the document is fully styled even
-   before the active theme's variables are applied to <html>. Sans-serif. */
+/* Baseline defaults (a clean light theme) so the document is fully styled even
+   before the active theme's variables are applied to <html>. */
 :root {
   --bg: #ffffff;
   --surface: #f6f6f7;
+  --surface-alt: #f0f0f2;
   --fg: #0f0f10;
   --muted: #6b6b70;
   --border: #ececee;
   --primary: #4f46e5;
   --primary-fg: #ffffff;
+  --secondary: #4f46e5;
+  --accent: #4f46e5;
   --link: #4f46e5;
   --heading-color: #0f0f10;
+  --kicker: #4f46e5;
+  --hero-from: #4f46e5;
+  --hero-to: #4f46e5;
+  --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius: 0.625rem;
   --content-width: 42rem;
   --container-width: 48rem;
+}
+
+/* Derived tones. Recomputed automatically whenever the palette vars change,
+   so every theme — and every env color override — gets a matching set of
+   tinted surfaces, soft text and pill backgrounds without declaring them. */
+:root {
+  --tint: color-mix(in srgb, var(--primary) 7%, var(--bg));
+  --tint-strong: color-mix(in srgb, var(--primary) 14%, var(--bg));
+  --accent-tint: color-mix(in srgb, var(--accent) 14%, var(--bg));
+  --secondary-tint: color-mix(in srgb, var(--secondary) 14%, var(--bg));
+  --fg-soft: color-mix(in srgb, var(--fg) 66%, var(--bg));
+  --hairline: color-mix(in srgb, var(--fg) 12%, transparent);
 }
 
 @layer base {
@@ -50,12 +78,13 @@
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    font-feature-settings: "kern", "liga", "clig";
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     color: var(--heading-color);
-    line-height: 1.2;
-    letter-spacing: -0.014em;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
   }
   a {
     color: inherit;
@@ -68,86 +97,225 @@
   :focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
+    border-radius: 2px;
+  }
+  img {
+    /* covers are 16:9; keep them from ever squashing */
+    color: transparent;
   }
 }
 
+/* ── Layout containers ───────────────────────────────────────────────────── */
 @utility container-content {
   max-width: var(--content-width);
   margin-inline: auto;
   width: 100%;
 }
-
 @utility container-wide {
   max-width: var(--container-width);
   margin-inline: auto;
   width: 100%;
 }
 
-/* Long-form article typography, all driven by theme tokens. */
+/* ── Editorial utilities ─────────────────────────────────────────────────── */
+@layer components {
+  /* Display headline — the big, tight, tracking-negative masthead-grade type. */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+  }
+  .tight {
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+
+  /* Kicker / eyebrow — the small all-caps section label above a headline. */
+  .kicker {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--kicker);
+    line-height: 1.2;
+  }
+  .kicker-accent { color: var(--accent); }
+  .kicker-muted { color: var(--muted); }
+
+  /* Section rule with a centered/leading label (broadsheet section fronts). */
+  .rule-label {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg);
+  }
+  .rule-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Pill / tag — a soft tinted chip that is always readable on any palette. */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.24em 0.6em;
+    border-radius: 999px;
+    background: var(--accent-tint);
+    color: var(--accent);
+    line-height: 1.2;
+  }
+  .pill-solid {
+    background: var(--primary);
+    color: var(--primary-fg);
+  }
+
+  /* Author avatar — deterministic initials chip. */
+  .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border-radius: 999px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  /* Headline links: color shift on hover, no underline (magazine style).
+     Uses --link so themes with a bright brand primary still hover legibly. */
+  .headline-link {
+    color: var(--heading-color);
+    transition: color 0.15s ease;
+  }
+  .headline-link:hover { color: var(--link); }
+
+  /* Underline-on-hover link (feed / nav). Uses --link so the hover rule stays
+     legible on themes whose brand primary is a very bright color. */
+  .ul-link {
+    background-image: linear-gradient(var(--link), var(--link));
+    background-size: 0% 2px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.2s ease;
+  }
+  .ul-link:hover { background-size: 100% 2px; }
+
+  /* Hero gradient wash driven by the theme palette. */
+  .hero-wash {
+    background-image: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+  }
+  /* Scrim behind overlaid hero text — strong enough to keep white text
+     legible (AA) even over a bright cover image. */
+  .hero-tint {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.32) 45%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+  }
+
+  /* Newsletter / CTA band. */
+  .cta-band {
+    background: var(--tint-strong);
+    border: 1px solid var(--border);
+  }
+}
+
+/* ── Long-form article typography, all driven by theme tokens ────────────── */
 @layer components {
   .prose {
     color: var(--fg);
-    font-size: 1.125rem;
+    font-size: 1.15rem;
     line-height: 1.75;
+    font-family: var(--font-body);
   }
-  .prose > * + * {
-    margin-top: 1.3em;
-  }
-  .prose > *:first-child {
-    margin-top: 0;
-  }
+  .prose > * + * { margin-top: 1.35em; }
+  .prose > *:first-child { margin-top: 0; }
   .prose h1, .prose h2, .prose h3, .prose h4 {
     font-family: var(--font-heading);
     color: var(--heading-color);
     font-weight: 700;
-    line-height: 1.25;
-    letter-spacing: -0.014em;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
     margin-top: 1.9em;
     margin-bottom: 0.5em;
   }
-  .prose h2 { font-size: 1.55em; }
-  .prose h3 { font-size: 1.28em; }
+  .prose h2 { font-size: 1.6em; }
+  .prose h3 { font-size: 1.3em; }
   .prose h4 { font-size: 1.1em; }
+  .prose p { text-wrap: pretty; }
   .prose a {
     color: var(--link);
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-decoration-color: color-mix(in srgb, var(--link) 40%, transparent);
+    text-underline-offset: 3px;
     text-decoration-thickness: 1px;
+    transition: text-decoration-color 0.15s ease;
   }
-  .prose a:hover { text-decoration-thickness: 2px; }
-  .prose ul, .prose ol { padding-left: 1.5em; }
+  .prose a:hover {
+    text-decoration-color: var(--link);
+    text-decoration-thickness: 2px;
+  }
+  .prose strong { font-weight: 700; color: var(--heading-color); }
+  .prose ul, .prose ol { padding-left: 1.4em; }
   .prose ul { list-style: disc; }
   .prose ol { list-style: decimal; }
-  .prose li { margin-top: 0.4em; }
-  .prose li::marker { color: var(--muted); }
+  .prose li { margin-top: 0.45em; }
+  /* --link (not --primary) so bright brand accents stay legible as markers. */
+  .prose li::marker { color: var(--link); }
   .prose blockquote {
-    border-left: 2px solid var(--primary);
-    padding-left: 1.25em;
-    color: var(--muted);
+    border-left: 3px solid var(--primary);
+    padding-left: 1.2em;
+    margin-left: 0;
+    color: var(--fg-soft);
+    font-style: italic;
     font-size: 1.05em;
   }
   .prose img {
     border-radius: var(--radius);
     max-width: 100%;
     height: auto;
+    width: 100%;
   }
   .prose figure figcaption {
     color: var(--muted);
-    font-size: 0.875em;
+    font-size: 0.85em;
+    line-height: 1.5;
     text-align: center;
-    margin-top: 0.5em;
+    margin-top: 0.6em;
+    font-family: var(--font-heading);
   }
   .prose hr {
     border: none;
-    border-top: 1px solid var(--border);
-    margin: 2.5em 0;
+    height: 1px;
+    background: var(--border);
+    margin: 2.6em 0;
   }
+  /* Center a short hr as three dots for an editorial section break. */
   .prose code {
     font-family: var(--font-mono);
-    font-size: 0.875em;
+    font-size: 0.85em;
     background: var(--surface);
     padding: 0.15em 0.4em;
     border-radius: 0.3em;
+    border: 1px solid var(--border);
   }
   .prose pre {
     font-family: var(--font-mono);
@@ -157,13 +325,9 @@
     padding: 1em 1.25em;
     overflow-x: auto;
     font-size: 0.9em;
-    line-height: 1.6;
+    line-height: 1.65;
   }
-  .prose pre code {
-    background: none;
-    padding: 0;
-    font-size: 1em;
-  }
+  .prose pre code { background: none; padding: 0; border: none; font-size: 1em; }
   .prose table {
     width: 100%;
     border-collapse: collapse;
@@ -171,11 +335,50 @@
   }
   .prose th, .prose td {
     border: 1px solid var(--border);
-    padding: 0.5em 0.75em;
+    padding: 0.55em 0.8em;
     text-align: left;
   }
-  .prose th {
-    background: var(--surface);
-    font-weight: 600;
+  .prose th { background: var(--surface); font-weight: 700; }
+
+  /* Feature/editorial drop cap: enabled by adding `.prose-dropcap`. */
+  .prose-dropcap > p:first-of-type::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 3.6em;
+    line-height: 0.78;
+    padding-right: 0.08em;
+    margin-top: 0.06em;
+    color: var(--primary);
+  }
+}
+
+/* ── Small helpers ───────────────────────────────────────────────────────── */
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* Grain/paper texture toggle for print-mag themes (very subtle). */
+  .paper {
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--fg) 3%, transparent) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 4px 4px;
   }
 }

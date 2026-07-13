@@ -76,16 +76,38 @@ function poly(points: string, fill: string, stroke?: { c: string; w: number }): 
 type Palette = {
   /** Subtle full-canvas background fill. */
   bg: string;
-  /** Five clearly-visible shape tones, light -> strong, derived from the theme. */
+  /** Five clearly-visible shape tones, derived across the theme's brand colors. */
   tones: string[];
 };
 
-/** Build a theme palette: a subtle background plus five visible shape tones. */
-function paletteFor(colors: { background: string; primary: string; foreground: string }): Palette {
+type CoverColors = {
+  background: string;
+  primary: string;
+  foreground: string;
+  secondary?: string;
+  accent?: string;
+};
+
+/**
+ * Build a vibrant, multi-hue palette: a subtle background plus five visible
+ * shape tones that traverse the theme's primary, secondary and accent colors,
+ * so generated covers feel like real editorial art rather than a single-hue
+ * gradient. Works for both light and dark themes (the mix toward the brand
+ * color reads as neon-on-black on dark palettes).
+ */
+function paletteFor(colors: CoverColors): Palette {
   const { background, primary } = colors;
+  const secondary = colors.secondary ?? primary;
+  const accent = colors.accent ?? secondary;
   return {
     bg: mix(background, primary, 0.05),
-    tones: [0.13, 0.24, 0.36, 0.5, 0.66].map((t) => mix(background, primary, t)),
+    tones: [
+      mix(background, primary, 0.14),
+      mix(background, secondary, 0.3),
+      mix(background, primary, 0.5),
+      mix(background, accent, 0.62),
+      mix(background, secondary, 0.78),
+    ],
   };
 }
 
@@ -263,7 +285,7 @@ if (VARIATIONS.length !== FALLBACK_COVER_VARIANTS) {
   );
 }
 
-function svgFor(palette: { bg: string; ramp: string[] }, variation: Variation): string {
+function svgFor(palette: Palette, variation: Variation): string {
   const { background, shapes } = variation(palette);
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
@@ -277,7 +299,16 @@ function svgFor(palette: { bg: string; ramp: string[] }, variation: Variation): 
 // Theme discovery + generation
 // ---------------------------------------------------------------------------
 
-type ThemeLike = { name: string; colors: { background: string; primary: string; foreground: string } };
+type ThemeLike = {
+  name: string;
+  colors: {
+    background: string;
+    primary: string;
+    foreground: string;
+    secondary?: string;
+    accent?: string;
+  };
+};
 
 function isThemeLike(v: unknown): v is ThemeLike {
   return (
