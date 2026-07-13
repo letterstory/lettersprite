@@ -53,19 +53,50 @@ export const env = {
   theme: str("THEME", "sleek"),
 
   /** Site identity, used for the wordmark, metadata, OpenGraph and sitemap. */
-  siteTitle: str("SITE_TITLE", "Blog"),
+  siteTitle: str("SITE_TITLE", "The Signal"),
   siteDescription: str("SITE_DESCRIPTION"),
   siteUrl: resolveSiteUrl(),
+  /** Short masthead tagline shown under/next to the wordmark (e.g. a motto). */
+  siteTagline: str("SITE_TAGLINE"),
+  /** Founding year shown in the footer ("Est. 2024"). Blank hides it. */
+  established: str("SITE_ESTABLISHED"),
+  /** Comma-separated section nav override. Otherwise derived from post tags. */
+  sections: str("SITE_SECTIONS"),
+  /** Social handle (no @) used for Twitter card attribution and footer links. */
+  twitterHandle: str("SITE_TWITTER").replace(/^@/, ""),
 
-  /** Optional, targeted color overrides layered on top of the selected theme. */
+  /**
+   * Full color-palette overrides, layered on top of the selected theme. A
+   * deployment can supply a whole palette — not just text and background — so
+   * the theme's dynamic visuals (gradients, tinted bands, kickers) recolor
+   * coherently. IMPORTANT: quote hex values in `.env` (a bare leading `#` is a
+   * comment).
+   */
   accentColor: str("SITE_ACCENT_COLOR"), // overrides theme.colors.primary
+  secondaryColor: str("SITE_SECONDARY_COLOR"), // overrides theme.colors.secondary
+  popColor: str("SITE_POP_COLOR"), // overrides theme.colors.accent (highlights)
   backgroundColor: str("SITE_BACKGROUND_COLOR"), // overrides theme.colors.background
+  surfaceColor: str("SITE_SURFACE_COLOR"), // overrides theme.colors.surface
   textColor: str("SITE_TEXT_COLOR"), // overrides theme.colors.foreground
   headingColor: str("SITE_HEADING_COLOR"), // overrides heading color
   linkColor: str("SITE_LINK_COLOR"), // overrides link color
+  heroFrom: str("SITE_HERO_FROM"), // hero gradient start
+  heroTo: str("SITE_HERO_TO"), // hero gradient end
   /** Optional font overrides (Google Fonts family names). */
   fontBody: str("FONT_BODY"),
   fontHeading: str("FONT_HEADING"),
+  fontDisplay: str("FONT_DISPLAY"),
+  /** Optional logo-treatment override (see LogoStyle in src/themes/types.ts). */
+  logoStyle: str("SITE_LOGO_STYLE"),
+
+  /**
+   * Newsletter capture. Off by default: the subscribe UI is fully designed but
+   * has no working backend yet, so it stays hidden until a deployment opts in
+   * with `NEWSLETTER_ENABLED=true` (and wires up `NEWSLETTER_ACTION`).
+   */
+  newsletterEnabled: bool("NEWSLETTER_ENABLED", false),
+  /** Optional form `action` URL (e.g. a Mailchimp/Buttondown endpoint). */
+  newsletterAction: str("NEWSLETTER_ACTION"),
 
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),

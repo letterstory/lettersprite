@@ -1,20 +1,28 @@
 import { env, hasLetterbraceKey } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
+import { blogListingLd } from "@/lib/seo";
 import { getActiveTheme } from "@/themes";
 import { EmptyState } from "@/components/EmptyState";
-import { PostCard } from "@/components/PostCard";
-import { PostListItem } from "@/components/PostListItem";
+import { JsonLd } from "@/components/JsonLd";
+import { BroadsheetHome } from "@/components/home/BroadsheetHome";
+import { ColumnHome } from "@/components/home/ColumnHome";
+import { FeedHome } from "@/components/home/FeedHome";
+import { GlossyHome } from "@/components/home/GlossyHome";
+import { GridHome } from "@/components/home/GridHome";
+import { MosaicHome } from "@/components/home/MosaicHome";
 
 // Fully static: prerendered at build from the baked Letterbrace payload.
 export const dynamic = "force-static";
 
 function PreviewBanner() {
   return (
-    <div className="mb-10 rounded-[var(--radius)] border border-border bg-surface px-4 py-3 text-sm text-muted">
-      <span className="font-semibold text-foreground">Preview mode.</span>{" "}
-      Showing sample posts — set{" "}
-      <code className="font-mono text-[0.85em]">LETTERBRACE_API_KEY</code> to
-      publish your own Letterbrace collection.
+    <div className="border-b border-border bg-surface-alt">
+      <div className="container-wide px-6 py-2.5 text-center text-xs text-muted">
+        <span className="font-semibold text-foreground">Preview mode</span> —
+        showing sample stories. Set{" "}
+        <code className="font-mono text-[0.9em]">LETTERBRACE_API_KEY</code> to
+        publish your collection.
+      </div>
     </div>
   );
 }
@@ -31,45 +39,25 @@ export default async function HomePage() {
     );
   }
 
-  const container =
-    theme.layout === "list" ? "container-content" : "container-wide";
-  const [featured, ...rest] = posts;
+  const Home = {
+    broadsheet: BroadsheetHome,
+    feed: FeedHome,
+    mosaic: MosaicHome,
+    glossy: GlossyHome,
+    column: ColumnHome,
+    grid: GridHome,
+  }[theme.home];
 
   return (
-    <div className={`${container} px-6 py-12`}>
+    <>
+      <JsonLd data={blogListingLd(posts)} />
+      {/* The page's single h1 (the layouts use h2/h3 for stories). */}
+      <h1 className="sr-only">
+        {env.siteTitle}
+        {env.siteTagline ? ` — ${env.siteTagline}` : ""}
+      </h1>
       {!hasLetterbraceKey && <PreviewBanner />}
-
-      {theme.layout === "list" && (
-        <>
-          {env.siteDescription && (
-            <p className="mb-10 text-lg text-muted">{env.siteDescription}</p>
-          )}
-          {posts.map((post) => (
-            <PostListItem key={post.id} post={post} />
-          ))}
-        </>
-      )}
-
-      {theme.layout === "grid" && (
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
-
-      {theme.layout === "magazine" && (
-        <div className="flex flex-col gap-10">
-          <PostCard post={featured} featured />
-          {rest.length > 0 && (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {rest.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      <Home posts={posts} />
+    </>
   );
 }

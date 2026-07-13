@@ -58,6 +58,16 @@ function extractOne(payload: unknown): Record<string, unknown> | null {
   return extractArray(payload)[0] ?? null;
 }
 
+/** Drop any repeated ids, keeping the first occurrence (stable React keys). */
+function dedupeById(posts: Post[]): Post[] {
+  const seen = new Set<string>();
+  return posts.filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+}
+
 /** Make slugs unique within a list by suffixing collisions with the id. */
 function ensureUniqueSlugs(posts: Post[]): Post[] {
   const seen = new Set<string>();
@@ -90,10 +100,12 @@ export async function getPosts(): Promise<Post[]> {
   if (!hasLetterbraceKey) return samplePosts;
   try {
     const payload = await apiGet(publishedPath());
-    const posts = extractArray(payload)
-      .map(normalizePost)
-      .filter((p): p is Post => p !== null)
-      .filter(isVisible)
+    const posts = dedupeById(
+      extractArray(payload)
+        .map(normalizePost)
+        .filter((p): p is Post => p !== null)
+        .filter(isVisible),
+    )
       .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
       .slice(0, env.postsLimit);
     return ensureUniqueSlugs(posts);
