@@ -22,8 +22,8 @@ const WPM = 225;
 
 /** Generic section pool used when a post has no tag of its own. */
 const SECTIONS = [
-  "Features", "Analysis", "Culture", "Business", "Technology", "Science",
-  "Opinion", "Ideas", "Politics", "Style", "Report", "Interview",
+  "Features", "Analysis", "Culture", "Business", "Opinion", "Science",
+  "Opinion", "Ideas", "Thoughts", "Style", "Report", "Analysis",
 ];
 
 /** Total word count of the article body. */
