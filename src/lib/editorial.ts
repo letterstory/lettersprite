@@ -142,6 +142,24 @@ export function postsInSection(posts: Post[], slug: string): Post[] {
   return posts.filter((p) => sectionSlug(sectionFor(p)) === slug);
 }
 
+/**
+ * The display name for a section slug: several tag spellings can share one slug,
+ * so we show the most common spelling among the posts in that section (ties
+ * broken alphabetically for determinism). Returns null when the slug is empty.
+ */
+export function sectionNameFor(posts: Post[], slug: string): string | null {
+  const inSection = postsInSection(posts, slug);
+  if (inSection.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const p of inSection) {
+    const n = sectionFor(p);
+    counts.set(n, (counts.get(n) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort(
+    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+  )[0][0];
+}
+
 /** Unique sections present across the set, most-populated first. */
 export function allSections(posts: Post[]): string[] {
   return topSections(posts, Number.MAX_SAFE_INTEGER);
