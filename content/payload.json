@@ -1,0 +1,4 @@
+{
+  "_comment": "Drop posts here and set PAYLOAD_ENABLED=true. Trigger a Vercel rebuild after updating this file. Schema: any fields normalizePost() understands — id, title, content (HTML), slug, author, tags, cover_image, published_at. Optional 'whyChoose' field (a single object with the same shape) powers the /why 'Why companies choose X' page; it is kept off the feed, sections and RSS.",
+  "posts": []
+}
