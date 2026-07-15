@@ -48,7 +48,8 @@ export type LogoStyle =
   | "mono" // monospace, techy, bracketed
   | "boxed" // inverted solid box around the name (Vox / Verge)
   | "underline" // accent rule under the wordmark
-  | "monogram"; // initial tile + wordmark
+  | "monogram" // initial tile + wordmark
+  | "initial"; // single oversized first letter as a publication mark
 
 /**
  * A font used by the theme. `family` is the CSS `font-family` stack. When
