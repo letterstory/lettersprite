@@ -19,7 +19,7 @@ import {
 } from "@/lib/editorial";
 import { relatedPosts } from "@/lib/related";
 import { sanitizePostHtml } from "@/lib/sanitize";
-import { articleLd, breadcrumbLd } from "@/lib/seo";
+import { articleLd, breadcrumbLd, faqLd } from "@/lib/seo";
 import { buildToc } from "@/lib/toc";
 import { postUrl } from "@/lib/url";
 import { formatDate } from "@/lib/format";
@@ -121,11 +121,13 @@ export default async function PostPage({ params }: Params) {
 
   const linkableSlugs = allSections(allPosts).map((s) => sectionSlug(s));
   const words = wordCount(post);
+  const faq = faqLd(post, postUrl(post));
 
   return (
     <>
       <JsonLd data={articleLd(post)} />
       <JsonLd data={breadcrumbLd(post)} />
+      {faq && <JsonLd data={faq} />}
 
       <ReadingProgress />
       <BackToTop />
