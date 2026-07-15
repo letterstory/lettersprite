@@ -139,6 +139,15 @@ export function articleLd(post: Post): Json {
     isAccessibleForFree: IS_FREE,
     speakable: SPEAKABLE,
     inLanguage: "en",
+    // The Paper Trail as schema.org citations — the machine-readable half of the
+    // visible "Sources" section, so crawlers see the article's provenance.
+    citation: post.paperTrail.length
+      ? post.paperTrail.map((s) => ({
+          "@type": "CreativeWork",
+          name: s.title,
+          url: s.url,
+        }))
+      : undefined,
   });
 }
 

@@ -4,10 +4,12 @@ import { getActiveTheme } from "@/themes";
 import type { LogoStyle } from "@/themes/types";
 
 /**
- * The masthead "logo" — a purely typographic treatment of `SITE_TITLE`, chosen
- * by the theme's `logo` style. No image asset: font, weight, tracking, case and
- * a small ornament are enough to turn a plain title into something that reads
- * like a real publication's flag. Rendered at build time, identical every load.
+ * The masthead "logo". By default a purely typographic treatment of
+ * `SITE_TITLE`, chosen by the theme's `logo` style — font, weight, tracking,
+ * case and a small ornament are enough to turn a plain title into something that
+ * reads like a real publication's flag. If a deployment supplies inline SVG via
+ * `SITE_LOGO_SVG`, that is rendered instead (see `SvgMark`). Rendered at build
+ * time, identical every load.
  */
 
 type Size = "sm" | "md" | "lg" | "xl";
@@ -18,6 +20,41 @@ const SIZE: Record<Size, string> = {
   lg: "text-4xl",
   xl: "text-5xl sm:text-6xl",
 };
+
+/** Rendered pixel height of the logo SVG, per size — matches the wordmark. */
+const SVG_HEIGHT: Record<Size, string> = {
+  sm: "h-6",
+  md: "h-8",
+  lg: "h-11",
+  xl: "h-14 sm:h-16",
+};
+
+/**
+ * Neutralize the two SVG-specific script vectors before we inline supplied
+ * markup: `<script>` elements and inline `on*` event-handler attributes. The
+ * value is trusted deployment config (an env var), but stripping these keeps a
+ * compromised or careless payload from executing.
+ */
+function sanitizeSvg(svg: string): string {
+  return svg
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+}
+
+/**
+ * A supplied inline logo SVG, sized by height (width tracks the SVG's own aspect
+ * ratio). The wrapper carries the accessible name; the SVG is decorative to AT.
+ */
+function SvgMark({ size }: { size: Size }) {
+  return (
+    <span
+      role="img"
+      aria-label={env.logoAlt || env.siteTitle}
+      className={`inline-flex w-auto ${SVG_HEIGHT[size]} [&>svg]:h-full [&>svg]:w-auto`}
+      dangerouslySetInnerHTML={{ __html: sanitizeSvg(env.logoSvg) }}
+    />
+  );
+}
 
 function initials(title: string): string {
   const words = title
@@ -159,7 +196,7 @@ export function Logo({
   const resolved = style ?? getActiveTheme().logo;
   const mark = (
     <span className={`inline-block text-heading ${className}`}>
-      <Mark style={resolved} size={size} />
+      {env.logoSvg ? <SvgMark size={size} /> : <Mark style={resolved} size={size} />}
     </span>
   );
   if (!linked) return mark;

@@ -32,6 +32,7 @@ import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { PostContent } from "@/components/PostContent";
 import { PostMeta } from "@/components/PostMeta";
 import { PostNav } from "@/components/PostNav";
+import { PostSources } from "@/components/PostSources";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { RelatedPosts } from "@/components/RelatedPosts";
 import { ShareRow } from "@/components/ShareRow";
@@ -198,6 +199,10 @@ export default async function PostPage({ params }: Params) {
 
           {/* End-of-story mark (the printer's "fin"). */}
           <div className="fin" aria-hidden />
+
+          {/* Paper Trail — the vetted sources Letterbrace shipped with the
+              article. Renders nothing when the article has no trail. */}
+          <PostSources sources={post.paperTrail} className="mt-10" />
 
           <TopicTags
             tags={post.tags}

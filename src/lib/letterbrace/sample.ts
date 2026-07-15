@@ -33,6 +33,7 @@ const P = (
   tags: [tag],
   createdAt: null,
   updatedAt: null,
+  paperTrail: [],
   ...extra,
 });
 

@@ -1,4 +1,4 @@
-import type { Post } from "./types";
+import type { PaperTrailSource, Post } from "./types";
 
 type Raw = Record<string, unknown>;
 
@@ -100,6 +100,31 @@ export function cleanAuthorName(raw: string): string | null {
   return kept;
 }
 
+/**
+ * The article's Paper Trail from the `/published` payload
+ * (`paper_trail.sources`: `[{ url, title, note }]`). Tolerant of an absent or
+ * malformed field — always returns a (possibly empty) array — and drops
+ * url-less entries. Title falls back to the url when none was captured.
+ */
+function toPaperTrail(raw: Raw): PaperTrailSource[] {
+  const trail = raw.paper_trail;
+  if (!trail || typeof trail !== "object") return [];
+  const sources = (trail as Raw).sources;
+  if (!Array.isArray(sources)) return [];
+  return sources
+    .map((s): PaperTrailSource | null => {
+      const o = (s ?? {}) as Raw;
+      const url = asString(o.url)?.trim();
+      if (!url) return null;
+      return {
+        url,
+        title: asString(o.title)?.trim() || url,
+        note: asString(o.note)?.trim() || "",
+      };
+    })
+    .filter((s): s is PaperTrailSource => s !== null);
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
   if (direct) return cleanAuthorName(direct);
@@ -169,5 +194,6 @@ export function normalizePost(raw: Raw): Post | null {
       raw.date,
     ),
     updatedAt: toIso(raw.updated_at, raw.updatedAt, raw.modified_at),
+    paperTrail: toPaperTrail(raw),
   };
 }
