@@ -125,6 +125,49 @@ function toPaperTrail(raw: Raw): PaperTrailSource[] {
     .filter((s): s is PaperTrailSource => s !== null);
 }
 
+/** A usable image URL from a string, or from an object carrying a `url`. */
+function coverUrlFrom(value: unknown): string | null {
+  const s = asString(value);
+  if (s && s.trim()) return s.trim();
+  if (value && typeof value === "object") {
+    const url = asString((value as Raw).url);
+    if (url && url.trim()) return url.trim();
+  }
+  return null;
+}
+
+/**
+ * The post's cover image URL. Checked in order: flat top-level fields (string
+ * or `{ url }` object), then Letterbrace's `metadata.cover_image` (the object
+ * written by the cover generate/upload flows) and its legacy
+ * `metadata.cover_image_url` string.
+ */
+function toCoverImage(raw: Raw): string | null {
+  const keys = [
+    "cover_image",
+    "coverImage",
+    "featured_image",
+    "featuredImage",
+    "image",
+    "cover",
+    "thumbnail",
+  ];
+  for (const key of keys) {
+    const hit = coverUrlFrom(raw[key]);
+    if (hit) return hit;
+  }
+  const meta = raw.metadata;
+  if (meta && typeof meta === "object") {
+    const m = meta as Raw;
+    return (
+      coverUrlFrom(m.cover_image) ??
+      coverUrlFrom(m.cover_image_url) ??
+      coverUrlFrom(m.coverImage)
+    );
+  }
+  return null;
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
   if (direct) return cleanAuthorName(direct);
@@ -176,15 +219,7 @@ export function normalizePost(raw: Raw): Post | null {
     excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
     author: toAuthor(raw),
-    coverImage: pick(raw, [
-      "cover_image",
-      "coverImage",
-      "featured_image",
-      "featuredImage",
-      "image",
-      "cover",
-      "thumbnail",
-    ]),
+    coverImage: toCoverImage(raw),
     tags: toTags(raw),
     createdAt: toIso(
       raw.published_at,
