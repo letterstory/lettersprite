@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { env, hasLetterbraceKey } from "@/env";
-import { pickFavicon } from "@/lib/favicon";
+import { brandFavicon } from "@/lib/favicon";
 import { siteGraphLd } from "@/lib/seo";
 import { getActiveTheme } from "@/themes";
 import { googleFontsHref, themeToCssVars } from "@/themes/css";
@@ -13,7 +13,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 export function generateMetadata(): Metadata {
   const title = env.siteTitle;
   const description = env.siteDescription || undefined;
-  const favicon = pickFavicon(title);
+  const favicon = brandFavicon();
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.
   const indexable = hasLetterbraceKey;
