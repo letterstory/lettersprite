@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p ${PORT:-9000}",
+    "prebuild": "node scripts/extract-palette.mts",
     "build": "next build",
     "start": "next start -p ${PORT:-9000}",
     "lint": "eslint",

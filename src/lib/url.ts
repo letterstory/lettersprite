@@ -13,6 +13,11 @@ export function postUrl(post: Post): string {
   return `${env.siteUrl}/posts/${post.slug}`;
 }
 
+/** Canonical absolute URL for the "Why companies choose X" page. */
+export function whyPageUrl(): string {
+  return `${env.siteUrl}/why`;
+}
+
 /**
  * Absolute cover image URL. `coverImageFor` returns a relative `/covers/*.png`
  * for the generated fallback; JSON-LD and sitemap images MUST be absolute, so

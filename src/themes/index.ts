@@ -1,5 +1,7 @@
 import { env } from "@/env";
 import type { FontSpec, LogoStyle, Theme } from "./types";
+import { applyIndustryPreset, resolveIndustry, INDUSTRY_PRESETS } from "./industry";
+import { generatedPalette } from "./generated-palette";
 import { classic } from "./classic";
 import { magazine } from "./magazine";
 import { midnight } from "./midnight";
@@ -66,6 +68,7 @@ const LOGO_STYLES: LogoStyle[] = [
   "boxed",
   "underline",
   "monogram",
+  "initial",
 ];
 
 /** Replace a font with a Google-Fonts family named by an env override. */
@@ -76,6 +79,12 @@ function overrideFont(googleName: string): FontSpec {
     // rejected weight from the css2 API.
     google: { name: googleName, weights: [400, 700] },
   };
+}
+
+/** Layer the logo-extracted palette as a low-priority base. Env overrides still win. */
+function applyGeneratedPalette(theme: Theme): Theme {
+  if (Object.keys(generatedPalette).length === 0) return theme;
+  return { ...theme, colors: { ...theme.colors, ...generatedPalette } };
 }
 
 /** Layer optional per-deployment env overrides on top of a base theme. */
@@ -131,12 +140,31 @@ function applyOverrides(theme: Theme): Theme {
 
 /** The theme this deployment renders, selected by the `THEME` env var. */
 export function getActiveTheme(): Theme {
-  const base = themes[env.theme];
-  if (!base) {
+  const industry = resolveIndustry(env.industry);
+
+  // When SITE_INDUSTRY is set and no explicit THEME was provided, auto-select
+  // the industry's preferred theme. An explicit THEME env var always wins.
+  const hasExplicitTheme = Boolean(process.env.THEME);
+  const industryThemeName = industry
+    ? INDUSTRY_PRESETS[industry].theme
+    : undefined;
+
+  const base =
+    (hasExplicitTheme ? themes[env.theme] : undefined) ??
+    (industryThemeName ? themes[industryThemeName] : undefined) ??
+    themes[env.theme] ??
+    themes[DEFAULT_THEME];
+
+  if (!themes[env.theme] && !industry) {
     console.warn(
       `[themes] THEME="${env.theme}" is not a known theme; falling back to "${DEFAULT_THEME}". ` +
         `Available: ${Object.keys(themes).join(", ")}.`,
     );
   }
-  return applyOverrides(base ?? themes[DEFAULT_THEME]);
+
+  // Layer: base theme → logo-extracted palette → industry palette → manual env overrides (highest priority).
+  const withGenerated = applyGeneratedPalette(base);
+  const withIndustry = industry ? applyIndustryPreset(withGenerated, industry) : withGenerated;
+
+  return applyOverrides(withIndustry);
 }

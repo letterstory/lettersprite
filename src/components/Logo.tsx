@@ -67,6 +67,11 @@ function initials(title: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
+function firstLetter(title: string): string {
+  const clean = title.replace(/^(the|a|an)\s+/i, "").trim();
+  return (clean[0] ?? title[0] ?? "·").toUpperCase();
+}
+
 /** The inner wordmark markup for a given style (no link wrapper). */
 function Mark({ style, size }: { style: LogoStyle; size: Size }) {
   const title = env.siteTitle;
@@ -146,6 +151,29 @@ function Mark({ style, size }: { style: LogoStyle; size: Size }) {
           </span>
           <span
             className={`font-heading font-bold leading-none tracking-tight ${scale}`}
+          >
+            {title}
+          </span>
+        </span>
+      );
+
+    case "initial":
+      // Single oversized first letter as a publication mark — reads as a real
+      // masthead initial (cf. The Atlantic "A", Esquire "E") rather than an avatar.
+      // The outer span sets the base size via `scale`; the letter and wordmark
+      // are sized relative to it with em units so all four sizes stay proportional.
+      return (
+        <span className={`inline-flex items-baseline ${scale}`}>
+          <span
+            className="font-display font-extrabold leading-none tracking-[-0.04em] text-primary"
+            style={{ fontSize: "1.35em" }}
+            aria-hidden="true"
+          >
+            {firstLetter(title)}
+          </span>
+          <span
+            className="ml-[0.06em] border-l-2 border-primary pl-[0.2em] font-display font-extrabold leading-none tracking-[-0.02em]"
+            style={{ fontSize: "0.55em" }}
           >
             {title}
           </span>

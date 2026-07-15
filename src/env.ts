@@ -42,7 +42,7 @@ export const env = {
   /** Letterbrace Integrations API base, e.g. https://letterbrace.com/api/integrations */
   letterbraceApiUrl: str(
     "LETTERBRACE_API_URL",
-    "https://app.letterbrace.com/api/integrations",
+    "https://app.letterstory.com/api/integrations",
   ).replace(/\/$/, ""),
   /** `lb_...` key. Scopes this blog to one Letterbrace org. */
   letterbraceApiKey: str("LETTERBRACE_API_KEY"),
@@ -64,6 +64,12 @@ export const env = {
   sections: str("SITE_SECTIONS"),
   /** Social handle (no @) used for Twitter card attribution and footer links. */
   twitterHandle: str("SITE_TWITTER").replace(/^@/, ""),
+  /**
+   * Comma-separated profile/entity URLs for the Organization's `sameAs`
+   * (LinkedIn, Wikipedia, Crunchbase, etc.). The X/Twitter profile derived from
+   * SITE_TWITTER is added automatically, so it need not be repeated here.
+   */
+  sameAs: str("SITE_SAME_AS"),
 
   /**
    * Full color-palette overrides, layered on top of the selected theme. A
@@ -114,6 +120,15 @@ export const env = {
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
   showDrafts: bool("SHOW_DRAFTS", false),
+
+  /**
+   * Direct payload ingestion — lets letterstory push content without a
+   * Letterbrace integration. Set PAYLOAD_ENABLED=true and write posts to
+   * content/payload.json, then trigger a rebuild.
+   */
+  payloadEnabled: bool("PAYLOAD_ENABLED", false),
+  /** Path to the payload file, relative to the repo root. */
+  payloadFile: str("PAYLOAD_FILE", "content/payload.json"),
 } as const;
 
 /** True when a Letterbrace key is present; otherwise content calls no-op. */

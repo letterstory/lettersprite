@@ -1,5 +1,6 @@
 import { env, hasLetterbraceKey } from "@/env";
 import { normalizePost } from "./normalize";
+import { loadPayloadPosts, loadWhyChoosePost } from "./payload";
 import { samplePosts } from "./sample";
 import type { Post } from "./types";
 
@@ -92,27 +93,49 @@ function publishedPath(params: Record<string, string> = {}): string {
 }
 
 /**
- * All visible published posts, newest first, capped at POSTS_LIMIT. Returns
- * sample posts when no key is configured, and [] (rather than throwing) on API
- * errors, so the site renders an empty state instead of a 500.
+ * All visible published posts, newest first, capped at POSTS_LIMIT.
+ *
+ * Sources (merged in order, deduped by id):
+ *  1. Letterbrace API — when LETTERBRACE_API_KEY is set
+ *  2. content/payload.json — when PAYLOAD_ENABLED=true
+ *
+ * Either source can be used alone or together. When neither is configured,
+ * sample posts render so the theme is always previewable.
  */
 export async function getPosts(): Promise<Post[]> {
-  if (!hasLetterbraceKey) return samplePosts;
-  try {
-    const payload = await apiGet(publishedPath());
-    const posts = dedupeById(
-      extractArray(payload)
+  const payloadPosts = loadPayloadPosts().filter(isVisible);
+  const hasPayload = payloadPosts.length > 0;
+
+  if (!hasLetterbraceKey && !hasPayload) return samplePosts;
+
+  let letterbraecPosts: Post[] = [];
+  if (hasLetterbraceKey) {
+    try {
+      const raw = await apiGet(publishedPath());
+      letterbraecPosts = extractArray(raw)
         .map(normalizePost)
         .filter((p): p is Post => p !== null)
-        .filter(isVisible),
-    )
-      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
-      .slice(0, env.postsLimit);
-    return ensureUniqueSlugs(posts);
-  } catch (err) {
-    console.error("[letterbrace] failed to list published posts:", err);
-    return [];
+        .filter(isVisible);
+    } catch (err) {
+      console.error("[letterbrace] failed to list published posts:", err);
+    }
   }
+
+  const merged = dedupeById([...letterbraecPosts, ...payloadPosts])
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+    .slice(0, env.postsLimit);
+
+  return ensureUniqueSlugs(merged);
+}
+
+/**
+ * The "Why companies choose X" page, or null when none is configured. Sourced
+ * from the payload's `whyChoose` field (see loadWhyChoosePost) — the same
+ * content path as regular posts, never the Letterbrace API. Kept out of
+ * getPosts() so it stays off the feed and only powers the `/why` route.
+ */
+export function getWhyChoosePost(): Post | null {
+  return loadWhyChoosePost();
 }
 
 /**

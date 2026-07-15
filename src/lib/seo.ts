@@ -18,6 +18,7 @@ import { pickFavicon } from "./favicon";
 import { authorProfile, bylineFor, type Byline } from "./author";
 import { modifiedDate, publishDate, sectionFor } from "./editorial";
 import { absoluteCover, absoluteUrl, postUrl } from "./url";
+import { extractFaqs } from "./faq";
 import type { Post } from "./letterbrace/types";
 
 type Json = Record<string, unknown>;
@@ -38,12 +39,50 @@ function headline(title: string): string {
 }
 
 /**
+ * The parts of an article a voice assistant should read aloud (AEO). Points at
+ * the headline and standfirst/dek by CSS selector — both present on the post
+ * and `/why` templates — rather than duplicating their text into the graph.
+ */
+const SPEAKABLE: Json = {
+  "@type": "SpeakableSpecification",
+  cssSelector: ["h1", ".dek"],
+};
+
+/** Every deployment of this blog is free to read — no paywall in the codebase. */
+const IS_FREE = true;
+
+/**
+ * The entities an article is "about", derived from its tags. Lets answer
+ * engines connect the piece to topics without a separate taxonomy. Undefined
+ * (so `clean()` drops the key) when the post carries no tags.
+ */
+function mentionsFromTags(tags: string[]): Json[] | undefined {
+  if (!tags.length) return undefined;
+  return tags.map((name) => ({ "@type": "Thing", name }));
+}
+
+/**
+ * The Organization's `sameAs` profiles: the X/Twitter account derived from
+ * SITE_TWITTER, followed by any URLs in SITE_SAME_AS. Deduped; empty when
+ * nothing is configured (so `clean()` drops the key).
+ */
+function orgSameAs(): string[] {
+  const urls: string[] = [];
+  if (env.twitterHandle) urls.push(`https://x.com/${env.twitterHandle}`);
+  for (const u of env.sameAs.split(",").map((s) => s.trim()).filter(Boolean)) {
+    urls.push(u);
+  }
+  return [...new Set(urls)];
+}
+
+/**
  * The site-wide Organization + WebSite graph. Emitted once, in the root layout.
  * No SearchAction: this is a static, search-less blog, and a target that 404s
  * is worse than none.
  */
 export function siteGraphLd(): Json {
   const favicon = pickFavicon();
+  const sameAs = orgSameAs();
   const org: Json = clean({
     "@type": "Organization",
     "@id": ORG_ID,
@@ -51,6 +90,7 @@ export function siteGraphLd(): Json {
     url: env.siteUrl,
     description: env.siteDescription || undefined,
     logo: favicon ? absoluteUrl(favicon.url) : undefined,
+    sameAs: sameAs.length ? sameAs : undefined,
   });
   const website: Json = clean({
     "@type": "WebSite",
@@ -59,6 +99,7 @@ export function siteGraphLd(): Json {
     name: env.siteTitle,
     description: env.siteDescription || undefined,
     inLanguage: "en",
+    isAccessibleForFree: IS_FREE,
     publisher: { "@id": ORG_ID },
   });
   return { "@context": "https://schema.org", "@graph": [org, website] };
@@ -94,6 +135,9 @@ export function articleLd(post: Post): Json {
     isPartOf: { "@id": SITE_ID },
     articleSection: sectionFor(post),
     keywords: post.tags.length ? post.tags.join(", ") : undefined,
+    mentions: mentionsFromTags(post.tags),
+    isAccessibleForFree: IS_FREE,
+    speakable: SPEAKABLE,
     inLanguage: "en",
     // The Paper Trail as schema.org citations — the machine-readable half of the
     // visible "Sources" section, so crawlers see the article's provenance.
@@ -105,6 +149,74 @@ export function articleLd(post: Post): Json {
         }))
       : undefined,
   });
+}
+
+/**
+ * NewsArticle for the "Why companies choose X" page. Same graph wiring as
+ * `articleLd` (author node, publisher/isPartOf refs, absolute image + dates)
+ * but typed `NewsArticle` and anchored to an explicit page URL rather than a
+ * `/posts/` route — the page lives at its own path and carries no post slug.
+ */
+export function newsArticleLd(post: Post, url: string): Json {
+  return clean({
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "@id": `${url}/#article`,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    url,
+    headline: headline(post.title),
+    description: post.excerpt || undefined,
+    image: [absoluteCover(post)],
+    datePublished: publishDate(post),
+    dateModified: modifiedDate(post),
+    author: authorNode(post),
+    publisher: { "@id": ORG_ID },
+    isPartOf: { "@id": SITE_ID },
+    articleSection: sectionFor(post),
+    keywords: post.tags.length ? post.tags.join(", ") : undefined,
+    mentions: mentionsFromTags(post.tags),
+    isAccessibleForFree: IS_FREE,
+    speakable: SPEAKABLE,
+    inLanguage: "en",
+  });
+}
+
+/**
+ * Breadcrumbs for a standalone page. Home → page title (the leaf has no `item`
+ * URL: it's the current page, and a self-referential crumb adds nothing).
+ */
+export function pageBreadcrumbLd(title: string): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: env.siteUrl },
+      { "@type": "ListItem", position: 2, name: title },
+    ],
+  };
+}
+
+/**
+ * A `FAQPage` built from an article's own question-shaped headings (see
+ * `extractFaqs`) — the AEO surface that lets answer engines lift Q&A straight
+ * from the page. Returns null when the piece has no question headings, so the
+ * caller emits no empty FAQ node. `url` is the absolute URL of the page the
+ * FAQ lives on (a post or the `/why` page), used only for the node `@id`.
+ */
+export function faqLd(post: Post, url: string): Json | null {
+  const faqs = extractFaqs(post.content);
+  if (faqs.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${url}/#faq`,
+    isPartOf: { "@id": SITE_ID },
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
 }
 
 /**
