@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { env } from "@/env";
-import { getPosts } from "@/lib/letterbrace/client";
-import { allSections, publishDate, sectionSlug } from "@/lib/editorial";
+import { getPosts, getWhyChoosePost } from "@/lib/letterbrace/client";
+import { allSections, modifiedDate, publishDate, sectionSlug } from "@/lib/editorial";
 import { authorsFromPosts } from "@/lib/author";
 import { absoluteCover } from "@/lib/url";
 
@@ -37,6 +37,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.4,
   }));
 
+  const whyPage = getWhyChoosePost();
+  const whyEntries: MetadataRoute.Sitemap = whyPage
+    ? [
+        {
+          url: `${env.siteUrl}/why`,
+          lastModified: modifiedDate(whyPage),
+          changeFrequency: "monthly",
+          priority: 0.6,
+        },
+      ]
+    : [];
+
   return [
     {
       url: env.siteUrl,
@@ -44,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 1,
     },
+    ...whyEntries,
     ...sectionEntries,
     ...authorEntries,
     ...postEntries,

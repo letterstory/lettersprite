@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { env } from "@/env";
-import { getPosts } from "@/lib/letterbrace/client";
+import { getPosts, getWhyChoosePost } from "@/lib/letterbrace/client";
 import { sectionHref, topSections } from "@/lib/editorial";
 import { Logo } from "./Logo";
 import { NewsletterCTA } from "./NewsletterCTA";
@@ -18,6 +18,7 @@ export async function SiteFooter() {
     ? env.sections.split(",").map((s) => s.trim()).filter(Boolean)
     : topSections(posts, 6);
   const established = env.established && `Est. ${env.established}`;
+  const whyPage = getWhyChoosePost();
 
   return (
     <footer className="no-print mt-20">
@@ -74,6 +75,16 @@ export async function SiteFooter() {
                   Latest
                 </Link>
               </li>
+              {whyPage && (
+                <li>
+                  <Link
+                    href="/why"
+                    className="text-muted ul-link hover:text-foreground"
+                  >
+                    {whyPage.title}
+                  </Link>
+                </li>
+              )}
               <li>
                 <a
                   href="/feed.xml"
