@@ -10,6 +10,11 @@ import { FeedHome } from "@/components/home/FeedHome";
 import { GlossyHome } from "@/components/home/GlossyHome";
 import { GridHome } from "@/components/home/GridHome";
 import { MosaicHome } from "@/components/home/MosaicHome";
+import { CoverHome } from "@/components/home/CoverHome";
+import { GalleryHome } from "@/components/home/GalleryHome";
+import { DigestHome } from "@/components/home/DigestHome";
+import { TimelineHome } from "@/components/home/TimelineHome";
+import { BoardHome } from "@/components/home/BoardHome";
 
 // Fully static: prerendered at build from the baked Letterbrace payload.
 export const dynamic = "force-static";
@@ -46,6 +51,11 @@ export default async function HomePage() {
     glossy: GlossyHome,
     column: ColumnHome,
     grid: GridHome,
+    cover: CoverHome,
+    gallery: GalleryHome,
+    digest: DigestHome,
+    timeline: TimelineHome,
+    board: BoardHome,
   }[theme.home];
 
   return (
