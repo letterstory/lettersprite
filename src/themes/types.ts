@@ -19,6 +19,16 @@
  * - `glossy` — a big cinematic hero over a card grid (Wired, The Verge).
  * - `column` — an elegant, restrained single/dual column (The Atlantic, Slate).
  * - `grid` — a clean uniform card grid (lifestyle / minimal).
+ * - `cover` — a full-bleed magazine cover with overlaid coverlines, then an
+ *   "in this issue" grid (Vogue, Vanity Fair — fashion/beauty).
+ * - `gallery` — an image-first masonry with hover captions (photography, travel,
+ *   interior design — the picture leads, the words follow).
+ * - `digest` — a narrow, numbered single-column reading list with a dateline,
+ *   like a personal email newsletter (Substack / a writer's dispatch).
+ * - `timeline` — a vertical changelog with dated markers down a rail
+ *   (engineering blogs, product changelogs, release notes).
+ * - `board` — a Pinterest-style pinboard of mixed image + text cards in a
+ *   masonry, some note-only (wellness, food, DIY, lifestyle).
  */
 export type HomeLayout =
   | "broadsheet"
@@ -26,7 +36,12 @@ export type HomeLayout =
   | "mosaic"
   | "glossy"
   | "column"
-  | "grid";
+  | "grid"
+  | "cover"
+  | "gallery"
+  | "digest"
+  | "timeline"
+  | "board";
 
 /**
  * How the article page reads.
