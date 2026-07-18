@@ -31,18 +31,49 @@ export function slugify(input: string): string {
   return s || "post";
 }
 
-/** Strip tags and decode the handful of entities we care about, to plain text. */
+/** Block-level elements whose boundaries are semantic sentence/paragraph
+ *  breaks. Flattening them to a bare space runs a heading or list item that
+ *  carries no terminal punctuation straight into the next block
+ *  ("...essential work The numbers..."). Inline tags (`<em>`, `<a>`, …) are
+ *  deliberately absent so mid-sentence formatting still closes up to a space. */
+const BLOCK_BOUNDARY =
+  /<\/?(?:p|h[1-6]|li|ul|ol|dl|dd|dt|blockquote|pre|figure|figcaption|div|section|article|header|footer|main|aside|table|thead|tbody|tr|hr|br)\b[^>]*>/gi;
+
+/** Private-use sentinel marking a block edge between the tag strip and the
+ *  sentence-break pass. Chosen so it can never collide with real content. */
+const BLOCK_SEP = "\u0001";
+
+/** A block edge that follows sentence-continuing text (a letter/number or a
+ *  closing quote/bracket/percent) and precedes new sentence-opening text
+ *  becomes a full stop. The leading char is captured so nothing is consumed. */
+const NEEDS_STOP = new RegExp(
+  `([\\p{L}\\p{N})\\]"'’”%])[ \\t]*${BLOCK_SEP}+[ \\t]*(?=[\\p{L}\\p{N}("'‘“¿¡[])`,
+  "gu",
+);
+
+/** Strip tags and decode the handful of entities we care about, to plain text.
+ *  Block boundaries are preserved as sentence breaks so flattened HTML doesn't
+ *  produce run-ons across headings, list items and paragraphs. */
 export function stripHtml(html: string): string {
-  const clean = html
+  const marked = html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    // Mark block edges with a sentinel BEFORE the generic tag strip, then strip
+    // the remaining (inline) tags to spaces.
+    .replace(BLOCK_BOUNDARY, BLOCK_SEP)
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
     .replace(/&(?:#39|apos);/gi, "'")
-    .replace(/&quot;/gi, '"')
+    .replace(/&quot;/gi, '"');
+  const clean = marked
+    // Insert a full stop where a block edge separated two sentences...
+    .replace(NEEDS_STOP, "$1. ")
+    // ...and collapse every remaining sentinel (already-punctuated or
+    // leading/trailing edges) to plain whitespace.
+    .replace(new RegExp(`${BLOCK_SEP}+`, "g"), " ")
     .replace(/\s+/g, " ")
     .trim();
   return tightenPunctuationSpacing(clean);
