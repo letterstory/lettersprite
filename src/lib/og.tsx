@@ -197,6 +197,13 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   const displayFamily = loaded(dSpec.google?.name, dWeight);
   const bodyFamily = loaded(bSpec.google?.name, bWeight);
 
+  // Only set `fontFamily` when the face actually loaded. A build-time Google
+  // Fonts fetch can flake, leaving these undefined — and Satori throws
+  // "Cannot read properties of undefined (reading 'split')" on a bare
+  // `fontFamily: undefined`, which fails the whole static export. Omitting the
+  // key instead lets Satori fall back to its bundled default font.
+  const fam = (name?: string): { fontFamily?: string } => (name ? { fontFamily: name } : {});
+
   const element = (
     <div
       style={{
@@ -208,7 +215,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
         padding: "76px 80px",
         backgroundImage: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
         color: fg,
-        fontFamily: bodyFamily,
+        ...fam(bodyFamily),
       }}
     >
       <div style={{ display: "flex" }}>
@@ -221,7 +228,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               color: muted,
-              fontFamily: bodyFamily,
+              ...fam(bodyFamily),
             }}
           >
             {opts.eyebrow}
@@ -248,7 +255,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
             lineHeight: 1.03,
             letterSpacing: "-0.02em",
             maxWidth: 1000,
-            fontFamily: displayFamily,
+            ...fam(displayFamily),
           }}
         >
           {opts.title}
@@ -263,7 +270,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
               marginTop: 28,
               maxWidth: 900,
               color: muted,
-              fontFamily: bodyFamily,
+              ...fam(bodyFamily),
             }}
           >
             {opts.subtitle}
@@ -278,7 +285,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
               letterSpacing: "0.03em",
               marginTop: 44,
               color: muted,
-              fontFamily: bodyFamily,
+              ...fam(bodyFamily),
             }}
           >
             {footer}
