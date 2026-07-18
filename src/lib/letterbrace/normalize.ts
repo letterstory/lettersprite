@@ -45,9 +45,13 @@ const BLOCK_SEP = "\u0001";
 
 /** A block edge that follows sentence-continuing text (a letter/number or a
  *  closing quote/bracket/percent) and precedes new sentence-opening text
- *  becomes a full stop. The leading char is captured so nothing is consumed. */
+ *  becomes a full stop. The leading char is captured so nothing is consumed.
+ *  The sentinel run tolerates surrounding whitespace and adjacent sentinels
+ *  (`</h2>\n<p>` marks two sentinels around a newline), which real serialized
+ *  HTML always has between block tags — matching only `[ \t]` here silently
+ *  no-ops on newline-separated blocks, which is the whole bug this fixes. */
 const NEEDS_STOP = new RegExp(
-  `([\\p{L}\\p{N})\\]"'’”%])[ \\t]*${BLOCK_SEP}+[ \\t]*(?=[\\p{L}\\p{N}("'‘“¿¡[])`,
+  `([\\p{L}\\p{N})\\]"'’”%])\\s*${BLOCK_SEP}[\\s${BLOCK_SEP}]*(?=[\\p{L}\\p{N}("'‘“¿¡[])`,
   "gu",
 );
 
