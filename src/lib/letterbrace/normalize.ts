@@ -1,3 +1,4 @@
+import { tightenPunctuationSpacing } from "@/lib/text";
 import type { PaperTrailSource, Post } from "./types";
 
 type Raw = Record<string, unknown>;
@@ -32,7 +33,7 @@ export function slugify(input: string): string {
 
 /** Strip tags and decode the handful of entities we care about, to plain text. */
 export function stripHtml(html: string): string {
-  return html
+  const clean = html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, " ")
@@ -44,15 +45,27 @@ export function stripHtml(html: string): string {
     .replace(/&quot;/gi, '"')
     .replace(/\s+/g, " ")
     .trim();
+  return tightenPunctuationSpacing(clean);
 }
 
-/** A trimmed, word-boundary plain-text excerpt. */
+/** Trailing whitespace, punctuation and symbols we never want jammed against
+ *  the ellipsis (".…", " ,…", "50%…"). Unicode-aware so it covers quotes,
+ *  brackets, dashes, currency, etc. as well as the ASCII basics. */
+const TRAILING_NOISE = /[\s\p{P}\p{S}]+$/u;
+
+/**
+ * A trimmed, word-boundary plain-text excerpt. When truncated it ends with a
+ * space then an ellipsis (" …") and never leaves a trailing punctuation mark
+ * against the ellipsis — both of which read as broken ("the…", "registry.…").
+ */
 export function excerptFrom(html: string, max = 180): string {
   const clean = stripHtml(html);
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max);
   const lastSpace = cut.lastIndexOf(" ");
-  return `${(lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+  const body = (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).replace(TRAILING_NOISE, "");
+  // If the cut was all punctuation/whitespace, fall back to the raw trimmed cut.
+  return `${body || cut.trimEnd()} …`;
 }
 
 function toIso(...candidates: unknown[]): string | null {
