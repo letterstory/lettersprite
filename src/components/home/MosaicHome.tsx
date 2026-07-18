@@ -29,7 +29,7 @@ export function MosaicHome({ posts }: { posts: Post[] }) {
                 </h2>
               </Link>
               {lead.excerpt && (
-                <p className="max-w-2xl text-lg text-fg-soft line-clamp-2">
+                <p className="max-w-2xl text-lg text-fg-soft excerpt-clamp-2">
                   {lead.excerpt}
                 </p>
               )}

@@ -387,6 +387,28 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  /*
+   * Excerpt clamps: cap a preview to N lines by HEIGHT, without the browser's
+   * built-in `-webkit-line-clamp` ellipsis. That auto-ellipsis can't be styled
+   * — it's jammed straight onto whatever character lands at the cutoff
+   * ("counted…", "registry.…") with no space, which is exactly the artefact we
+   * want gone. Here the only ellipsis is the clean " …" that `excerptFrom`
+   * appends at the text level; when a preview is longer than the box it cuts at
+   * a line boundary with no dots. `1lh` = the element's own line-height, so this
+   * tracks each theme's font size and leading with no per-variant tuning.
+   */
+  .excerpt-clamp-2 {
+    overflow: hidden;
+    max-height: calc(2 * 1lh);
+  }
+  .excerpt-clamp-3 {
+    overflow: hidden;
+    max-height: calc(3 * 1lh);
+  }
+  .excerpt-clamp-4 {
+    overflow: hidden;
+    max-height: calc(4 * 1lh);
+  }
   /* Grain/paper texture toggle for print-mag themes (very subtle). */
   .paper {
     background-image: radial-gradient(

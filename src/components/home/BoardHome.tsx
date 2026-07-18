@@ -27,7 +27,7 @@ export function BoardHome({ posts }: { posts: Post[] }) {
                 </h2>
               </Link>
               {lead.excerpt && (
-                <p className="text-fg-soft line-clamp-3">{lead.excerpt}</p>
+                <p className="text-fg-soft excerpt-clamp-3">{lead.excerpt}</p>
               )}
               <PostMeta post={lead} variant="byline" readingTime className="mt-1" />
             </div>
@@ -66,7 +66,7 @@ export function BoardHome({ posts }: { posts: Post[] }) {
                   {post.excerpt && (
                     <p
                       className={`text-sm text-fg-soft ${
-                        note ? "line-clamp-4" : "line-clamp-3"
+                        note ? "excerpt-clamp-4" : "excerpt-clamp-3"
                       }`}
                     >
                       {post.excerpt}

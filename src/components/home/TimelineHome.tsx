@@ -32,7 +32,7 @@ export function TimelineHome({ posts }: { posts: Post[] }) {
               </h2>
             </Link>
             {lead.excerpt && (
-              <p className="max-w-xl text-lg text-fg-soft line-clamp-3">
+              <p className="max-w-xl text-lg text-fg-soft excerpt-clamp-3">
                 {lead.excerpt}
               </p>
             )}
@@ -66,7 +66,7 @@ export function TimelineHome({ posts }: { posts: Post[] }) {
                       </h3>
                     </Link>
                     {post.excerpt && (
-                      <p className="text-fg-soft line-clamp-2">{post.excerpt}</p>
+                      <p className="text-fg-soft excerpt-clamp-2">{post.excerpt}</p>
                     )}
                     <PostMeta post={post} readingTime className="mt-1 text-sm" />
                   </div>
