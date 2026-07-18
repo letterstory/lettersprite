@@ -57,8 +57,14 @@ const TRAILING_NOISE = /[\s\p{P}\p{S}]+$/u;
  * A trimmed, word-boundary plain-text excerpt. When truncated it ends with a
  * space then an ellipsis (" …") and never leaves a trailing punctuation mark
  * against the ellipsis — both of which read as broken ("the…", "registry.…").
+ *
+ * The default length is kept short enough that this text — and its clean
+ * trailing " …" — fits inside the card's `excerpt-clamp-*` box on the common
+ * layouts, so the height clamp doesn't cut it off. (The clamp no longer adds
+ * its own ellipsis, so an over-long preview degrades to a clean line cut rather
+ * than a jammed "word…".)
  */
-export function excerptFrom(html: string, max = 180): string {
+export function excerptFrom(html: string, max = 130): string {
   const clean = stripHtml(html);
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max);
