@@ -56,10 +56,47 @@ All configuration is via environment variables. See [`.env.example`](./.env.exam
 | `SITE_HERO_FROM` / `SITE_HERO_TO` | no | theme default | Hero gradient stops. |
 | `FONT_DISPLAY` / `FONT_HEADING` / `FONT_BODY` | no | theme default | Google Fonts families (display headlines / headings / body). |
 | `SITE_LOGO_STYLE` | no | theme default | Force a logo treatment: `serif`, `sans-bold`, `condensed`, `mono`, `boxed`, `underline`, `monogram`. |
+| `SITE_LOGO_SVG` | no | – | Inline logo **SVG markup** (`<svg>…</svg>`, not a URL). When set, the masthead renders this instead of the typographic wordmark and `SITE_LOGO_STYLE` is ignored. See [Custom logo](#custom-logo). |
+| `SITE_LOGO_ALT` | no | `SITE_TITLE` | Accessible label for `SITE_LOGO_SVG`. |
 | `NEWSLETTER_ENABLED` | no | `false` | Show the subscribe capture (hidden by default — no backend yet). |
 | `NEWSLETTER_ACTION` | no | – | Form `action` URL to wire subscribe to a real provider. |
 | `POSTS_LIMIT` | no | `50` | Max posts fetched for the index (1–100). |
 | `SHOW_DRAFTS` | no | `false` | Include draft-status posts. |
+
+### Custom logo
+
+By default the masthead is a **typographic wordmark** built from `SITE_TITLE`
+(the treatment is picked by the theme, or forced with `SITE_LOGO_STYLE`). To use
+a real logo instead, set **`SITE_LOGO_SVG`** to the raw inline SVG markup.
+
+**What the backend sends:** the value is the SVG source itself — the literal
+`<svg …>…</svg>` string — **not** a URL and not a file path. It is inlined into
+the masthead at build time. Concretely, for each deployment set:
+
+```bash
+SITE_LOGO_SVG='<svg viewBox="0 0 120 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="…"/></svg>'
+SITE_LOGO_ALT='Acme Weekly'   # optional; defaults to SITE_TITLE
+```
+
+Requirements and behavior:
+
+- **Inline markup, one line.** Env vars are single values — strip internal
+  newlines (or escape them). The string must start with `<svg` and be
+  well-formed.
+- **Include a `viewBox`.** The logo is rendered at a fixed height per masthead
+  size (≈24–64px) and its width scales to the SVG's aspect ratio, so a `viewBox`
+  is what makes it size correctly. Any intrinsic `width`/`height` on the `<svg>`
+  is overridden.
+- **Use `currentColor`** for `fill`/`stroke` to inherit the theme's heading
+  color automatically (light and dark themes both look right). Hard-coded colors
+  are kept as-is — fine for a full-color mark, but it won't adapt per theme.
+- **Sanitization.** `<script>` elements and `on*` event-handler attributes are
+  stripped before render. Keep the SVG to shapes/paths (no scripts, no external
+  `<image href>` you rely on).
+- **Precedence.** When `SITE_LOGO_SVG` is set it fully replaces the wordmark and
+  `SITE_LOGO_STYLE` is ignored. Leave it empty to keep the typographic logo.
+- **Rebuild required.** Like all config, it's baked in at build time — changing
+  the logo needs a redeploy.
 
 ## Themes
 

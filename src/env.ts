@@ -88,6 +88,19 @@ export const env = {
   fontDisplay: str("FONT_DISPLAY"),
   /** Optional logo-treatment override (see LogoStyle in src/themes/types.ts). */
   logoStyle: str("SITE_LOGO_STYLE"),
+  /**
+   * Optional inline logo SVG. When set, the masthead renders this SVG instead of
+   * the typographic wordmark (and `SITE_LOGO_STYLE` is ignored). Pass the raw
+   * `<svg>…</svg>` markup itself — not a URL — as the value; it's inlined
+   * directly. `<script>` and event-handler attributes are stripped before
+   * render. Height is fixed per masthead size and width scales to the SVG's
+   * aspect ratio, so `width`/`height`/`viewBox` on the source are respected for
+   * ratio but not absolute size. Use `currentColor` for fills/strokes to inherit
+   * the theme's heading color.
+   */
+  logoSvg: str("SITE_LOGO_SVG"),
+  /** Accessible label for the logo SVG. Defaults to `SITE_TITLE` when omitted. */
+  logoAlt: str("SITE_LOGO_ALT"),
 
   /**
    * Newsletter capture. Off by default: the subscribe UI is fully designed but

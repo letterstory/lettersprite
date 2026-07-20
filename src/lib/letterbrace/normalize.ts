@@ -1,4 +1,5 @@
-import type { Post } from "./types";
+import { tightenPunctuationSpacing } from "@/lib/text";
+import type { PaperTrailSource, Post } from "./types";
 
 type Raw = Record<string, unknown>;
 
@@ -30,29 +31,82 @@ export function slugify(input: string): string {
   return s || "post";
 }
 
-/** Strip tags and decode the handful of entities we care about, to plain text. */
+/** Block-level elements whose boundaries are semantic sentence/paragraph
+ *  breaks. Flattening them to a bare space runs a heading or list item that
+ *  carries no terminal punctuation straight into the next block
+ *  ("...essential work The numbers..."). Inline tags (`<em>`, `<a>`, …) are
+ *  deliberately absent so mid-sentence formatting still closes up to a space. */
+const BLOCK_BOUNDARY =
+  /<\/?(?:p|h[1-6]|li|ul|ol|dl|dd|dt|blockquote|pre|figure|figcaption|div|section|article|header|footer|main|aside|table|thead|tbody|tr|hr|br)\b[^>]*>/gi;
+
+/** Private-use sentinel marking a block edge between the tag strip and the
+ *  sentence-break pass. Chosen so it can never collide with real content. */
+const BLOCK_SEP = "\u0001";
+
+/** A block edge that follows sentence-continuing text (a letter/number or a
+ *  closing quote/bracket/percent) and precedes new sentence-opening text
+ *  becomes a full stop. The leading char is captured so nothing is consumed.
+ *  The sentinel run tolerates surrounding whitespace and adjacent sentinels
+ *  (`</h2>\n<p>` marks two sentinels around a newline), which real serialized
+ *  HTML always has between block tags — matching only `[ \t]` here silently
+ *  no-ops on newline-separated blocks, which is the whole bug this fixes. */
+const NEEDS_STOP = new RegExp(
+  `([\\p{L}\\p{N})\\]"'’”%])\\s*${BLOCK_SEP}[\\s${BLOCK_SEP}]*(?=[\\p{L}\\p{N}("'‘“¿¡[])`,
+  "gu",
+);
+
+/** Strip tags and decode the handful of entities we care about, to plain text.
+ *  Block boundaries are preserved as sentence breaks so flattened HTML doesn't
+ *  produce run-ons across headings, list items and paragraphs. */
 export function stripHtml(html: string): string {
-  return html
+  const marked = html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    // Mark block edges with a sentinel BEFORE the generic tag strip, then strip
+    // the remaining (inline) tags to spaces.
+    .replace(BLOCK_BOUNDARY, BLOCK_SEP)
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
     .replace(/&(?:#39|apos);/gi, "'")
-    .replace(/&quot;/gi, '"')
+    .replace(/&quot;/gi, '"');
+  const clean = marked
+    // Insert a full stop where a block edge separated two sentences...
+    .replace(NEEDS_STOP, "$1. ")
+    // ...and collapse every remaining sentinel (already-punctuated or
+    // leading/trailing edges) to plain whitespace.
+    .replace(new RegExp(`${BLOCK_SEP}+`, "g"), " ")
     .replace(/\s+/g, " ")
     .trim();
+  return tightenPunctuationSpacing(clean);
 }
 
-/** A trimmed, word-boundary plain-text excerpt. */
-export function excerptFrom(html: string, max = 180): string {
+/** Trailing whitespace, punctuation and symbols we never want jammed against
+ *  the ellipsis (".…", " ,…", "50%…"). Unicode-aware so it covers quotes,
+ *  brackets, dashes, currency, etc. as well as the ASCII basics. */
+const TRAILING_NOISE = /[\s\p{P}\p{S}]+$/u;
+
+/**
+ * A trimmed, word-boundary plain-text excerpt. When truncated it ends with a
+ * space then an ellipsis (" …") and never leaves a trailing punctuation mark
+ * against the ellipsis — both of which read as broken ("the…", "registry.…").
+ *
+ * The default length is kept short enough that this text — and its clean
+ * trailing " …" — fits inside the card's `excerpt-clamp-*` box on the common
+ * layouts, so the height clamp doesn't cut it off. (The clamp no longer adds
+ * its own ellipsis, so an over-long preview degrades to a clean line cut rather
+ * than a jammed "word…".)
+ */
+export function excerptFrom(html: string, max = 130): string {
   const clean = stripHtml(html);
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max);
   const lastSpace = cut.lastIndexOf(" ");
-  return `${(lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+  const body = (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).replace(TRAILING_NOISE, "");
+  // If the cut was all punctuation/whitespace, fall back to the raw trimmed cut.
+  return `${body || cut.trimEnd()} …`;
 }
 
 function toIso(...candidates: unknown[]): string | null {
@@ -98,6 +152,74 @@ export function cleanAuthorName(raw: string): string | null {
     .trim();
   if (!kept || NULLISH_NAME.test(kept)) return null;
   return kept;
+}
+
+/**
+ * The article's Paper Trail from the `/published` payload
+ * (`paper_trail.sources`: `[{ url, title, note }]`). Tolerant of an absent or
+ * malformed field — always returns a (possibly empty) array — and drops
+ * url-less entries. Title falls back to the url when none was captured.
+ */
+function toPaperTrail(raw: Raw): PaperTrailSource[] {
+  const trail = raw.paper_trail;
+  if (!trail || typeof trail !== "object") return [];
+  const sources = (trail as Raw).sources;
+  if (!Array.isArray(sources)) return [];
+  return sources
+    .map((s): PaperTrailSource | null => {
+      const o = (s ?? {}) as Raw;
+      const url = asString(o.url)?.trim();
+      if (!url) return null;
+      return {
+        url,
+        title: asString(o.title)?.trim() || url,
+        note: asString(o.note)?.trim() || "",
+      };
+    })
+    .filter((s): s is PaperTrailSource => s !== null);
+}
+
+/** A usable image URL from a string, or from an object carrying a `url`. */
+function coverUrlFrom(value: unknown): string | null {
+  const s = asString(value);
+  if (s && s.trim()) return s.trim();
+  if (value && typeof value === "object") {
+    const url = asString((value as Raw).url);
+    if (url && url.trim()) return url.trim();
+  }
+  return null;
+}
+
+/**
+ * The post's cover image URL. Checked in order: flat top-level fields (string
+ * or `{ url }` object), then Letterbrace's `metadata.cover_image` (the object
+ * written by the cover generate/upload flows) and its legacy
+ * `metadata.cover_image_url` string.
+ */
+function toCoverImage(raw: Raw): string | null {
+  const keys = [
+    "cover_image",
+    "coverImage",
+    "featured_image",
+    "featuredImage",
+    "image",
+    "cover",
+    "thumbnail",
+  ];
+  for (const key of keys) {
+    const hit = coverUrlFrom(raw[key]);
+    if (hit) return hit;
+  }
+  const meta = raw.metadata;
+  if (meta && typeof meta === "object") {
+    const m = meta as Raw;
+    return (
+      coverUrlFrom(m.cover_image) ??
+      coverUrlFrom(m.cover_image_url) ??
+      coverUrlFrom(m.coverImage)
+    );
+  }
+  return null;
 }
 
 function toAuthor(raw: Raw): string | null {
@@ -151,15 +273,7 @@ export function normalizePost(raw: Raw): Post | null {
     excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
     author: toAuthor(raw),
-    coverImage: pick(raw, [
-      "cover_image",
-      "coverImage",
-      "featured_image",
-      "featuredImage",
-      "image",
-      "cover",
-      "thumbnail",
-    ]),
+    coverImage: toCoverImage(raw),
     tags: toTags(raw),
     createdAt: toIso(
       raw.published_at,
@@ -169,5 +283,6 @@ export function normalizePost(raw: Raw): Post | null {
       raw.date,
     ),
     updatedAt: toIso(raw.updated_at, raw.updatedAt, raw.modified_at),
+    paperTrail: toPaperTrail(raw),
   };
 }

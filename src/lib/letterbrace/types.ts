@@ -1,4 +1,18 @@
 /**
+ * One source in an article's Paper Trail — the vetted list of pages the article
+ * actually drew on, compiled by Letterbrace at publish time and shipped in the
+ * `/published` payload as `paper_trail.sources`. Rendered as a "Sources" section
+ * and emitted as schema.org `citation` (see `seo.ts`).
+ */
+export interface PaperTrailSource {
+  url: string;
+  /** A human label — the page title, or the bare URL when none was captured. */
+  title: string;
+  /** One reader-facing sentence on what the source contributed (may be empty). */
+  note: string;
+}
+
+/**
  * A normalized blog post. This is the stable shape the UI consumes, decoupled
  * from whatever the Letterbrace `/out` endpoint happens to return — see
  * `normalize.ts`, which tolerates missing and extra fields.
@@ -21,4 +35,6 @@ export interface Post {
   /** ISO 8601 timestamps, or null when the API doesn't supply them. */
   createdAt: string | null;
   updatedAt: string | null;
+  /** The article's Paper Trail — vetted sources, or [] when there are none. */
+  paperTrail: PaperTrailSource[];
 }

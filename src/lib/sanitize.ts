@@ -1,4 +1,5 @@
 import sanitizeHtml from "sanitize-html";
+import { tightenPunctuationSpacing } from "@/lib/text";
 
 /**
  * Article bodies arrive as HTML from Letterbrace. We render them with
@@ -23,6 +24,11 @@ const options: sanitizeHtml.IOptions = {
   },
   allowedSchemes: ["http", "https", "mailto", "tel"],
   allowedSchemesByTag: { img: ["http", "https", "data"] },
+  // Fix a stray space before sentence punctuation in body prose (upstream
+  // generation sometimes emits "2025 ,"). Runs on text nodes only — never on
+  // tags or attributes — and skips <code>/<pre>, where spacing is meaningful.
+  textFilter: (text, tagName) =>
+    tagName === "code" || tagName === "pre" ? text : tightenPunctuationSpacing(text),
   transformTags: {
     // Never trust outbound links from generated content.
     a: (tagName, attribs) => ({

@@ -15,6 +15,26 @@ import { ledger } from "./ledger";
 import { atelier } from "./atelier";
 import { noir } from "./noir";
 import { chronicle } from "./chronicle";
+import { verdure } from "./verdure";
+import { couture } from "./couture";
+import { atlas } from "./atlas";
+import { missive } from "./missive";
+import { commit } from "./commit";
+import { apex } from "./apex";
+import { mint } from "./mint";
+import { bloom } from "./bloom";
+import { cinder } from "./cinder";
+import { hearth } from "./hearth";
+import { harvest } from "./harvest";
+import { terra } from "./terra";
+import { verve } from "./verve";
+import { estate } from "./estate";
+import { counsel } from "./counsel";
+import { clinic } from "./clinic";
+import { nook } from "./nook";
+import { lumen } from "./lumen";
+import { cellar } from "./cellar";
+import { horizon } from "./horizon";
 import { meridian } from "./meridian";
 import { keystone } from "./keystone";
 import { vantage } from "./vantage";
@@ -67,6 +87,28 @@ export const themes: Record<string, Theme> = {
   [atelier.name]: atelier, // warm-paper lifestyle quarterly
   [noir.name]: noir, // dark neon terminal
   [chronicle.name]: chronicle, // authoritative politics + economics
+  // Brand & product publications — a wide spread of verticals, five of them on
+  // brand-new home layouts (cover / gallery / digest / timeline / board).
+  [verdure.name]: verdure, // nutrition & wellness pinboard (board)
+  [couture.name]: couture, // high-fashion magazine cover (cover)
+  [atlas.name]: atlas, // travel & exploration gallery (gallery)
+  [missive.name]: missive, // personal newsletter digest (digest)
+  [commit.name]: commit, // engineering changelog timeline (timeline)
+  [apex.name]: apex, // athletic performance, dark cinematic
+  [mint.name]: mint, // consumer fintech, rounded grid
+  [bloom.name]: bloom, // beauty editorial, blush grid
+  [cinder.name]: cinder, // gaming & esports, neon mosaic
+  [hearth.name]: hearth, // interior design & architecture
+  [harvest.name]: harvest, // food & recipe mosaic
+  [terra.name]: terra, // sustainability & climate longform
+  [verve.name]: verve, // music & pop culture mosaic
+  [estate.name]: estate, // luxury real estate hero
+  [counsel.name]: counsel, // professional-services thought leadership
+  [clinic.name]: clinic, // healthcare & biotech feed
+  [nook.name]: nook, // parenting & family, cozy grid
+  [lumen.name]: lumen, // science & ideas feature feed
+  [cellar.name]: cellar, // craft coffee & beverage journal
+  [horizon.name]: horizon, // B2B SaaS product marketing, glossy gradient
   // Business & corporate publications.
   [meridian.name]: meridian, // management-consulting thought leadership
   [keystone.name]: keystone, // financial-services / investment desk

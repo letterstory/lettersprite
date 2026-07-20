@@ -31,7 +31,7 @@ export function ColumnHome({ posts }: { posts: Post[] }) {
                 </h2>
               </Link>
               {post.excerpt && (
-                <p className="text-fg-soft line-clamp-3">{post.excerpt}</p>
+                <p className="text-fg-soft excerpt-clamp-3">{post.excerpt}</p>
               )}
               <PostMeta post={post} readingTime className="mt-1 text-sm" />
             </div>

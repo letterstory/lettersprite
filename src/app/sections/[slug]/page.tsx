@@ -5,7 +5,7 @@ import { getPosts } from "@/lib/letterbrace/client";
 import {
   allSections,
   postsInSection,
-  sectionFor,
+  sectionNameFor,
   sectionSlug,
 } from "@/lib/editorial";
 import { StoryCard } from "@/components/Story";
@@ -24,16 +24,9 @@ export async function generateStaticParams() {
 /** Resolve the display name for a section slug from the posts that live in it. */
 async function resolveSection(slug: string) {
   const posts = await getPosts();
-  const inSection = postsInSection(posts, slug);
-  if (inSection.length === 0) return null;
-  // Several tag spellings can share a slug; show the most common display name.
-  const counts = new Map<string, number>();
-  for (const p of inSection) {
-    const n = sectionFor(p);
-    counts.set(n, (counts.get(n) ?? 0) + 1);
-  }
-  const name = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
-  return { name, posts: inSection };
+  const name = sectionNameFor(posts, slug);
+  if (!name) return null;
+  return { name, posts: postsInSection(posts, slug) };
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
