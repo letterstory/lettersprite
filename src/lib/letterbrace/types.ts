@@ -31,6 +31,8 @@ export interface Post {
   status: string;
   author: string | null;
   coverImage: string | null;
+  /** Alt text for the cover, shipped by Letterbrace (`cover_image_alt`). */
+  coverImageAlt: string | null;
   tags: string[];
   /** ISO 8601 timestamps, or null when the API doesn't supply them. */
   createdAt: string | null;

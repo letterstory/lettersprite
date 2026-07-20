@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { authorsFromPosts, bylineFor } from "@/lib/author";
 import {
   adjacentPosts,
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     url: coverImageFor(post),
     width: 1200,
     height: 675,
-    alt: post.title,
+    alt: coverAltFor(post) || post.title,
   };
   return {
     title: post.title,
@@ -180,7 +180,7 @@ export default async function PostPage({ params }: Params) {
         >
           <img
             src={coverImageFor(post)}
-            alt=""
+            alt={coverAltFor(post)}
             className="w-full rounded-[var(--radius)] object-cover"
           />
           <figcaption className="mt-2.5 text-xs text-muted">

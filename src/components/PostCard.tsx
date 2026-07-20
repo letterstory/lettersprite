@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { PostMeta } from "./PostMeta";
 
 /** Card used by the grid and magazine layouts. `featured` renders larger. */
@@ -25,7 +25,7 @@ export function PostCard({
       >
         <img
           src={cover}
-          alt=""
+          alt={coverAltFor(post)}
           className={`w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
             featured ? "h-64 sm:h-full" : "h-48"
           }`}

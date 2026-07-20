@@ -51,3 +51,13 @@ export function coverImageFor(post: Post): string {
   if (post.coverImage) return post.coverImage;
   return fallbackCover(post.title || post.slug, getActiveTheme().name);
 }
+
+/**
+ * Alt text to pair with `coverImageFor`. A real cover gets the alt Letterbrace
+ * shipped (falling back to the post title); the generated pattern fallback is
+ * purely decorative, so it correctly stays `alt=""`.
+ */
+export function coverAltFor(post: Post): string {
+  if (!post.coverImage) return "";
+  return post.coverImageAlt ?? post.title ?? "";
+}

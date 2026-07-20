@@ -222,6 +222,35 @@ function toCoverImage(raw: Raw): string | null {
   return null;
 }
 
+/** An `alt` string from an object-shaped cover value (`{ url, alt }`). */
+function coverAltFrom(value: unknown): string | null {
+  if (value && typeof value === "object") {
+    const alt = asString((value as Raw).alt);
+    if (alt && alt.trim()) return alt.trim();
+  }
+  return null;
+}
+
+/**
+ * Alt text for the cover image. Checked in order: the flat `cover_image_alt`
+ * field Letterbrace ships alongside `cover_image`, an `alt` carried on an
+ * object-shaped cover, then the same inside `metadata`.
+ */
+function toCoverImageAlt(raw: Raw): string | null {
+  const flat = pick(raw, ["cover_image_alt", "coverImageAlt"]);
+  if (flat && flat.trim()) return flat.trim();
+  const direct = coverAltFrom(raw.cover_image) ?? coverAltFrom(raw.coverImage);
+  if (direct) return direct;
+  const meta = raw.metadata;
+  if (meta && typeof meta === "object") {
+    const m = meta as Raw;
+    const fromMeta = asString(m.cover_image_alt);
+    if (fromMeta && fromMeta.trim()) return fromMeta.trim();
+    return coverAltFrom(m.cover_image) ?? coverAltFrom(m.coverImage);
+  }
+  return null;
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
   if (direct) return cleanAuthorName(direct);
@@ -274,6 +303,7 @@ export function normalizePost(raw: Raw): Post | null {
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
     author: toAuthor(raw),
     coverImage: toCoverImage(raw),
+    coverImageAlt: toCoverImageAlt(raw),
     tags: toTags(raw),
     createdAt: toIso(
       raw.published_at,

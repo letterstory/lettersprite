@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { env } from "@/env";
 import type { Post } from "@/lib/letterbrace/types";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { StoryCard } from "@/components/Story";
 import { Kicker } from "@/components/Kicker";
 
@@ -26,7 +26,7 @@ export function GlossyHome({ posts }: { posts: Post[] }) {
           >
             <img
               src={coverImageFor(lead)}
-              alt=""
+              alt={coverAltFor(lead)}
               className="h-[52vh] max-h-[560px] min-h-[380px] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           </Link>
