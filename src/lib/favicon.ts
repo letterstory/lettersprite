@@ -71,3 +71,29 @@ export function pickFavicon(name: string = env.siteTitle): Favicon | undefined {
     type: ICON_TYPES[extname(file).toLowerCase()],
   };
 }
+
+/**
+ * The generated site logo (`SITE_LOGO_SVG`) as a favicon.
+ *
+ * The tab icon should match the mark the header renders. A rescramble or logo
+ * regeneration in Letterbrace re-syncs `SITE_LOGO_SVG` and rebuilds this site,
+ * so deriving the favicon from the same env var keeps the two in lockstep.
+ * Inlined as a base64 data URL: no extra route or file, and a changed logo
+ * changes the href — which also defeats the browser's sticky favicon cache.
+ */
+export function logoFavicon(): Favicon | undefined {
+  const svg = env.logoSvg.trim();
+  if (!svg) return undefined;
+  return {
+    url: `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`,
+    type: "image/svg+xml",
+  };
+}
+
+/**
+ * The deployment's favicon: the generated logo when one is set (matches the
+ * header), otherwise the stable per-title pick from `public/icons/`.
+ */
+export function siteFavicon(name?: string): Favicon | undefined {
+  return logoFavicon() ?? pickFavicon(name);
+}
