@@ -35,6 +35,21 @@ import { nook } from "./nook";
 import { lumen } from "./lumen";
 import { cellar } from "./cellar";
 import { horizon } from "./horizon";
+import { meridian } from "./meridian";
+import { keystone } from "./keystone";
+import { vantage } from "./vantage";
+import { cobalt } from "./cobalt";
+import { sterling } from "./sterling";
+import { momentum } from "./momentum";
+import { forum } from "./forum";
+import { cadence } from "./cadence";
+import { evergreen } from "./evergreen";
+import { beacon } from "./beacon";
+import { kernel } from "./kernel";
+import { graphite } from "./graphite";
+import { cortex } from "./cortex";
+import { cipher } from "./cipher";
+import { pulse } from "./pulse";
 
 export type {
   Theme,
@@ -94,6 +109,23 @@ export const themes: Record<string, Theme> = {
   [lumen.name]: lumen, // science & ideas feature feed
   [cellar.name]: cellar, // craft coffee & beverage journal
   [horizon.name]: horizon, // B2B SaaS product marketing, glossy gradient
+  // Business & corporate publications.
+  [meridian.name]: meridian, // management-consulting thought leadership
+  [keystone.name]: keystone, // financial-services / investment desk
+  [vantage.name]: vantage, // B2B SaaS product & engineering blog
+  [cobalt.name]: cobalt, // enterprise cloud/IT, carbon-dark console
+  [sterling.name]: sterling, // private banking & wealth journal
+  [momentum.name]: momentum, // marketing, brand & growth
+  [forum.name]: forum, // economics & policy research institute
+  [cadence.name]: cadence, // people, HR & future of work
+  [evergreen.name]: evergreen, // corporate sustainability & ESG
+  [beacon.name]: beacon, // professional services & advisory
+  // Technology publications.
+  [kernel.name]: kernel, // minimal developer / open-source blog
+  [graphite.name]: graphite, // minimal dark writing / engineering blog
+  [cortex.name]: cortex, // AI / ML research lab
+  [cipher.name]: cipher, // cybersecurity / infosec desk
+  [pulse.name]: pulse, // DevOps / observability
 };
 
 export function listThemes(): Theme[] {
