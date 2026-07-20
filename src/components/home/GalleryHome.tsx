@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { sectionFor } from "@/lib/editorial";
 import { LeadStory } from "@/components/Story";
 
@@ -36,7 +36,7 @@ export function GalleryHome({ posts }: { posts: Post[] }) {
               >
                 <img
                   src={coverImageFor(post)}
-                  alt=""
+                  alt={coverAltFor(post)}
                   loading="lazy"
                   className={`w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] ${ASPECTS[i % ASPECTS.length]}`}
                 />

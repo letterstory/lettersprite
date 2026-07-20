@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { Kicker } from "./Kicker";
 import { PostMeta } from "./PostMeta";
 
@@ -46,7 +46,7 @@ export function Cover({
     >
       <img
         src={coverImageFor(post)}
-        alt=""
+        alt={coverAltFor(post)}
         loading={priority ? "eager" : "lazy"}
         className={`h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] ${RATIO[ratio]}`}
       />

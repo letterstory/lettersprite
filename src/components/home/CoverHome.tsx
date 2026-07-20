@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { StoryCard } from "@/components/Story";
 import { Kicker } from "@/components/Kicker";
 
@@ -31,7 +31,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
           >
             <img
               src={coverImageFor(lead)}
-              alt=""
+              alt={coverAltFor(lead)}
               className="h-[86vh] max-h-[900px] min-h-[520px] w-full object-cover"
             />
           </Link>

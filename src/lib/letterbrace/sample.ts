@@ -30,6 +30,7 @@ const P = (
   status: "published",
   author: null,
   coverImage: null,
+  coverImageAlt: null,
   tags: [tag],
   createdAt: null,
   updatedAt: null,

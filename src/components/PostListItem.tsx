@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/letterbrace/types";
-import { coverImageFor } from "@/lib/covers";
+import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { PostMeta } from "./PostMeta";
 
 /** Row used by the single-column list layout. */
@@ -15,7 +15,7 @@ export function PostListItem({ post }: { post: Post }) {
       >
         <img
           src={cover}
-          alt=""
+          alt={coverAltFor(post)}
           className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       </Link>

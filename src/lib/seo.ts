@@ -18,6 +18,7 @@ import { pickFavicon } from "./favicon";
 import { authorProfile, bylineFor, type Byline } from "./author";
 import { modifiedDate, publishDate, sectionFor } from "./editorial";
 import { absoluteCover, absoluteUrl, postUrl } from "./url";
+import { coverAltFor } from "./covers";
 import type { Post } from "./letterbrace/types";
 
 type Json = Record<string, unknown>;
@@ -86,7 +87,15 @@ export function articleLd(post: Post): Json {
     url,
     headline: headline(post.title),
     description: post.excerpt || undefined,
-    image: [absoluteCover(post)],
+    // An ImageObject (not a bare URL) so the cover's alt rides along as its
+    // caption — image descriptions are part of how the phantom sites index.
+    image: [
+      clean({
+        "@type": "ImageObject",
+        url: absoluteCover(post),
+        caption: coverAltFor(post) || undefined,
+      }),
+    ],
     datePublished: publishDate(post),
     dateModified: modifiedDate(post),
     author: authorNode(post),
