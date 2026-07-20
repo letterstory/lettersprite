@@ -17,6 +17,7 @@
 import { readdirSync } from "node:fs";
 import { extname, join } from "node:path";
 import { env } from "@/env";
+import { getActiveTheme } from "@/themes";
 
 /** Directory holding the selectable favicons, served at `/icons/*`. */
 const ICONS_DIR = join(process.cwd(), "public", "icons");
@@ -69,5 +70,32 @@ export function pickFavicon(name: string = env.siteTitle): Favicon | undefined {
   return {
     url: `/icons/${file}`,
     type: ICON_TYPES[extname(file).toLowerCase()],
+  };
+}
+
+/** First letter of the site title (articles stripped) — matches the masthead. */
+function siteInitial(): string {
+  const clean = env.siteTitle.replace(/^(the|a|an)\s+/i, "").trim();
+  return (clean[0] ?? env.siteTitle[0] ?? "·").toUpperCase();
+}
+
+/**
+ * A favicon that matches the masthead: the site initial in white on a rounded
+ * tile filled with the active theme's primary color. Built as an inline SVG
+ * data URI so it needs no asset pipeline and always reflects the deployment's
+ * real brand color (theme + industry + env overrides). This is what the browser
+ * tab shows — so the tab, the header wordmark, and the brand all read as one.
+ */
+export function brandFavicon(): Favicon {
+  const primary = getActiveTheme().colors.primary || "#111111";
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">` +
+    `<rect width="64" height="64" rx="14" fill="${primary}"/>` +
+    `<text x="50%" y="50%" dy=".35em" text-anchor="middle" ` +
+    `font-family="Georgia,'Times New Roman',serif" font-weight="700" ` +
+    `font-size="40" fill="#ffffff">${siteInitial()}</text></svg>`;
+  return {
+    url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
+    type: "image/svg+xml",
   };
 }
