@@ -98,7 +98,7 @@ export function LeadStory({
           className="text-3xl font-black leading-[1.05] sm:text-4xl md:text-5xl"
         />
         {post.dek && (
-          <p className="max-w-2xl text-lg leading-relaxed text-fg-soft excerpt-clamp-3">
+          <p className="max-w-2xl text-lg leading-relaxed text-fg-soft excerpt-clamp-4">
             {post.dek}
           </p>
         )}
@@ -145,7 +145,7 @@ export function StoryCard({
       {dek && post.dek && (
         <p
           className={`text-fg-soft ${
-            size === "sm" ? "text-sm excerpt-clamp-2" : "excerpt-clamp-3"
+            size === "sm" ? "text-sm excerpt-clamp-3" : "excerpt-clamp-4"
           }`}
         >
           {post.dek}
@@ -187,7 +187,7 @@ export function StoryRow({
           className="text-lg font-bold leading-snug sm:text-xl"
         />
         {dek && post.dek && (
-          <p className="hidden text-sm text-fg-soft excerpt-clamp-2 sm:block">
+          <p className="hidden text-sm text-fg-soft excerpt-clamp-3 sm:block">
             {post.dek}
           </p>
         )}
@@ -218,7 +218,7 @@ export function HeadlineItem({
         className="text-lg font-bold leading-snug"
       />
       {dek && post.dek && (
-        <p className="text-sm text-fg-soft excerpt-clamp-2">{post.dek}</p>
+        <p className="text-sm text-fg-soft excerpt-clamp-3">{post.dek}</p>
       )}
       <PostMeta post={post} className="text-xs" />
     </article>
