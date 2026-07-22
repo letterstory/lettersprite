@@ -26,7 +26,7 @@ export function FeedHome({ posts }: { posts: Post[] }) {
           <div className="flex flex-col divide-y divide-border">
             {river.map((post) => (
               <div key={post.id} className="py-6 first:pt-0">
-                <StoryRow post={post} excerpt />
+                <StoryRow post={post} dek />
               </div>
             ))}
           </div>

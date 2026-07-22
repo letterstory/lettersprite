@@ -40,9 +40,9 @@ export function GlossyHome({ posts }: { posts: Post[] }) {
                     {lead.title}
                   </h2>
                 </Link>
-                {lead.excerpt && (
+                {lead.dek && (
                   <p className="mt-3 max-w-xl text-lg text-white/85 excerpt-clamp-2">
-                    {lead.excerpt}
+                    {lead.dek}
                   </p>
                 )}
               </div>
@@ -55,7 +55,7 @@ export function GlossyHome({ posts }: { posts: Post[] }) {
         {secondaryFeatures.length > 0 && (
           <section className="mb-12 grid gap-8 border-b border-border pb-12 sm:grid-cols-2">
             {secondaryFeatures.map((post) => (
-              <StoryCard key={post.id} post={post} size="lg" ratio="16/9" excerpt />
+              <StoryCard key={post.id} post={post} size="lg" ratio="16/9" dek />
             ))}
           </section>
         )}
@@ -65,7 +65,7 @@ export function GlossyHome({ posts }: { posts: Post[] }) {
             <h2 className="rule-label mb-8">More From {env.siteTitle}</h2>
             <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((post) => (
-                <StoryCard key={post.id} post={post} size="md" ratio="16/9" excerpt />
+                <StoryCard key={post.id} post={post} size="md" ratio="16/9" dek />
               ))}
             </div>
           </>

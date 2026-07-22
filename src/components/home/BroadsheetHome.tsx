@@ -29,7 +29,7 @@ export function BroadsheetHome({ posts }: { posts: Post[] }) {
         </div>
         <aside className="lg:col-span-4">
           <h2 className="rule-label mb-5">Latest</h2>
-          <HeadlineList posts={rail} kicker excerpt={false} />
+          <HeadlineList posts={rail} kicker dek={false} />
         </aside>
       </section>
 
@@ -53,10 +53,10 @@ export function BroadsheetHome({ posts }: { posts: Post[] }) {
                           post={post}
                           size="sm"
                           ratio="16/9"
-                          excerpt
+                          dek
                         />
                       ) : (
-                        <HeadlineItem post={post} excerpt />
+                        <HeadlineItem post={post} dek />
                       )}
                     </div>
                   ))}

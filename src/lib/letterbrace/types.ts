@@ -25,8 +25,14 @@ export interface Post {
   title: string;
   /** Raw HTML from the API. NOT sanitized — sanitize before rendering. */
   content: string;
-  /** Plain-text summary; derived from `content` when the API omits one. */
+  /** Plain-text summary; derived (truncated) from `content` when the API omits
+   *  one. Metadata only (meta description, OG/Twitter, JSON-LD, RSS) — never
+   *  render it in the UI, use `dek` there. */
   excerpt: string;
+  /** Display-safe subheadline for visible UI. Set only when the payload
+   *  explicitly supplies a summary; null otherwise — never derived from the
+   *  body, so it can't be a truncated fragment. */
+  dek: string | null;
   /** Lower-cased status, e.g. "published" | "draft". */
   status: string;
   author: string | null;

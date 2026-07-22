@@ -24,7 +24,7 @@ export function RelatedPosts({
             post={post}
             size="sm"
             ratio="16/9"
-            excerpt={false}
+            dek={false}
           />
         ))}
       </div>

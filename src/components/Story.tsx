@@ -97,9 +97,9 @@ export function LeadStory({
           level={2}
           className="text-3xl font-black leading-[1.05] sm:text-4xl md:text-5xl"
         />
-        {post.excerpt && (
+        {post.dek && (
           <p className="max-w-2xl text-lg leading-relaxed text-fg-soft excerpt-clamp-3">
-            {post.excerpt}
+            {post.dek}
           </p>
         )}
         <PostMeta post={post} variant="byline" readingTime className="mt-1" />
@@ -113,7 +113,7 @@ export function StoryCard({
   post,
   size = "md",
   kicker = true,
-  excerpt = true,
+  dek = true,
   ratio = "16/9",
   meta = true,
   headingLevel = 3,
@@ -121,7 +121,7 @@ export function StoryCard({
   post: Post;
   size?: "sm" | "md" | "lg";
   kicker?: boolean;
-  excerpt?: boolean;
+  dek?: boolean;
   ratio?: Ratio;
   meta?: boolean;
   headingLevel?: 2 | 3;
@@ -142,13 +142,13 @@ export function StoryCard({
         level={headingLevel}
         className={headlineCls}
       />
-      {excerpt && post.excerpt && (
+      {dek && post.dek && (
         <p
           className={`text-fg-soft ${
             size === "sm" ? "text-sm excerpt-clamp-2" : "excerpt-clamp-3"
           }`}
         >
-          {post.excerpt}
+          {post.dek}
         </p>
       )}
       {meta && (
@@ -162,12 +162,12 @@ export function StoryCard({
 export function StoryRow({
   post,
   thumb = true,
-  excerpt = false,
+  dek = false,
   headingLevel = 3,
 }: {
   post: Post;
   thumb?: boolean;
-  excerpt?: boolean;
+  dek?: boolean;
   headingLevel?: 2 | 3;
 }) {
   return (
@@ -186,9 +186,9 @@ export function StoryRow({
           level={headingLevel}
           className="text-lg font-bold leading-snug sm:text-xl"
         />
-        {excerpt && post.excerpt && (
+        {dek && post.dek && (
           <p className="hidden text-sm text-fg-soft excerpt-clamp-2 sm:block">
-            {post.excerpt}
+            {post.dek}
           </p>
         )}
         <PostMeta post={post} className="text-xs" />
@@ -200,12 +200,12 @@ export function StoryRow({
 /** A compact, text-only ruled headline (broadsheet columns, rails, "more"). */
 export function HeadlineItem({
   post,
-  excerpt = false,
+  dek = false,
   kicker = true,
   headingLevel = 3,
 }: {
   post: Post;
-  excerpt?: boolean;
+  dek?: boolean;
   kicker?: boolean;
   headingLevel?: 2 | 3;
 }) {
@@ -217,8 +217,8 @@ export function HeadlineItem({
         level={headingLevel}
         className="text-lg font-bold leading-snug"
       />
-      {excerpt && post.excerpt && (
-        <p className="text-sm text-fg-soft excerpt-clamp-2">{post.excerpt}</p>
+      {dek && post.dek && (
+        <p className="text-sm text-fg-soft excerpt-clamp-2">{post.dek}</p>
       )}
       <PostMeta post={post} className="text-xs" />
     </article>
@@ -228,18 +228,18 @@ export function HeadlineItem({
 /** A vertical list of ruled headline items, divided by hairlines. */
 export function HeadlineList({
   posts,
-  excerpt = false,
+  dek = false,
   kicker = true,
 }: {
   posts: Post[];
-  excerpt?: boolean;
+  dek?: boolean;
   kicker?: boolean;
 }) {
   return (
     <div className="flex flex-col divide-y divide-border">
       {posts.map((post) => (
         <div key={post.id} className="py-5 first:pt-0 last:pb-0">
-          <HeadlineItem post={post} excerpt={excerpt} kicker={kicker} />
+          <HeadlineItem post={post} dek={dek} kicker={kicker} />
         </div>
       ))}
     </div>
