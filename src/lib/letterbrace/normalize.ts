@@ -93,11 +93,9 @@ const TRAILING_NOISE = /[\s\p{P}\p{S}]+$/u;
  * space then an ellipsis (" …") and never leaves a trailing punctuation mark
  * against the ellipsis — both of which read as broken ("the…", "registry.…").
  *
- * The default length is kept short enough that this text — and its clean
- * trailing " …" — fits inside the card's `excerpt-clamp-*` box on the common
- * layouts, so the height clamp doesn't cut it off. (The clamp no longer adds
- * its own ellipsis, so an over-long preview degrades to a clean line cut rather
- * than a jammed "word…".)
+ * Feeds `Post.excerpt`, which is metadata-only (meta description, OG/Twitter,
+ * JSON-LD, RSS) — truncation is fine there. It is never rendered in the UI;
+ * visible templates use `Post.dek`, which is null rather than derived.
  */
 export function excerptFrom(html: string, max = 130): string {
   const clean = stripHtml(html);
@@ -300,6 +298,7 @@ export function normalizePost(raw: Raw): Post | null {
     title,
     content,
     excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
+    dek: suppliedExcerpt ? stripHtml(suppliedExcerpt) : null,
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
     author: toAuthor(raw),
     coverImage: toCoverImage(raw),

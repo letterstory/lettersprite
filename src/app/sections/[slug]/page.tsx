@@ -70,13 +70,13 @@ export default async function SectionPage({ params }: Params) {
 
       {lead && (
         <div className="mb-12 border-b border-border pb-12">
-          <StoryCard post={lead} size="lg" ratio="16/9" excerpt headingLevel={2} />
+          <StoryCard post={lead} size="lg" ratio="16/9" dek headingLevel={2} />
         </div>
       )}
 
       <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {rest.map((post) => (
-          <StoryCard key={post.id} post={post} size="md" ratio="16/9" excerpt />
+          <StoryCard key={post.id} post={post} size="md" ratio="16/9" dek />
         ))}
       </div>
 

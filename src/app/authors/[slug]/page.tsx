@@ -94,7 +94,7 @@ export default async function AuthorPage({ params }: Params) {
 
       <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
-          <StoryCard key={post.id} post={post} size="md" ratio="16/9" excerpt />
+          <StoryCard key={post.id} post={post} size="md" ratio="16/9" dek />
         ))}
       </div>
 

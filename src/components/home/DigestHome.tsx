@@ -41,8 +41,8 @@ export function DigestHome({ posts }: { posts: Post[] }) {
                       {post.title}
                     </h3>
                   </Link>
-                  {post.excerpt && (
-                    <p className="text-fg-soft excerpt-clamp-2">{post.excerpt}</p>
+                  {post.dek && (
+                    <p className="text-fg-soft excerpt-clamp-2">{post.dek}</p>
                   )}
                   <PostMeta post={post} readingTime className="mt-1 text-sm" />
                 </div>

@@ -26,6 +26,8 @@ const P = (
   slug,
   title,
   excerpt,
+  // Hand-written summaries, so they're display-safe as deks too.
+  dek: excerpt,
   content: body,
   status: "published",
   author: null,

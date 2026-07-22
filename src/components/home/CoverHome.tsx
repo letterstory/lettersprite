@@ -62,9 +62,9 @@ export function CoverHome({ posts }: { posts: Post[] }) {
                   {lead.title}
                 </h2>
               </Link>
-              {lead.excerpt && (
+              {lead.dek && (
                 <p className="mt-4 max-w-xl text-lg text-white/85 excerpt-clamp-2">
-                  {lead.excerpt}
+                  {lead.dek}
                 </p>
               )}
             </div>
@@ -77,7 +77,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
           <h2 className="rule-label mb-8">In This Issue</h2>
           <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {issue.map((post) => (
-              <StoryCard key={post.id} post={post} size="md" ratio="4/5" excerpt />
+              <StoryCard key={post.id} post={post} size="md" ratio="4/5" dek />
             ))}
           </div>
         </div>

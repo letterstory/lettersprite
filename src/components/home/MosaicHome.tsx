@@ -28,9 +28,9 @@ export function MosaicHome({ posts }: { posts: Post[] }) {
                   {lead.title}
                 </h2>
               </Link>
-              {lead.excerpt && (
+              {lead.dek && (
                 <p className="max-w-2xl text-lg text-fg-soft excerpt-clamp-2">
-                  {lead.excerpt}
+                  {lead.dek}
                 </p>
               )}
               <PostMeta post={lead} variant="byline" readingTime className="mt-1" />
@@ -40,7 +40,7 @@ export function MosaicHome({ posts }: { posts: Post[] }) {
         <div className="flex flex-col divide-y divide-border">
           {[second, third].filter(Boolean).map((post) => (
             <div key={post.id} className="py-6 first:pt-0">
-              <StoryCard post={post} size="md" ratio="3/2" excerpt />
+              <StoryCard post={post} size="md" ratio="3/2" dek />
             </div>
           ))}
         </div>
@@ -57,7 +57,7 @@ export function MosaicHome({ posts }: { posts: Post[] }) {
                 post={post}
                 size={i % 5 === 0 ? "md" : "sm"}
                 ratio={i % 3 === 0 ? "4/5" : "4/3"}
-                excerpt={i % 5 === 0}
+                dek={i % 5 === 0}
               />
             ))}
           </div>

@@ -156,9 +156,9 @@ export default async function PostPage({ params }: Params) {
           >
             {post.title}
           </h1>
-          {post.excerpt && (
+          {post.dek && (
             <p className="dek mt-5 text-xl leading-relaxed text-fg-soft text-pretty">
-              {post.excerpt}
+              {post.dek}
             </p>
           )}
 

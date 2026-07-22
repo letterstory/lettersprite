@@ -19,7 +19,7 @@ export function GridHome({ posts }: { posts: Post[] }) {
               post={post}
               size="lg"
               ratio="4/3"
-              excerpt
+              dek
               headingLevel={2}
             />
           ))}
@@ -28,7 +28,7 @@ export function GridHome({ posts }: { posts: Post[] }) {
 
       <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {rest.map((post) => (
-          <StoryCard key={post.id} post={post} size="md" ratio="4/3" excerpt />
+          <StoryCard key={post.id} post={post} size="md" ratio="4/3" dek />
         ))}
       </div>
     </div>

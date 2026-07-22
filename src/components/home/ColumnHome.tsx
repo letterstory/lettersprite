@@ -30,8 +30,8 @@ export function ColumnHome({ posts }: { posts: Post[] }) {
                   {post.title}
                 </h2>
               </Link>
-              {post.excerpt && (
-                <p className="text-fg-soft excerpt-clamp-3">{post.excerpt}</p>
+              {post.dek && (
+                <p className="text-fg-soft excerpt-clamp-3">{post.dek}</p>
               )}
               <PostMeta post={post} readingTime className="mt-1 text-sm" />
             </div>
