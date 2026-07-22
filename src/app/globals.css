@@ -389,13 +389,14 @@
   }
   /*
    * Excerpt clamps: cap a preview to N lines by HEIGHT, without the browser's
-   * built-in `-webkit-line-clamp` ellipsis. That auto-ellipsis can't be styled
-   * — it's jammed straight onto whatever character lands at the cutoff
-   * ("counted…", "registry.…") with no space, which is exactly the artefact we
-   * want gone. Here the only ellipsis is the clean " …" that `excerptFrom`
-   * appends at the text level; when a preview is longer than the box it cuts at
-   * a line boundary with no dots. `1lh` = the element's own line-height, so this
-   * tracks each theme's font size and leading with no per-variant tuning.
+   * built-in `-webkit-line-clamp` ellipsis (that auto-ellipsis can't be styled
+   * — it jams straight onto the cutoff character). Deks are length-bounded
+   * upstream (Letterbrace caps `summary` at 120 chars), so these are a safety
+   * net against edge viewports rather than the primary length control — each
+   * render site takes one line more than its text usually needs, and a
+   * max-length dek fits every box with headroom. `1lh` = the element's own
+   * line-height, so this tracks each theme's font size and leading with no
+   * per-variant tuning.
    */
   .excerpt-clamp-2 {
     overflow: hidden;
@@ -408,6 +409,10 @@
   .excerpt-clamp-4 {
     overflow: hidden;
     max-height: calc(4 * 1lh);
+  }
+  .excerpt-clamp-5 {
+    overflow: hidden;
+    max-height: calc(5 * 1lh);
   }
   /* Grain/paper texture toggle for print-mag themes (very subtle). */
   .paper {

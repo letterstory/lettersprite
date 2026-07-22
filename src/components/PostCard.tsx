@@ -47,7 +47,7 @@ export function PostCard({
           </Link>
         </h2>
         {post.dek && (
-          <p className="excerpt-clamp-3 flex-1 text-muted">{post.dek}</p>
+          <p className="excerpt-clamp-4 flex-1 text-muted">{post.dek}</p>
         )}
         <PostMeta post={post} className="text-xs" />
       </div>

@@ -27,7 +27,7 @@ export function BoardHome({ posts }: { posts: Post[] }) {
                 </h2>
               </Link>
               {lead.dek && (
-                <p className="text-fg-soft excerpt-clamp-3">{lead.dek}</p>
+                <p className="text-fg-soft excerpt-clamp-4">{lead.dek}</p>
               )}
               <PostMeta post={lead} variant="byline" readingTime className="mt-1" />
             </div>
@@ -66,7 +66,7 @@ export function BoardHome({ posts }: { posts: Post[] }) {
                   {post.dek && (
                     <p
                       className={`text-sm text-fg-soft ${
-                        note ? "excerpt-clamp-4" : "excerpt-clamp-3"
+                        note ? "excerpt-clamp-5" : "excerpt-clamp-4"
                       }`}
                     >
                       {post.dek}

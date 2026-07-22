@@ -63,7 +63,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
                 </h2>
               </Link>
               {lead.dek && (
-                <p className="mt-4 max-w-xl text-lg text-white/85 excerpt-clamp-2">
+                <p className="mt-4 max-w-xl text-lg text-white/85 excerpt-clamp-3">
                   {lead.dek}
                 </p>
               )}
