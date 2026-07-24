@@ -8,7 +8,7 @@ import type { Theme } from "./types";
 export const atelier: Theme = {
   name: "atelier",
   label: "Atelier",
-  description: "Warm-paper lifestyle quarterly: elegant Fraunces serif, muted palette, airy grid.",
+  description: "Warm-paper lifestyle quarterly: delicate Cormorant serif, muted taupe/forest/plum, airy grid.",
   colorScheme: "light",
   colors: {
     background: "#f4f0e8",
@@ -17,24 +17,24 @@ export const atelier: Theme = {
     foreground: "#2b2723",
     muted: "#6b6257", // darkened for AA over the warm paper + lighter surface
     border: "#ded7c7",
-    primary: "#7c6a52",
+    primary: "#6b5d47", // taupe
     primaryForeground: "#fbf9f3",
-    secondary: "#3e4a42",
-    accent: "#b04a2f",
-    link: "#b04a2f",
+    secondary: "#3e4a42", // forest
+    accent: "#8a5a6e", // muted plum — replaces terracotta so it doesn't echo harvest's paprika
+    link: "#8a5a6e",
     heading: "#2b2723",
-    kicker: "#7c6a52",
+    kicker: "#6b5d47",
     heroFrom: "#3e4a42",
-    heroTo: "#7c6a52",
+    heroTo: "#6b5d47",
   },
   fonts: {
     display: {
-      family: "'Fraunces', Georgia, serif",
-      google: { name: "Fraunces", weights: [400, 500, 600, 800, 900], italic: true },
+      family: "'Cormorant Garamond', Georgia, serif",
+      google: { name: "Cormorant Garamond", weights: [500, 600, 700], italic: true },
     },
     heading: {
-      family: "'Fraunces', Georgia, serif",
-      google: { name: "Fraunces", weights: [500, 600, 700] },
+      family: "'Cormorant Garamond', Georgia, serif",
+      google: { name: "Cormorant Garamond", weights: [600, 700] },
     },
     body: {
       family: "'Newsreader', Georgia, serif",
