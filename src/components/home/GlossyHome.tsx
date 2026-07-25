@@ -36,7 +36,7 @@ export function GlossyHome({ posts }: { posts: Post[] }) {
               <div className="max-w-3xl text-white">
                 <Kicker post={lead} className="text-white/90" linked={false} />
                 <Link href={`/posts/${lead.slug}`}>
-                  <h2 className="display mt-3 text-4xl font-black leading-[1.02] drop-shadow-sm sm:text-5xl md:text-6xl">
+                  <h2 className="display mt-3 text-4xl font-black leading-[1.02] text-white [text-shadow:0_1px_16px_rgba(0,0,0,0.45)] sm:text-5xl md:text-6xl">
                     {lead.title}
                   </h2>
                 </Link>

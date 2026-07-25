@@ -58,7 +58,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
             <div className="container-wide px-6 pb-10 text-white sm:pb-16">
               <Kicker post={lead} className="text-white/90" linked={false} />
               <Link href={`/posts/${lead.slug}`}>
-                <h2 className="display mt-3 max-w-3xl text-5xl font-black leading-[0.92] drop-shadow-sm sm:text-6xl md:text-7xl">
+                <h2 className="display mt-3 max-w-3xl text-5xl font-black leading-[0.92] text-white [text-shadow:0_1px_16px_rgba(0,0,0,0.45)] sm:text-6xl md:text-7xl">
                   {lead.title}
                 </h2>
               </Link>
