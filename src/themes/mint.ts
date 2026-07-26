@@ -3,7 +3,10 @@ import type { Theme } from "./types";
 /**
  * Mint — a consumer fintech & personal-finance blog (a modern neobank). Fresh
  * emerald with a trust-navy anchor and a gold-coin pop, rounded app-like cards,
- * a geometric Jakarta wordmark. Friendly, bright and confident about money.
+ * a bold geometric Jakarta wordmark. Friendly, bright and confident about money.
+ *
+ * Uses a `sans-bold` wordmark (not a monogram tile) so it never reads as a twin
+ * of `nook`, the other bright monogram-on-grid lifestyle theme.
  */
 export const mint: Theme = {
   name: "mint",
@@ -50,6 +53,6 @@ export const mint: Theme = {
   containerWidth: "74rem",
   home: "grid",
   article: "standard",
-  logo: "monogram",
+  logo: "sans-bold",
   features: { kickers: true },
 };
