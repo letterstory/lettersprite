@@ -89,8 +89,9 @@ export const env = {
   /** Optional logo-treatment override (see LogoStyle in src/themes/types.ts). */
   logoStyle: str("SITE_LOGO_STYLE"),
   /**
-   * Optional inline logo SVG. When set, the masthead renders this SVG instead of
-   * the typographic wordmark (and `SITE_LOGO_STYLE` is ignored). Pass the raw
+   * Optional inline logo SVG. When set, the masthead renders this SVG paired
+   * with the site-title wordmark (and `SITE_LOGO_STYLE` is ignored); see
+   * `SITE_LOGO_ICON_ONLY` to render the mark alone. Pass the raw
    * `<svg>…</svg>` markup itself — not a URL — as the value; it's inlined
    * directly. `<script>` and event-handler attributes are stripped before
    * render. Height is fixed per masthead size and width scales to the SVG's
@@ -101,6 +102,14 @@ export const env = {
   logoSvg: str("SITE_LOGO_SVG"),
   /** Accessible label for the logo SVG. Defaults to `SITE_TITLE` when omitted. */
   logoAlt: str("SITE_LOGO_ALT"),
+  /**
+   * When a `SITE_LOGO_SVG` is supplied, the masthead pairs the icon with the
+   * site-title wordmark so the publication's name is always visible (an emblem
+   * alone doesn't identify the site). Set this to true only when the SVG is
+   * itself a full logotype that already includes the name, to avoid showing it
+   * twice.
+   */
+  logoIconOnly: bool("SITE_LOGO_ICON_ONLY", false),
 
   /**
    * Newsletter capture. Off by default: the subscribe UI is fully designed but

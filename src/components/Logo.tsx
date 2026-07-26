@@ -43,16 +43,32 @@ function sanitizeSvg(svg: string): string {
 
 /**
  * A supplied inline logo SVG, sized by height (width tracks the SVG's own aspect
- * ratio). The wrapper carries the accessible name; the SVG is decorative to AT.
+ * ratio). By default it is paired with the site-title wordmark so the
+ * publication's name is always visible in the masthead — an emblem alone
+ * doesn't identify the site. When `SITE_LOGO_ICON_ONLY` is set (the SVG is a
+ * full logotype that already contains the name), the icon renders alone.
  */
 function SvgMark({ size }: { size: Size }) {
-  return (
+  const iconOnly = env.logoIconOnly;
+  const icon = (
     <span
-      role="img"
-      aria-label={env.logoAlt || env.siteTitle}
+      // When paired with the wordmark the icon is decorative (the text carries
+      // the name); on its own it carries the accessible name.
+      {...(iconOnly
+        ? { role: "img", "aria-label": env.logoAlt || env.siteTitle }
+        : { "aria-hidden": true })}
       className={`inline-flex w-auto ${SVG_HEIGHT[size]} [&>svg]:h-full [&>svg]:w-auto`}
       dangerouslySetInnerHTML={{ __html: sanitizeSvg(env.logoSvg) }}
     />
+  );
+  if (iconOnly) return icon;
+  return (
+    <span className="inline-flex items-center gap-2.5">
+      {icon}
+      <span className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}>
+        {env.siteTitle}
+      </span>
+    </span>
   );
 }
 
