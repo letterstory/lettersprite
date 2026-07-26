@@ -1036,15 +1036,42 @@ async function discoverThemes(): Promise<ThemeLike[]> {
   return themes;
 }
 
+/**
+ * Optional `--only=themeA,themeB` filter: regenerate just those themes' covers
+ * (e.g. after adding a theme) without touching the rest. A full run — no flag —
+ * still wipes and regenerates everything.
+ */
+const ONLY: Set<string> | null = (() => {
+  const arg = process.argv.find((a) => a.startsWith("--only="));
+  if (!arg) return null;
+  const names = arg
+    .slice("--only=".length)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return names.length ? new Set(names) : null;
+})();
+
 async function main(): Promise<void> {
-  const themes = await discoverThemes();
-  if (themes.length === 0) throw new Error(`No themes found in ${THEMES_DIR}`);
+  let themes = await discoverThemes();
+  if (ONLY) themes = themes.filter((t) => ONLY.has(t.name));
+  if (themes.length === 0) {
+    throw new Error(
+      ONLY
+        ? `No themes matched --only=${[...ONLY].join(",")}`
+        : `No themes found in ${THEMES_DIR}`,
+    );
+  }
 
   await mkdir(OUT_DIR, { recursive: true });
 
-  // Clean stale PNGs so renamed/removed sets don't leave orphans behind.
+  // Clean stale PNGs so renamed/removed sets don't leave orphans behind. On a
+  // targeted (`--only`) run, only remove the targeted themes' files so the rest
+  // of the committed covers are left byte-for-byte untouched.
   for (const file of await readdir(OUT_DIR)) {
-    if (file.endsWith(".png")) await rm(path.join(OUT_DIR, file));
+    if (!file.endsWith(".png")) continue;
+    if (ONLY && ![...ONLY].some((t) => file.startsWith(`${t}-`))) continue;
+    await rm(path.join(OUT_DIR, file));
   }
 
   const perTheme = SETS.length * VARIANTS_PER_SET;
