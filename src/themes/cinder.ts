@@ -1,40 +1,44 @@
 import type { Theme } from "./types";
 
 /**
- * Cinder — a gaming & esports title (IGN / Polygon energy). Deep violet-black,
- * an electric-violet brand with a hot-pink and mint-green charge, condensed
- * Rajdhani headlines, a boxed flag, on a bold asymmetric mosaic. Aggressive, neon.
+ * Cinder — a gaming & esports title (IGN / Polygon energy). Ember red-black with
+ * a crimson brand and a molten gold/orange charge, condensed Rajdhani headlines,
+ * a condensed flag, on a bold asymmetric mosaic. Aggressive and hot — kept off
+ * the violet/pink neon of `signal` so two dark tech sites never read as twins.
+ *
+ * NOTE: `name` is the stable identifier mirrored in Letterbrace's phantom theme
+ * catalog — do not change it. Only the visual tokens below are re-styled.
  */
 export const cinder: Theme = {
   name: "cinder",
   label: "Cinder",
-  description: "Gaming & esports: violet-black, electric violet/pink/mint, condensed mosaic.",
+  description: "Gaming & esports: ember red-black, crimson/gold charge, condensed Rajdhani mosaic.",
   colorScheme: "dark",
   colors: {
-    background: "#0c0a12",
-    surface: "#171320",
-    surfaceAlt: "#201931",
-    foreground: "#eee9f5",
-    muted: "#9b93ad",
-    border: "#2a2340",
-    primary: "#8b3bff", // electric violet
+    background: "#0e0809",
+    surface: "#191012",
+    surfaceAlt: "#221618",
+    foreground: "#f2e8e6",
+    muted: "#a38d8b",
+    border: "#2d1e20",
+    primary: "#ff2d46", // esports crimson
     primaryForeground: "#ffffff",
-    secondary: "#ff2e63", // hot pink-red
-    accent: "#00f0b5", // mint pop
-    link: "#b98bff", // lightened violet stays legible on the dark canvas
+    secondary: "#ff6a2c", // orange charge
+    accent: "#ffd23f", // molten gold pop
+    link: "#ff6a5c", // lightened red stays legible on the dark canvas
     heading: "#ffffff",
-    kicker: "#00f0b5",
-    heroFrom: "#8b3bff",
-    heroTo: "#ff2e63",
+    kicker: "#ffd23f",
+    heroFrom: "#ff2d46",
+    heroTo: "#7a0f1c",
   },
   fonts: {
     display: {
       family: "'Rajdhani', 'Arial Narrow', system-ui, sans-serif",
-      google: { name: "Rajdhani", weights: [500, 600, 700] },
+      google: { name: "Rajdhani", weights: [600, 700] },
     },
     heading: {
-      family: "'Archivo', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Archivo", weights: [700, 800, 900] },
+      family: "'Rajdhani', 'Arial Narrow', system-ui, sans-serif",
+      google: { name: "Rajdhani", weights: [500, 600, 700] },
     },
     body: {
       family: "'Inter', system-ui, -apple-system, sans-serif",
@@ -50,6 +54,6 @@ export const cinder: Theme = {
   containerWidth: "78rem",
   home: "mosaic",
   article: "feature",
-  logo: "boxed",
+  logo: "condensed",
   features: { kickers: true, tightHeadlines: true, uppercaseNav: true, topRule: true },
 };
