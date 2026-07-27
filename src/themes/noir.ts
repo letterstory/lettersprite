@@ -1,51 +1,57 @@
 import type { Theme } from "./types";
 
 /**
- * Noir — a dark futuristic tech/crypto terminal. Near-black canvas, neon
- * cyan/magenta/violet accents, monospace meta with a grotesque display, and a
- * glowing cinematic hero.
+ * Noir — a dark developer/terminal publication. True black-green canvas, a
+ * single phosphor-green accent with an amber pop, angular mono-tech type, and a
+ * structured ruled feed (no cinematic hero). Deliberately distinct from
+ * `signal`: different layout (feed, not glossy), a green terminal palette
+ * instead of purple/cyan neon, and unified Chakra Petch display over IBM Plex
+ * Sans body — so two dark tech sites never read as the same publication.
+ *
+ * NOTE: `name` is the stable identifier mirrored in Letterbrace's phantom theme
+ * catalog — do not change it. Only the visual tokens below are re-styled.
  */
 export const noir: Theme = {
   name: "noir",
   label: "Noir",
-  description: "Dark neon terminal: cyan/magenta accents, mono meta, glowing hero.",
+  description: "Dark developer/terminal: phosphor green on black, amber pop, angular mono-tech type, cinematic banner hero.",
   colorScheme: "dark",
   colors: {
-    background: "#05060a",
-    surface: "#0c0f18",
-    surfaceAlt: "#10131f",
-    foreground: "#e4e8f2",
-    muted: "#7a839a",
-    border: "#1c2233",
-    primary: "#00e5ff",
-    primaryForeground: "#04121a", // dark text on neon cyan
-    secondary: "#ff2fb9",
-    accent: "#b57bff",
-    link: "#00e5ff",
-    heading: "#ffffff",
-    kicker: "#b57bff",
-    heroFrom: "#00e5ff",
-    heroTo: "#ff2fb9",
+    background: "#060a08",
+    surface: "#0c1411",
+    surfaceAlt: "#111a15",
+    foreground: "#cdeadd",
+    muted: "#6d8a7c",
+    border: "#1a271f",
+    primary: "#00e08a", // phosphor green
+    primaryForeground: "#02140c", // dark text on neon green
+    secondary: "#57f5b0",
+    accent: "#f5c518", // amber pop for kickers / marks
+    link: "#00e08a",
+    heading: "#e9fff5",
+    kicker: "#f5c518",
+    heroFrom: "#00e08a",
+    heroTo: "#023a28",
   },
   fonts: {
     display: {
-      family: "'Space Grotesk', system-ui, sans-serif",
-      google: { name: "Space Grotesk", weights: [500, 600, 700] },
+      family: "'Chakra Petch', system-ui, sans-serif",
+      google: { name: "Chakra Petch", weights: [600, 700] },
     },
     heading: {
       family: "'Chakra Petch', system-ui, sans-serif",
       google: { name: "Chakra Petch", weights: [500, 600, 700] },
     },
     body: {
-      family: "'Inter', system-ui, -apple-system, sans-serif",
-      google: { name: "Inter", weights: [400, 500, 600, 700] },
+      family: "'IBM Plex Sans', system-ui, -apple-system, sans-serif",
+      google: { name: "IBM Plex Sans", weights: [400, 500, 600, 700] },
     },
     mono: {
       family: "'JetBrains Mono', ui-monospace, Menlo, monospace",
       google: { name: "JetBrains Mono", weights: [400, 700] },
     },
   },
-  radius: "0.5rem",
+  radius: "0.25rem",
   contentWidth: "44rem",
   containerWidth: "76rem",
   home: "glossy",
