@@ -1,16 +1,22 @@
 import type { Theme } from "./types";
 
 /**
- * Ledger — a business & markets desk. Deep navy authority with a bright-blue
- * link and an orange data pop, set in a tight, data-forward feed.
+ * Ledger — a business & markets desk (FT / Economist authority). Deep navy on a
+ * near-white paper, a bright-blue link and an orange data pop, set as a serif
+ * financial BROADSHEET with editorial long-form. Deliberately distinct from
+ * `dispatch` (the green tech-news feed): a different layout, a serif nameplate
+ * and headlines instead of the shared Archivo/feed/sans-bold formula.
+ *
+ * NOTE: `name` is the stable identifier mirrored in Letterbrace's phantom theme
+ * catalog — do not change it. Only the visual tokens below are re-styled.
  */
 export const ledger: Theme = {
   name: "ledger",
   label: "Ledger",
-  description: "Business & markets desk: navy authority, blue links, orange pop.",
+  description: "Business & markets broadsheet: navy authority, serif headlines, blue links, orange pop.",
   colorScheme: "light",
   colors: {
-    background: "#ffffff",
+    background: "#fcfcfb",
     surface: "#f4f6f9",
     surfaceAlt: "#eef2f7",
     foreground: "#0a0e17",
@@ -28,12 +34,12 @@ export const ledger: Theme = {
   },
   fonts: {
     display: {
-      family: "'Archivo', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Archivo", weights: [600, 700, 800] },
+      family: "'Source Serif 4', Georgia, 'Times New Roman', serif",
+      google: { name: "Source Serif 4", weights: [600, 700], italic: true },
     },
     heading: {
-      family: "'Archivo', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Archivo", weights: [600, 700, 800] },
+      family: "'Libre Franklin', system-ui, 'Helvetica Neue', sans-serif",
+      google: { name: "Libre Franklin", weights: [600, 700, 800] },
     },
     body: {
       family: "'IBM Plex Sans', system-ui, sans-serif",
@@ -44,11 +50,11 @@ export const ledger: Theme = {
       google: { name: "IBM Plex Mono", weights: [400, 600] },
     },
   },
-  radius: "0.25rem",
+  radius: "0.125rem",
   contentWidth: "44rem",
   containerWidth: "74rem",
-  home: "feed",
-  article: "standard",
-  logo: "sans-bold",
-  features: { kickers: true, rules: true, uppercaseNav: true, topRule: true },
+  home: "broadsheet",
+  article: "editorial",
+  logo: "serif",
+  features: { kickers: true, rules: true, dropCap: true, topRule: true },
 };
