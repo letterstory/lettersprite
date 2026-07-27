@@ -1,13 +1,15 @@
 import type { Theme } from "./types";
 
 /**
- * Review — a refined longform monthly. An all-Newsreader serif system on warm
- * cream, a deep-red brand, drop caps and a quiet, generous reading column.
+ * Review — a refined literary/academic journal. An all-Spectral serif system on
+ * ivory, near-black ink with a single restrained oxblood accent, drop caps and a
+ * quiet, generous reading column. Kept off `classic`'s warm-red Playfair so two
+ * serif editorial titles never read as the same journal.
  */
 export const review: Theme = {
   name: "review",
   label: "Review",
-  description: "Refined longform: warm cream, all-serif system, deep-red accent.",
+  description: "Literary journal: ivory paper, ink black, restrained oxblood, all-Spectral serif column.",
   colorScheme: "light",
   colors: {
     background: "#faf8f3",
@@ -16,28 +18,28 @@ export const review: Theme = {
     foreground: "#1a1a1a",
     muted: "#63615c", // darkened for AA over cream + surface
     border: "#ded9ce",
-    primary: "#b31b1b",
+    primary: "#23201c", // ink
     primaryForeground: "#ffffff",
-    secondary: "#8a0303",
-    accent: "#c8102e",
-    link: "#b31b1b",
+    secondary: "#4a4540",
+    accent: "#7a1f3d", // restrained oxblood
+    link: "#7a1f3d",
     heading: "#1a1a1a",
-    kicker: "#b31b1b",
-    heroFrom: "#1a1a1a",
+    kicker: "#7a1f3d",
+    heroFrom: "#23201c",
     heroTo: "#3a3735",
   },
   fonts: {
     display: {
-      family: "'Newsreader', Georgia, serif",
-      google: { name: "Newsreader", weights: [400, 500, 600, 700, 800], italic: true },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [500, 600, 700], italic: true },
     },
     heading: {
-      family: "'Newsreader', Georgia, serif",
-      google: { name: "Newsreader", weights: [500, 600, 700] },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [500, 600, 700] },
     },
     body: {
-      family: "'Newsreader', Georgia, serif",
-      google: { name: "Newsreader", weights: [400, 500, 600, 700], italic: true },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [400, 500, 600, 700], italic: true },
     },
     mono: {
       family: "'IBM Plex Mono', ui-monospace, Menlo, monospace",
