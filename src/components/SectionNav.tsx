@@ -5,23 +5,24 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { sectionHref } from "@/lib/editorial";
 
 /**
- * The masthead section bar, as a single non-wrapping line.
+ * The masthead section bar, kept to a single line with an exact "More" overflow.
  *
- * A phantom can own 6-9 pillars whose labels vary wildly in width, so a fixed
- * "show N inline" cap either wraps to a second row or leaves the "More" button
- * stranded below. Instead we MEASURE: an invisible row renders every label at
- * its natural width, and on mount / resize we fit as many as the bar allows —
- * reserving room for the "More" control — then fold the exact remainder into a
- * dropdown. The result is always one line: inline links, then "More" if (and
- * only if) something didn't fit.
+ * A phantom can own 6-9 pillars of wildly varying label width, so a fixed inline
+ * count either wraps or strands "More". Instead we MEASURE the real rendered
+ * links: they are `shrink-0`, so even where the (overflow-hidden) bar clips them
+ * they keep their intrinsic width. On mount we capture every link's width while
+ * all are on screen, then fit as many as the width-bounded bar allows —
+ * reserving room for "More" — and hide the exact remainder into a dropdown.
+ * Measuring against the stable `<nav>` width (not the clip, whose width changes
+ * when "More" appears) avoids a feedback loop.
  *
- * Pre-hydration the inline row is clipped (overflow-hidden, no wrap), so the
- * static HTML never bleeds or wraps before the measurement runs; if JS never
- * loads it simply shows what fits with no menu — a safe degradation.
+ * Pre-hydration every link renders (clipped, never wrapped); the effect then
+ * trims. If measurement ever fails, we fall back to a conservative inline count
+ * plus "More" — never an untrimmed, menu-less clipped row.
  */
 
-const GAP_PX = 24; // matches gap-x-6 (1.5rem)
-const SAFETY_PX = 8; // guard against sub-pixel rounding so we never wrap
+const GAP_PX = 24; // gap-x-6 (1.5rem)
+const SAFETY_PX = 8; // guard against sub-pixel rounding
 
 export function SectionNav({
   sections,
@@ -33,48 +34,47 @@ export function SectionNav({
   align?: "start" | "center";
 }) {
   const navRef = useRef<HTMLElement>(null);
-  const measureRef = useRef<HTMLDivElement>(null);
-  // Start by assuming all fit; the clip container keeps the SSR output from
-  // bleeding until the measure pass trims it.
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const widthsRef = useRef<number[]>([]);
+  const moreWRef = useRef(72);
   const [visible, setVisible] = useState(sections.length);
 
   useLayoutEffect(() => {
     const nav = navRef.current;
-    const measure = measureRef.current;
-    if (!nav || !measure) return;
+    if (!nav) return;
 
-    const recompute = () => {
+    // Capture intrinsic widths while all links are on screen (only the first
+    // pass, before any are hidden, yields non-zero widths for every link).
+    const capture = () => {
+      const ws = linkRefs.current.slice(0, sections.length).map((el) => el?.getBoundingClientRect().width ?? 0);
+      if (ws.length === sections.length && ws.every((w) => w > 0)) {
+        widthsRef.current = ws;
+        const mw = moreRef.current?.getBoundingClientRect().width ?? 0;
+        if (mw > 0) moreWRef.current = mw;
+      }
+    };
+
+    const compute = () => {
+      const ws = widthsRef.current;
       const avail = nav.clientWidth;
-      const widths = Array.from(
-        measure.querySelectorAll<HTMLElement>("[data-item]"),
-      ).map((el) => el.getBoundingClientRect().width);
-      const moreEl = measure.querySelector<HTMLElement>("[data-more]");
-      const moreW = moreEl ? moreEl.getBoundingClientRect().width : 72;
-
-      // Safety net: if measurement failed (any zero width) or the bar hasn't
-      // been laid out yet, fall back to a conservative inline count + More
-      // rather than ever rendering an untrimmed, clipped row with no menu.
-      if (avail <= 0 || widths.length === 0 || widths.some((w) => w <= 0)) {
+      // Measurement not ready / bar not laid out → conservative fallback so we
+      // never render an untrimmed clipped row.
+      if (avail <= 0 || ws.length !== sections.length || ws.some((w) => w <= 0)) {
         setVisible(Math.min(sections.length, 4));
         return;
       }
-
-      // Does the whole set fit with no menu?
       let total = 0;
-      for (let i = 0; i < widths.length; i++) {
-        total += widths[i] + (i > 0 ? GAP_PX : 0);
-      }
+      for (let i = 0; i < ws.length; i++) total += ws[i] + (i > 0 ? GAP_PX : 0);
       if (total <= avail) {
-        setVisible(widths.length);
+        setVisible(sections.length);
         return;
       }
-
-      // Otherwise reserve space for "More" and fit as many as we can.
-      const budget = avail - moreW - GAP_PX - SAFETY_PX;
+      const budget = avail - moreWRef.current - GAP_PX - SAFETY_PX;
       let used = 0;
       let count = 0;
-      for (let i = 0; i < widths.length; i++) {
-        const next = used + widths[i] + (count > 0 ? GAP_PX : 0);
+      for (let i = 0; i < ws.length; i++) {
+        const next = used + ws[i] + (count > 0 ? GAP_PX : 0);
         if (next > budget) break;
         used = next;
         count++;
@@ -82,14 +82,12 @@ export function SectionNav({
       setVisible(Math.max(1, count));
     };
 
-    recompute();
-    const ro = new ResizeObserver(recompute);
+    capture();
+    compute();
+    const ro = new ResizeObserver(compute);
     ro.observe(nav);
     return () => ro.disconnect();
   }, [sections]);
-
-  const inline = sections.slice(0, visible);
-  const overflow = sections.slice(visible);
 
   return (
     <nav
@@ -97,24 +95,27 @@ export function SectionNav({
       aria-label="Sections"
       className={`relative flex min-w-0 items-center gap-x-6 ${className}`}
     >
-      {/* The visible one-line row. Clipped so it can never wrap or bleed. */}
-      <div
-        className={`flex min-w-0 flex-1 flex-nowrap items-center gap-x-6 overflow-hidden ${
-          align === "center" ? "justify-center" : ""
-        }`}
-      >
-        {inline.map((s) => (
+      {/* One-line row. Every link is rendered (so widths stay measurable); those
+          past the fold are display:none. overflow-hidden means it can never
+          wrap or bleed before the effect trims. */}
+      <div className="flex min-w-0 max-w-full flex-nowrap items-center gap-x-6 overflow-hidden">
+        {sections.map((s, i) => (
           <Link
             key={s}
+            ref={(el) => {
+              linkRefs.current[i] = el;
+            }}
             href={sectionHref(s)}
-            className="kicker kicker-muted ul-link shrink-0 whitespace-nowrap py-0.5 hover:text-primary"
+            className={`kicker kicker-muted ul-link shrink-0 whitespace-nowrap py-0.5 hover:text-primary ${
+              i < visible ? "" : "hidden"
+            }`}
           >
             {s}
           </Link>
         ))}
       </div>
 
-      {overflow.length > 0 && (
+      {visible < sections.length && (
         <details className="group relative shrink-0">
           <summary className="kicker kicker-muted ul-link flex cursor-pointer list-none items-center gap-1 whitespace-nowrap py-0.5 hover:text-primary [&::-webkit-details-marker]:hidden">
             More
@@ -130,7 +131,7 @@ export function SectionNav({
               align === "center" ? "left-1/2 -translate-x-1/2" : "right-0"
             }`}
           >
-            {overflow.map((s) => (
+            {sections.slice(visible).map((s) => (
               <li key={s}>
                 <Link
                   href={sectionHref(s)}
@@ -144,29 +145,13 @@ export function SectionNav({
         </details>
       )}
 
-      {/* Off-layout measurement row: every label + the More control at natural
-          width. INLINE-BLOCK (not flex) so items keep their intrinsic width;
-          flex children shrink to ~0 inside the w-0 box and measure wrong. The
-          w-0/h-0 + overflow-hidden keeps it from affecting page width. */}
+      {/* Off-screen sizer to measure the "More" control's width. */}
       <div
+        ref={moreRef}
         aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 h-0 w-0 overflow-hidden whitespace-nowrap"
+        className="kicker kicker-muted pointer-events-none invisible absolute left-0 top-0 flex items-center gap-1 whitespace-nowrap py-0.5"
       >
-        {sections.map((s) => (
-          <span
-            key={s}
-            data-item
-            className="kicker kicker-muted inline-block whitespace-nowrap py-0.5"
-          >
-            {s}
-          </span>
-        ))}
-        <span
-          data-more
-          className="kicker kicker-muted inline-block whitespace-nowrap py-0.5"
-        >
-          More ▾
-        </span>
+        More <span className="text-[0.85em]">▾</span>
       </div>
     </nav>
   );
