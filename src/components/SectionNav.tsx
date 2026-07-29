@@ -47,9 +47,17 @@ export function SectionNav({
       const avail = nav.clientWidth;
       const widths = Array.from(
         measure.querySelectorAll<HTMLElement>("[data-item]"),
-      ).map((el) => el.offsetWidth);
+      ).map((el) => el.getBoundingClientRect().width);
       const moreEl = measure.querySelector<HTMLElement>("[data-more]");
-      const moreW = moreEl ? moreEl.offsetWidth : 0;
+      const moreW = moreEl ? moreEl.getBoundingClientRect().width : 72;
+
+      // Safety net: if measurement failed (any zero width) or the bar hasn't
+      // been laid out yet, fall back to a conservative inline count + More
+      // rather than ever rendering an untrimmed, clipped row with no menu.
+      if (avail <= 0 || widths.length === 0 || widths.some((w) => w <= 0)) {
+        setVisible(Math.min(sections.length, 4));
+        return;
+      }
 
       // Does the whole set fit with no menu?
       let total = 0;
@@ -137,28 +145,28 @@ export function SectionNav({
       )}
 
       {/* Off-layout measurement row: every label + the More control at natural
-          width. w-0/h-0 + overflow-hidden keeps it from affecting page width. */}
+          width. INLINE-BLOCK (not flex) so items keep their intrinsic width;
+          flex children shrink to ~0 inside the w-0 box and measure wrong. The
+          w-0/h-0 + overflow-hidden keeps it from affecting page width. */}
       <div
         aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 h-0 w-0 overflow-hidden"
+        className="pointer-events-none invisible absolute left-0 top-0 h-0 w-0 overflow-hidden whitespace-nowrap"
       >
-        <div className="flex flex-nowrap items-center gap-x-6">
-          {sections.map((s) => (
-            <span
-              key={s}
-              data-item
-              className="kicker kicker-muted whitespace-nowrap py-0.5"
-            >
-              {s}
-            </span>
-          ))}
+        {sections.map((s) => (
           <span
-            data-more
-            className="kicker kicker-muted flex items-center gap-1 whitespace-nowrap py-0.5"
+            key={s}
+            data-item
+            className="kicker kicker-muted inline-block whitespace-nowrap py-0.5"
           >
-            More <span className="text-[0.85em]">▾</span>
+            {s}
           </span>
-        </div>
+        ))}
+        <span
+          data-more
+          className="kicker kicker-muted inline-block whitespace-nowrap py-0.5"
+        >
+          More ▾
+        </span>
       </div>
     </nav>
   );
