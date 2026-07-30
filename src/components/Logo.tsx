@@ -65,7 +65,9 @@ function SvgMark({ size }: { size: Size }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       {icon}
-      <span className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}>
+      <span
+        className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}
+      >
         {env.siteTitle}
       </span>
     </span>
@@ -78,7 +80,8 @@ function initials(title: string): string {
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-  if (words.length === 0) return env.siteTitle.trim().slice(0, 2).toUpperCase() || "·";
+  if (words.length === 0)
+    return env.siteTitle.trim().slice(0, 2).toUpperCase() || "·";
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return (words[0][0] + words[1][0]).toUpperCase();
 }
@@ -101,9 +104,11 @@ function Mark({ style, size }: { style: LogoStyle; size: Size }) {
       );
 
     case "sans-bold":
+      // No forced lowercase: titles carry acronyms (SMB, AI) and proper nouns
+      // that read as typos when lowercased. Render the wordmark as authored.
       return (
         <span
-          className={`font-heading font-extrabold lowercase leading-none tracking-[-0.04em] ${scale}`}
+          className={`font-heading font-extrabold leading-none tracking-[-0.04em] ${scale}`}
         >
           {title}
         </span>
@@ -184,7 +189,11 @@ export function Logo({
   const resolved = style ?? getActiveTheme().logo;
   const mark = (
     <span className={`inline-block text-heading ${className}`}>
-      {env.logoSvg ? <SvgMark size={size} /> : <Mark style={resolved} size={size} />}
+      {env.logoSvg ? (
+        <SvgMark size={size} />
+      ) : (
+        <Mark style={resolved} size={size} />
+      )}
     </span>
   );
   if (!linked) return mark;
