@@ -142,6 +142,68 @@ const LOGO_STYLES: LogoStyle[] = [
   "monogram",
 ];
 
+/**
+ * Serif families shipped by the themes. Used to force the site sans-serif:
+ * per product direction, both the masthead/headings and the body must render
+ * in a sans-serif face on every deployment.
+ */
+const SERIF_FAMILIES = new Set([
+  "Playfair Display",
+  "Newsreader",
+  "Source Serif 4",
+  "Spectral",
+  "EB Garamond",
+  "Fraunces",
+  "Cormorant Garamond",
+  "Lora",
+  "Bitter",
+  "Zilla Slab",
+  "Bodoni Moda",
+  "Literata",
+  "PT Serif",
+  "Merriweather",
+]);
+
+/** The sans-serif face serif slots fall back to (Inter — versatile, neutral). */
+const SANS_FAMILY = "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif";
+
+/** First real family name in a CSS font stack (unquoted). */
+function primaryFamily(family: string): string {
+  return family.split(",")[0].replace(/['"]/g, "").trim();
+}
+
+/** Coerce a serif FontSpec to Inter; leave sans (and mono) untouched. */
+function toSans(spec: FontSpec | undefined): FontSpec | undefined {
+  if (!spec) return spec;
+  if (!SERIF_FAMILIES.has(primaryFamily(spec.family))) return spec;
+  return {
+    family: SANS_FAMILY,
+    google: {
+      name: "Inter",
+      // Preserve the intended weights (headings keep their heft), default sane.
+      weights: spec.google?.weights ?? [400, 600, 700],
+      italic: spec.google?.italic,
+    },
+  };
+}
+
+/**
+ * Force the display, heading and body fonts to sans-serif. The mono slot
+ * (code / kickers) is intentionally left monospace. Applied last, so it also
+ * neutralizes any serif introduced by a `FONT_*` env override.
+ */
+function forceSansSerif(theme: Theme): Theme {
+  return {
+    ...theme,
+    fonts: {
+      ...theme.fonts,
+      display: toSans(theme.fonts.display),
+      heading: toSans(theme.fonts.heading) ?? theme.fonts.heading,
+      body: toSans(theme.fonts.body) ?? theme.fonts.body,
+    },
+  };
+}
+
 /** Replace a font with a Google-Fonts family named by an env override. */
 function overrideFont(googleName: string): FontSpec {
   return {
@@ -212,5 +274,5 @@ export function getActiveTheme(): Theme {
         `Available: ${Object.keys(themes).join(", ")}.`,
     );
   }
-  return applyOverrides(base ?? themes[DEFAULT_THEME]);
+  return forceSansSerif(applyOverrides(base ?? themes[DEFAULT_THEME]));
 }
