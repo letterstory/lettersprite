@@ -65,11 +65,27 @@ function SvgMark({ size }: { size: Size }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       {icon}
-      <span className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}>
-        {env.siteTitle}
+      <span
+        className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}
+      >
+        {mastheadTitle(env.siteTitle)}
       </span>
     </span>
   );
+}
+
+/**
+ * The short brand shown in the masthead. Many phantom titles are "Brand: a long
+ * descriptive tagline" ("SMB Scaler: Covering the SMB x AI Transformation") —
+ * the whole thing overwhelms a flag. Take the part before the first strong
+ * separator (colon, dash, pipe) so the masthead reads as a clean brand ("SMB
+ * Scaler"). The full title still carries the <title>, aria-label and sr-only
+ * heading for SEO/AT. A title with no separator is left whole.
+ */
+function mastheadTitle(full: string): string {
+  // ":␣", "␣—␣/␣–␣/␣|␣", or "␣-␣" — a spaced hyphen only, so "AI-Assisted" is safe.
+  const brand = full.split(/:\s|\s+[—–|]\s+|\s+-\s+/)[0]?.trim();
+  return brand || full;
 }
 
 function initials(title: string): string {
@@ -78,14 +94,15 @@ function initials(title: string): string {
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-  if (words.length === 0) return env.siteTitle.trim().slice(0, 2).toUpperCase() || "·";
+  if (words.length === 0)
+    return env.siteTitle.trim().slice(0, 2).toUpperCase() || "·";
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
 /** The inner wordmark markup for a given style (no link wrapper). */
 function Mark({ style, size }: { style: LogoStyle; size: Size }) {
-  const title = env.siteTitle;
+  const title = mastheadTitle(env.siteTitle);
   const scale = SIZE[size];
 
   switch (style) {
@@ -101,9 +118,11 @@ function Mark({ style, size }: { style: LogoStyle; size: Size }) {
       );
 
     case "sans-bold":
+      // No forced lowercase: titles carry acronyms (SMB, AI) and proper nouns
+      // that read as typos when lowercased. Render the wordmark as authored.
       return (
         <span
-          className={`font-heading font-extrabold lowercase leading-none tracking-[-0.04em] ${scale}`}
+          className={`font-heading font-extrabold leading-none tracking-[-0.04em] ${scale}`}
         >
           {title}
         </span>
@@ -184,7 +203,11 @@ export function Logo({
   const resolved = style ?? getActiveTheme().logo;
   const mark = (
     <span className={`inline-block text-heading ${className}`}>
-      {env.logoSvg ? <SvgMark size={size} /> : <Mark style={resolved} size={size} />}
+      {env.logoSvg ? (
+        <SvgMark size={size} />
+      ) : (
+        <Mark style={resolved} size={size} />
+      )}
     </span>
   );
   if (!linked) return mark;
