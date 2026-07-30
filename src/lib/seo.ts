@@ -16,7 +16,12 @@
 import { env } from "@/env";
 import { pickFavicon } from "./favicon";
 import { authorProfile, bylineFor, type Byline } from "./author";
-import { modifiedDate, publishDate, sectionFor } from "./editorial";
+import {
+  modifiedDate,
+  publishDate,
+  sectionFor,
+  sectionHref,
+} from "./editorial";
 import { absoluteCover, absoluteUrl, postUrl } from "./url";
 import { coverAltFor } from "./covers";
 import type { Post } from "./letterbrace/types";
@@ -117,18 +122,33 @@ export function articleLd(post: Post): Json {
 }
 
 /**
- * Breadcrumbs for an article. Home → article. The section is shown as a kicker
- * but has no dedicated route, so it's intentionally not linked as a crumb (a
- * BreadcrumbList item that 404s is a validation strike).
+ * Breadcrumbs for an article: Home → Section → article. Every section has a
+ * real `/sections/[slug]` route (generateStaticParams covers all of them), so
+ * the section crumb is linked — matching the visible breadcrumb and reinforcing
+ * the topic hub. The trailing article crumb omits `item` (it's the current page).
  */
 export function breadcrumbLd(post: Post): Json {
+  const section = sectionFor(post);
+  const items: Json[] = [
+    { "@type": "ListItem", position: 1, name: "Home", item: env.siteUrl },
+  ];
+  if (section) {
+    items.push({
+      "@type": "ListItem",
+      position: 2,
+      name: section,
+      item: absoluteUrl(sectionHref(section)),
+    });
+  }
+  items.push({
+    "@type": "ListItem",
+    position: items.length + 1,
+    name: post.title,
+  });
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: env.siteUrl },
-      { "@type": "ListItem", position: 2, name: post.title },
-    ],
+    itemListElement: items,
   };
 }
 
