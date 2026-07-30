@@ -33,8 +33,8 @@ export const gazette: Theme = {
       google: { name: "Playfair Display", weights: [400, 700, 800, 900] },
     },
     heading: {
-      family: "'Libre Franklin', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Libre Franklin", weights: [400, 600, 700, 800] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700, 800] },
     },
     body: {
       family: "'Source Serif 4', Georgia, serif",

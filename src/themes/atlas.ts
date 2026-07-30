@@ -2,8 +2,7 @@ import type { Theme } from "./types";
 
 /**
  * Atlas — a travel & exploration title (National Geographic / Condé Nast
- * Traveler). Warm ochre and deep-sea teal on soft ivory, a condensed Oswald
- * masthead over an elegant Playfair display, and an image-first gallery front.
+ * Traveler). Warm ochre and deep-sea teal on soft ivory, an elegant Playfair display over a Spectral serif body, and an image-first gallery front.
  */
 export const atlas: Theme = {
   name: "atlas",
@@ -33,8 +32,8 @@ export const atlas: Theme = {
       google: { name: "Playfair Display", weights: [500, 700, 800], italic: true },
     },
     heading: {
-      family: "'Oswald', 'Arial Narrow', system-ui, sans-serif",
-      google: { name: "Oswald", weights: [500, 600, 700] },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [500, 600, 700] },
     },
     body: {
       family: "'Spectral', Georgia, serif",

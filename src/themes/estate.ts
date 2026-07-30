@@ -33,8 +33,8 @@ export const estate: Theme = {
       google: { name: "EB Garamond", weights: [500, 600, 700, 800], italic: true },
     },
     heading: {
-      family: "'Jost', system-ui, -apple-system, sans-serif",
-      google: { name: "Jost", weights: [400, 500, 600, 700] },
+      family: "'EB Garamond', Georgia, 'Times New Roman', serif",
+      google: { name: "EB Garamond", weights: [500, 600, 700] },
     },
     body: {
       family: "'EB Garamond', Georgia, 'Times New Roman', serif",

@@ -3,12 +3,12 @@ import type { Theme } from "./types";
 /**
  * Terra — a sustainability & climate title (Grist / Patagonia stories). Recycled
  * -paper canvas, a forest-green brand with a water-blue support and a clay pop, a
- * warm Bitter slab, on a considered longform column. Earthy, hopeful, grounded.
+ * clean Mulish sans, on a considered longform column. Earthy, hopeful, grounded.
  */
 export const terra: Theme = {
   name: "terra",
   label: "Terra",
-  description: "Sustainability longform: recycled paper, forest + water + clay, warm Bitter slab.",
+  description: "Sustainability longform: recycled paper, forest + water + clay, clean Mulish sans.",
   colorScheme: "light",
   colors: {
     background: "#f7f6f1",
@@ -29,12 +29,12 @@ export const terra: Theme = {
   },
   fonts: {
     display: {
-      family: "'Bitter', Georgia, serif",
-      google: { name: "Bitter", weights: [600, 700, 800], italic: true },
+      family: "'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Mulish", weights: [700, 800] },
     },
     heading: {
-      family: "'Bitter', Georgia, serif",
-      google: { name: "Bitter", weights: [600, 700] },
+      family: "'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Mulish", weights: [600, 700] },
     },
     body: {
       family: "'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif",

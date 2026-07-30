@@ -3,12 +3,12 @@ import type { Theme } from "./types";
 /**
  * Hearth — an interior design & architecture title (Dwell / Architectural
  * Digest). Warm-concrete paper, a charcoal-stone brand with clay-taupe and a
- * brick pop, geometric Jost over literary Spectral, square corners, lots of air.
+ * brick pop, literary Spectral throughout, square corners, lots of air.
  */
 export const hearth: Theme = {
   name: "hearth",
   label: "Hearth",
-  description: "Interior & architecture: warm concrete, charcoal + brick, geometric Jost, airy.",
+  description: "Interior & architecture: warm concrete, charcoal + brick, literary Spectral, airy.",
   colorScheme: "light",
   colors: {
     background: "#f6f4f1",
@@ -29,12 +29,12 @@ export const hearth: Theme = {
   },
   fonts: {
     display: {
-      family: "'Jost', system-ui, -apple-system, sans-serif",
-      google: { name: "Jost", weights: [500, 600, 700] },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [500, 600, 700], italic: true },
     },
     heading: {
-      family: "'Jost', system-ui, -apple-system, sans-serif",
-      google: { name: "Jost", weights: [400, 500, 600, 700] },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [400, 500, 600, 700] },
     },
     body: {
       family: "'Spectral', Georgia, serif",

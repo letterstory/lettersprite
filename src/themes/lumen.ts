@@ -3,7 +3,7 @@ import type { Theme } from "./types";
 /**
  * Lumen — a science & ideas title (Quanta / Nautilus). A cool near-white, an
  * indigo-ink brand with a discovery-cyan support and an orange spark, a literary
- * Spectral serif under IBM Plex Sans labels, on a fast feature feed. Intellectual
+ * Spectral serif throughout, on a fast feature feed. Intellectual
  * but inviting.
  */
 export const lumen: Theme = {
@@ -34,8 +34,8 @@ export const lumen: Theme = {
       google: { name: "Spectral", weights: [500, 600, 700, 800], italic: true },
     },
     heading: {
-      family: "'IBM Plex Sans', system-ui, sans-serif",
-      google: { name: "IBM Plex Sans", weights: [500, 600, 700] },
+      family: "'Spectral', Georgia, serif",
+      google: { name: "Spectral", weights: [500, 600, 700] },
     },
     body: {
       family: "'Spectral', Georgia, serif",

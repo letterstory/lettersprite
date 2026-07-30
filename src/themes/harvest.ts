@@ -2,13 +2,12 @@ import type { Theme } from "./types";
 
 /**
  * Harvest — a food & recipe magazine (Bon Appétit). Cream stock, a paprika-red
- * brand with herb-green and honey supports, a warm Fraunces display over a clean
- * Mulish body, on a bold appetizing mosaic. Big photography, generous, hungry.
+ * brand with herb-green and honey supports, a clean Mulish display and body, on a bold appetizing mosaic. Big photography, generous, hungry.
  */
 export const harvest: Theme = {
   name: "harvest",
   label: "Harvest",
-  description: "Food & recipe mosaic: cream stock, paprika + herb + honey, warm Fraunces display.",
+  description: "Food & recipe mosaic: cream stock, paprika + herb + honey, clean Mulish type.",
   colorScheme: "light",
   colors: {
     background: "#fffaf2",
@@ -29,12 +28,12 @@ export const harvest: Theme = {
   },
   fonts: {
     display: {
-      family: "'Fraunces', Georgia, serif",
-      google: { name: "Fraunces", weights: [500, 700, 800], italic: true },
+      family: "'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Mulish", weights: [700, 800] },
     },
     heading: {
-      family: "'Fraunces', Georgia, serif",
-      google: { name: "Fraunces", weights: [500, 600, 700] },
+      family: "'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Mulish", weights: [600, 700] },
     },
     body: {
       family: "'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif",

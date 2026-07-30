@@ -28,12 +28,12 @@ export const metro: Theme = {
   },
   fonts: {
     display: {
-      family: "'Oswald', 'Arial Narrow', system-ui, sans-serif",
-      google: { name: "Oswald", weights: [500, 600, 700] },
+      family: "'Newsreader', Georgia, serif",
+      google: { name: "Newsreader", weights: [500, 600, 700], italic: true },
     },
     heading: {
-      family: "'Archivo Narrow', 'Arial Narrow', system-ui, sans-serif",
-      google: { name: "Archivo Narrow", weights: [600, 700] },
+      family: "'Newsreader', Georgia, serif",
+      google: { name: "Newsreader", weights: [600, 700] },
     },
     body: {
       family: "'Newsreader', Georgia, serif",

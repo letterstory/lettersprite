@@ -2,13 +2,13 @@ import type { Theme } from "./types";
 
 /**
  * Sterling — a private-bank & wealth-management journal. Deep navy and gold on
- * ivory stock, an elegant EB Garamond display underlined in brand, a clean
+ * ivory stock, an elegant Figtree display underlined in brand, a clean
  * Figtree body, and a generous, unhurried reading column. Quiet prestige.
  */
 export const sterling: Theme = {
   name: "sterling",
   label: "Sterling",
-  description: "Private banking & wealth: ivory stock, navy + gold, elegant Garamond.",
+  description: "Private banking & wealth: ivory stock, navy + gold, clean Figtree.",
   colorScheme: "light",
   colors: {
     background: "#fbfaf6",
@@ -29,12 +29,12 @@ export const sterling: Theme = {
   },
   fonts: {
     display: {
-      family: "'EB Garamond', Georgia, 'Times New Roman', serif",
-      google: { name: "EB Garamond", weights: [600, 700, 800], italic: true },
+      family: "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Figtree", weights: [600, 700, 800] },
     },
     heading: {
-      family: "'EB Garamond', Georgia, serif",
-      google: { name: "EB Garamond", weights: [500, 600, 700] },
+      family: "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Figtree", weights: [500, 600, 700] },
     },
     body: {
       family: "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif",

@@ -3,7 +3,7 @@ import type { Theme } from "./types";
 /**
  * Counsel — a professional-services & thought-leadership title (a law firm or
  * strategy consultancy's insights). Restrained white, a deep slate-navy brand
- * with a bronze support, a Source Serif voice under Libre Franklin subheads, on
+ * with a bronze support, a Source Serif voice with matching serif subheads, on
  * a quiet longform column. Conservative, authoritative, trustworthy.
  */
 export const counsel: Theme = {
@@ -34,8 +34,8 @@ export const counsel: Theme = {
       google: { name: "Source Serif 4", weights: [600, 700, 800], italic: true },
     },
     heading: {
-      family: "'Libre Franklin', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Libre Franklin", weights: [500, 600, 700] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700] },
     },
     body: {
       family: "'Source Serif 4', Georgia, serif",
