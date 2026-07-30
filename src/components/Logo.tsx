@@ -68,10 +68,24 @@ function SvgMark({ size }: { size: Size }) {
       <span
         className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}
       >
-        {env.siteTitle}
+        {mastheadTitle(env.siteTitle)}
       </span>
     </span>
   );
+}
+
+/**
+ * The short brand shown in the masthead. Many phantom titles are "Brand: a long
+ * descriptive tagline" ("SMB Scaler: Covering the SMB x AI Transformation") —
+ * the whole thing overwhelms a flag. Take the part before the first strong
+ * separator (colon, dash, pipe) so the masthead reads as a clean brand ("SMB
+ * Scaler"). The full title still carries the <title>, aria-label and sr-only
+ * heading for SEO/AT. A title with no separator is left whole.
+ */
+function mastheadTitle(full: string): string {
+  // ":␣", "␣—␣/␣–␣/␣|␣", or "␣-␣" — a spaced hyphen only, so "AI-Assisted" is safe.
+  const brand = full.split(/:\s|\s+[—–|]\s+|\s+-\s+/)[0]?.trim();
+  return brand || full;
 }
 
 function initials(title: string): string {
@@ -88,7 +102,7 @@ function initials(title: string): string {
 
 /** The inner wordmark markup for a given style (no link wrapper). */
 function Mark({ style, size }: { style: LogoStyle; size: Size }) {
-  const title = env.siteTitle;
+  const title = mastheadTitle(env.siteTitle);
   const scale = SIZE[size];
 
   switch (style) {
