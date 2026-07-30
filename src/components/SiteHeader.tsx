@@ -1,10 +1,11 @@
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
-import { editionDate, topSections } from "@/lib/editorial";
+import { editionDate, topSections, sectionFor } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 import { Logo } from "./Logo";
 import { SectionNav } from "./SectionNav";
+import { SiteSearch, type SearchItem } from "./SiteSearch";
 
 /**
  * The masthead. Two archetypes, chosen by the theme so different deployments
@@ -56,6 +57,13 @@ export async function SiteHeader() {
   const theme = getActiveTheme();
   const posts = await getPosts();
   const sections = navSections(posts);
+  const searchIndex: SearchItem[] = posts.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    section: sectionFor(p),
+    excerpt: p.excerpt,
+    tags: p.tags,
+  }));
   const edition = formatEdition(editionDate(posts));
   const centered =
     theme.home === "broadsheet" ||
@@ -91,11 +99,18 @@ export async function SiteHeader() {
         {/* Sticky section bar */}
         <div className="sticky top-0 z-50 border-y border-border bg-background/85 backdrop-blur-md">
           <div className="container-wide px-6">
-            <SectionNav
-              sections={sections}
-              align="center"
-              className="justify-center py-2.5 text-center"
-            />
+            <div className="flex items-center justify-center gap-4 py-2.5">
+              <SectionNav
+                sections={sections}
+                align="center"
+                className="justify-center text-center"
+              />
+              <SiteSearch index={searchIndex} className="hidden w-56 shrink-0 lg:block" />
+            </div>
+            {/* Full-width search on small screens where the inline box is hidden */}
+            <div className="border-t border-border pb-3 pt-2 lg:hidden">
+              <SiteSearch index={searchIndex} />
+            </div>
           </div>
         </div>
       </header>
@@ -111,12 +126,14 @@ export async function SiteHeader() {
         {/* Nav takes the middle and is width-bounded (flex-1 min-w-0) so it can
             measure how many sections fit and fold the rest into "More". */}
         <SectionNav sections={sections} className="hidden min-w-0 flex-1 md:flex" />
+        <SiteSearch index={searchIndex} className="hidden w-52 shrink-0 md:block" />
         <SubscribeButton />
       </div>
-      {/* Section nav wraps to its own row on small screens */}
+      {/* Section nav + search wrap to their own rows on small screens */}
       <div className="border-t border-border md:hidden">
         <div className="container-wide px-6">
           <SectionNav sections={sections} className="py-2" />
+          <SiteSearch index={searchIndex} className="pb-3" />
         </div>
       </div>
     </header>
