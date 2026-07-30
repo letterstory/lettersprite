@@ -143,28 +143,29 @@ const LOGO_STYLES: LogoStyle[] = [
 ];
 
 /**
- * Serif families shipped by the themes. Used to force the site sans-serif:
- * per product direction, both the masthead/headings and the body must render
- * in a sans-serif face on every deployment.
+ * Approved sans-serif families. This is an ALLOWLIST on purpose: per product
+ * direction the masthead/headings and body must be sans-serif on every
+ * deployment — now *and going forward*. Anything not on this list (any serif
+ * we ship today, or any font a future theme introduces) is coerced to Inter,
+ * so the site can never render serif even as new themes/fonts are added. When
+ * you add a theme with a new *sans* face, add its family here to keep it.
+ * Generic sans keywords are covered by `isSans` below.
  */
-const SERIF_FAMILIES = new Set([
-  "Playfair Display",
-  "Newsreader",
-  "Source Serif 4",
-  "Spectral",
-  "EB Garamond",
-  "Fraunces",
-  "Cormorant Garamond",
-  "Lora",
-  "Bitter",
-  "Zilla Slab",
-  "Bodoni Moda",
-  "Literata",
-  "PT Serif",
-  "Merriweather",
+const SANS_FAMILIES = new Set([
+  "Anton", "Archivo", "Archivo Narrow", "Baloo 2", "Barlow Semi Condensed",
+  "Bricolage Grotesque", "Chakra Petch", "Epilogue", "Figtree", "Hanken Grotesk",
+  "IBM Plex Sans", "Inter", "Jost", "Karla", "Lexend", "Libre Franklin",
+  "Manrope", "Mulish", "Nunito", "Outfit", "Plus Jakarta Sans", "Public Sans",
+  "Rajdhani", "Red Hat Display", "Red Hat Text", "Saira", "Sora",
+  "Source Sans 3", "Space Grotesk", "Syne",
 ]);
 
-/** The sans-serif face serif slots fall back to (Inter — versatile, neutral). */
+/** Generic sans keywords a pure system-font stack may lead with. */
+const SANS_KEYWORDS = new Set([
+  "system-ui", "ui-sans-serif", "sans-serif", "-apple-system",
+]);
+
+/** The sans-serif face unrecognized slots fall back to (Inter). */
 const SANS_FAMILY = "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif";
 
 /** First real family name in a CSS font stack (unquoted). */
@@ -172,10 +173,14 @@ function primaryFamily(family: string): string {
   return family.split(",")[0].replace(/['"]/g, "").trim();
 }
 
-/** Coerce a serif FontSpec to Inter; leave sans (and mono) untouched. */
+function isSans(spec: FontSpec): boolean {
+  const name = primaryFamily(spec.family);
+  return SANS_FAMILIES.has(name) || SANS_KEYWORDS.has(name);
+}
+
+/** Keep known sans faces; coerce anything else (serif, or unknown) to Inter. */
 function toSans(spec: FontSpec | undefined): FontSpec | undefined {
-  if (!spec) return spec;
-  if (!SERIF_FAMILIES.has(primaryFamily(spec.family))) return spec;
+  if (!spec || isSans(spec)) return spec;
   return {
     family: SANS_FAMILY,
     google: {
