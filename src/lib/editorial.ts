@@ -5,7 +5,7 @@
  */
 
 import { slugify, stripHtml } from "./letterbrace/normalize";
-import { hashString, pick } from "./rng";
+import { hashString } from "./rng";
 import type { Post } from "./letterbrace/types";
 
 /**
@@ -20,11 +20,13 @@ const DAY = 86_400_000;
 /** Words per minute used for the reading-time estimate. */
 const WPM = 225;
 
-/** Generic section pool used when a post has no tag of its own. */
-const SECTIONS = [
-  "Features", "Analysis", "Culture", "Business", "Opinion", "Science",
-  "Opinion", "Ideas", "Thoughts", "Style", "Report", "Analysis",
-];
+/**
+ * One shared catch-all section for posts with no tag of their own. A pool of
+ * invented topics ("Ideas", "Thoughts", "Opinion"…) used to scatter tagless
+ * posts across meaningless one-off hubs, fragmenting topical authority; a single
+ * bucket keeps them out of the real topic hubs without inventing fake ones.
+ */
+const FALLBACK_SECTION = "Features";
 
 /** Total word count of the article body. */
 export function wordCount(post: Post): number {
@@ -69,7 +71,9 @@ const FLEET_REPIN_CUTOFF = "2026-07-31T00:00:00.000Z";
 /** True when `updatedAt` represents a real post-publish edit worth advertising. */
 function isGenuineEdit(post: Post): boolean {
   return Boolean(
-    post.updatedAt && post.updatedAt > FLEET_REPIN_CUTOFF && post.updatedAt > publishDate(post),
+    post.updatedAt &&
+      post.updatedAt > FLEET_REPIN_CUTOFF &&
+      post.updatedAt > publishDate(post),
   );
 }
 
@@ -114,7 +118,9 @@ export function editionDate(posts: Post[]): string {
 
 /** Posts in canonical reading order: newest first by (synthesized) publish date. */
 export function orderedByDate(posts: Post[]): Post[] {
-  return [...posts].sort((a, b) => publishDate(b).localeCompare(publishDate(a)));
+  return [...posts].sort((a, b) =>
+    publishDate(b).localeCompare(publishDate(a)),
+  );
 }
 
 /**
@@ -137,8 +143,7 @@ export function adjacentPosts(
 
 /** Section / kicker label for a post: its first tag, or a stable synthesized one. */
 export function sectionFor(post: Post): string {
-  if (post.tags[0]) return post.tags[0];
-  return pick(SECTIONS, `${post.id}:section`);
+  return post.tags[0] || FALLBACK_SECTION;
 }
 
 /** URL slug for a section name, used by the `/sections/[slug]` route. */
