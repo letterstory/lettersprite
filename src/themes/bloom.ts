@@ -2,13 +2,12 @@ import type { Theme } from "./types";
 
 /**
  * Bloom — a beauty & skincare editorial (Glossier / Sephora editorial). Soft
- * blush white, a rose brand with a mauve-taupe support, elegant Playfair display
- * over clean Jost, a centered flag and generous air. Luxe but approachable.
+ * blush white, a rose brand with a mauve-taupe support, clean Jost throughout, a centered flag and generous air. Luxe but approachable.
  */
 export const bloom: Theme = {
   name: "bloom",
   label: "Bloom",
-  description: "Beauty editorial: blush paper, rose + mauve, Playfair over Jost, centered flag.",
+  description: "Beauty editorial: blush paper, rose + mauve, clean Jost, centered flag.",
   colorScheme: "light",
   colors: {
     background: "#fdf8f6",
@@ -29,8 +28,8 @@ export const bloom: Theme = {
   },
   fonts: {
     display: {
-      family: "'Playfair Display', Georgia, serif",
-      google: { name: "Playfair Display", weights: [400, 700, 800], italic: true },
+      family: "'Jost', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Jost", weights: [400, 700, 800] },
     },
     heading: {
       family: "'Jost', system-ui, -apple-system, sans-serif",

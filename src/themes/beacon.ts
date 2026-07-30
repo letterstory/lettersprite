@@ -2,13 +2,12 @@ import type { Theme } from "./types";
 
 /**
  * Beacon — a professional-services & advisory insights desk. A distinctive
- * burgundy brand against warm charcoal on white, condensed Chivo section
- * headings over a Source Serif body, in an authoritative thumbnail feed.
+ * burgundy brand against warm charcoal on white, Source Serif section headings over a Source Serif body, in an authoritative thumbnail feed.
  */
 export const beacon: Theme = {
   name: "beacon",
   label: "Beacon",
-  description: "Advisory & professional services: burgundy brand, condensed Chivo, serif feed.",
+  description: "Advisory & professional services: burgundy brand, Source Serif throughout, serif feed.",
   colorScheme: "light",
   colors: {
     background: "#ffffff",
@@ -29,12 +28,12 @@ export const beacon: Theme = {
   },
   fonts: {
     display: {
-      family: "'Chivo', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Chivo", weights: [700, 800, 900] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700, 800], italic: true },
     },
     heading: {
-      family: "'Chivo', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Chivo", weights: [600, 700] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700] },
     },
     body: {
       family: "'Source Serif 4', Georgia, serif",

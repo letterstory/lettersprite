@@ -2,9 +2,9 @@ import type { Theme } from "./types";
 
 /**
  * Ledger — a business & markets desk (FT / Economist authority). Deep navy on a
- * near-white paper, a bright-blue link and an orange data pop, set as a serif
+ * near-white paper, a bright-blue link and an orange data pop, set as a sharp
  * financial BROADSHEET with editorial long-form. Deliberately distinct from
- * `dispatch` (the green tech-news feed): a different layout, a serif nameplate
+ * `dispatch` (the green tech-news feed): a different layout, a Libre Franklin nameplate
  * and headlines instead of the shared Archivo/feed/sans-bold formula.
  *
  * NOTE: `name` is the stable identifier mirrored in Letterbrace's phantom theme
@@ -13,7 +13,7 @@ import type { Theme } from "./types";
 export const ledger: Theme = {
   name: "ledger",
   label: "Ledger",
-  description: "Business & markets broadsheet: navy authority, serif headlines, blue links, orange pop.",
+  description: "Business & markets broadsheet: navy authority, Libre Franklin headlines, blue links, orange pop.",
   colorScheme: "light",
   colors: {
     background: "#fcfcfb",
@@ -34,8 +34,8 @@ export const ledger: Theme = {
   },
   fonts: {
     display: {
-      family: "'Source Serif 4', Georgia, 'Times New Roman', serif",
-      google: { name: "Source Serif 4", weights: [600, 700], italic: true },
+      family: "'Libre Franklin', system-ui, 'Helvetica Neue', sans-serif",
+      google: { name: "Libre Franklin", weights: [700, 800] },
     },
     heading: {
       family: "'Libre Franklin', system-ui, 'Helvetica Neue', sans-serif",

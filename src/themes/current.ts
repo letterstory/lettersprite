@@ -2,13 +2,12 @@ import type { Theme } from "./types";
 
 /**
  * Current — a high-contrast tech magazine. Stark black-and-white with one
- * electric-teal signal and a red kicker, ultra-heavy grotesque headlines over a
- * serif body, on a bold card grid.
+ * electric-teal signal and a red kicker, ultra-heavy Source Serif headlines over a serif body, on a bold card grid.
  */
 export const current: Theme = {
   name: "current",
   label: "Current",
-  description: "Stark black-and-white with electric teal, heavy grotesque + serif body.",
+  description: "Stark black-and-white with electric teal, heavy Source Serif headlines + body.",
   colorScheme: "light",
   colors: {
     background: "#ffffff",
@@ -29,12 +28,12 @@ export const current: Theme = {
   },
   fonts: {
     display: {
-      family: "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
-      google: { name: "Archivo", weights: [700, 800, 900] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [700, 800], italic: true },
     },
     heading: {
-      family: "'Archivo', 'Helvetica Neue', system-ui, sans-serif",
-      google: { name: "Archivo", weights: [600, 700, 800] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700, 800] },
     },
     body: {
       family: "'Source Serif 4', Georgia, serif",

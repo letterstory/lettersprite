@@ -2,13 +2,12 @@ import type { Theme } from "./types";
 
 /**
  * Forum — an economics & policy research institute. Warm off-white newsprint, a
- * deep slate-teal ink with an amber pop, high-contrast Crimson Pro serif
- * headlines over a clean Source Sans body, laid out as a dense broadsheet.
+ * deep slate-teal ink with an amber pop, clean Source Sans headlines over a Source Sans body, laid out as a dense broadsheet.
  */
 export const forum: Theme = {
   name: "forum",
   label: "Forum",
-  description: "Economics & policy institute: warm stock, slate-teal serif, amber, broadsheet.",
+  description: "Economics & policy institute: warm stock, slate-teal sans, amber, broadsheet.",
   colorScheme: "light",
   colors: {
     background: "#fbfaf7",
@@ -29,12 +28,12 @@ export const forum: Theme = {
   },
   fonts: {
     display: {
-      family: "'Crimson Pro', Georgia, 'Times New Roman', serif",
-      google: { name: "Crimson Pro", weights: [600, 700, 800], italic: true },
+      family: "'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Source Sans 3", weights: [600, 700, 800] },
     },
     heading: {
-      family: "'Crimson Pro', Georgia, serif",
-      google: { name: "Crimson Pro", weights: [600, 700] },
+      family: "'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Source Sans 3", weights: [600, 700] },
     },
     body: {
       family: "'Source Sans 3', system-ui, -apple-system, sans-serif",

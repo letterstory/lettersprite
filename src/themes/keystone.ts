@@ -2,8 +2,7 @@ import type { Theme } from "./types";
 
 /**
  * Keystone — an investment & financial-services desk. Deep forest-green
- * authority with a gold data pop, heavy Work Sans headlines over a Source Serif
- * body for gravitas, set in a tight, data-forward feed.
+ * authority with a gold data pop, heavy Source Serif headlines over a Source Serif body for gravitas, set in a tight, data-forward feed.
  */
 export const keystone: Theme = {
   name: "keystone",
@@ -29,12 +28,12 @@ export const keystone: Theme = {
   },
   fonts: {
     display: {
-      family: "'Work Sans', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Work Sans", weights: [600, 700, 800] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700, 800], italic: true },
     },
     heading: {
-      family: "'Work Sans', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Work Sans", weights: [600, 700, 800] },
+      family: "'Source Serif 4', Georgia, serif",
+      google: { name: "Source Serif 4", weights: [600, 700, 800] },
     },
     body: {
       family: "'Source Serif 4', Georgia, serif",

@@ -2,14 +2,13 @@ import type { Theme } from "./types";
 
 /**
  * Meridian — a management-consulting insights review. Charcoal-navy authority
- * on a cool white page, a high-contrast Spectral serif for the argument and a
- * clean Public Sans body, with a brass pop reserved for prestige marks. A
+ * on a cool white page, a clean, high-contrast Public Sans for the argument and body, with a brass pop reserved for prestige marks. A
  * considered single-column longform in the McKinsey Quarterly tradition.
  */
 export const meridian: Theme = {
   name: "meridian",
   label: "Meridian",
-  description: "Consulting thought leadership: charcoal-navy, serif argument, brass pop.",
+  description: "Consulting thought leadership: charcoal-navy, clean sans argument, brass pop.",
   colorScheme: "light",
   colors: {
     background: "#ffffff",
@@ -30,12 +29,12 @@ export const meridian: Theme = {
   },
   fonts: {
     display: {
-      family: "'Spectral', Georgia, 'Times New Roman', serif",
-      google: { name: "Spectral", weights: [600, 700, 800], italic: true },
+      family: "'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Public Sans", weights: [700, 800] },
     },
     heading: {
-      family: "'Spectral', Georgia, serif",
-      google: { name: "Spectral", weights: [500, 600, 700] },
+      family: "'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Public Sans", weights: [600, 700] },
     },
     body: {
       family: "'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif",

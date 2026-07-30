@@ -2,13 +2,13 @@ import type { Theme } from "./types";
 
 /**
  * Evergreen — a corporate sustainability & ESG report. Deep forest green with
- * an amber pop on warm stone paper, geometric Outfit headlines underlined in
- * brand over a sturdy Bitter slab body, on a calm uniform grid.
+ * an amber pop on warm stone paper, sturdy Bitter slab headlines underlined in
+ * brand over a Bitter slab body, on a calm uniform grid.
  */
 export const evergreen: Theme = {
   name: "evergreen",
   label: "Evergreen",
-  description: "Sustainability & ESG: forest green, amber pop, stone paper, Outfit + slab body.",
+  description: "Sustainability & ESG: forest green, amber pop, stone paper, Bitter slab throughout.",
   colorScheme: "light",
   colors: {
     background: "#faf9f5",
@@ -29,12 +29,12 @@ export const evergreen: Theme = {
   },
   fonts: {
     display: {
-      family: "'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif",
-      google: { name: "Outfit", weights: [600, 700, 800] },
+      family: "'Bitter', Georgia, 'Times New Roman', serif",
+      google: { name: "Bitter", weights: [600, 700, 800], italic: true },
     },
     heading: {
-      family: "'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif",
-      google: { name: "Outfit", weights: [500, 600, 700] },
+      family: "'Bitter', Georgia, 'Times New Roman', serif",
+      google: { name: "Bitter", weights: [500, 600, 700] },
     },
     body: {
       family: "'Bitter', Georgia, 'Times New Roman', serif",

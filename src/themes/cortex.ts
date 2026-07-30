@@ -2,13 +2,12 @@ import type { Theme } from "./types";
 
 /**
  * Cortex — an AI & machine-learning research lab. A cool white page with a deep
- * iris-violet brand, expressive Bricolage Grotesque headlines over a readable
- * Literata serif body, and a cinematic hero for flagship work. Modern, rigorous.
+ * iris-violet brand, expressive Literata serif headlines over a readable Literata body, and a cinematic hero for flagship work. Modern, rigorous.
  */
 export const cortex: Theme = {
   name: "cortex",
   label: "Cortex",
-  description: "AI/ML research lab: iris-violet brand, grotesque display, Literata serif body.",
+  description: "AI/ML research lab: iris-violet brand, Literata serif headlines + body.",
   colorScheme: "light",
   colors: {
     background: "#ffffff",
@@ -29,12 +28,12 @@ export const cortex: Theme = {
   },
   fonts: {
     display: {
-      family: "'Bricolage Grotesque', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Bricolage Grotesque", weights: [600, 700, 800] },
+      family: "'Literata', Georgia, 'Times New Roman', serif",
+      google: { name: "Literata", weights: [600, 700, 800], italic: true },
     },
     heading: {
-      family: "'Bricolage Grotesque', system-ui, 'Helvetica Neue', sans-serif",
-      google: { name: "Bricolage Grotesque", weights: [600, 700, 800] },
+      family: "'Literata', Georgia, 'Times New Roman', serif",
+      google: { name: "Literata", weights: [600, 700, 800] },
     },
     body: {
       family: "'Literata', Georgia, 'Times New Roman', serif",

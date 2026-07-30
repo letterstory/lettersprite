@@ -1,10 +1,10 @@
 import type { Theme } from "./types";
 
-/** Bold glossy magazine: a cinematic hero over a grid, display serif, red accent. */
+/** Bold glossy magazine: a cinematic hero over a grid, a bold Archivo display, red accent. */
 export const magazine: Theme = {
   name: "magazine",
   label: "Magazine",
-  description: "Cinematic hero over a bold grid, display-serif headlines, red.",
+  description: "Cinematic hero over a bold grid, bold Archivo headlines, red.",
   colorScheme: "light",
   colors: {
     background: "#ffffff",
@@ -25,8 +25,8 @@ export const magazine: Theme = {
   },
   fonts: {
     display: {
-      family: "'Playfair Display', Georgia, serif",
-      google: { name: "Playfair Display", weights: [700, 800, 900] },
+      family: "'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif",
+      google: { name: "Archivo", weights: [700, 800, 900] },
     },
     heading: {
       family: "'Archivo', system-ui, sans-serif",
