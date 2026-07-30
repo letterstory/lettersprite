@@ -13,8 +13,16 @@ import { LeadStory } from "@/components/Story";
 export function GalleryHome({ posts }: { posts: Post[] }) {
   const [lead, ...rest] = posts;
 
-  // Deterministic aspect rhythm so the masonry looks composed, not random.
-  const ASPECTS = ["aspect-[4/5]", "aspect-[3/2]", "aspect-square", "aspect-[4/3]"];
+  // Deterministic aspect rhythm so the masonry looks composed, not random. Covers
+  // are authored 3:2 landscape, so every ratio here stays landscape — a portrait or
+  // square crop would slice a wide subject in half (unprofessional). The gentle
+  // 16/9 ↔ 4/3 spread gives the masonry rhythm without cutting through the art.
+  const ASPECTS = [
+    "aspect-[3/2]",
+    "aspect-[16/9]",
+    "aspect-[4/3]",
+    "aspect-[3/2]",
+  ];
 
   return (
     <div className="container-wide px-6 py-8">
@@ -42,7 +50,9 @@ export function GalleryHome({ posts }: { posts: Post[] }) {
                 />
                 <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/75 via-black/10 to-transparent opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                   <div className="p-4">
-                    <span className="kicker text-white/80">{sectionFor(post)}</span>
+                    <span className="kicker text-white/80">
+                      {sectionFor(post)}
+                    </span>
                     <h3 className="mt-1 font-heading text-lg font-bold leading-snug text-white">
                       {post.title}
                     </h3>

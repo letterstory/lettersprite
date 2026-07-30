@@ -77,7 +77,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
           <h2 className="rule-label mb-8">In This Issue</h2>
           <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {issue.map((post) => (
-              <StoryCard key={post.id} post={post} size="md" ratio="4/5" dek />
+              <StoryCard key={post.id} post={post} size="md" ratio="3/2" dek />
             ))}
           </div>
         </div>
