@@ -56,26 +56,40 @@ export function publishDate(post: Post): string {
 }
 
 /**
- * The last-modified date to advertise: the real `updatedAt` when it is at or
- * after the publish date, otherwise the publish date. Guarantees
- * `dateModified >= datePublished` for structured data and OpenGraph.
+ * The one-time fleet re-pin (2026-07-30) that restamped every post's version
+ * timestamp. `updatedAt` at or before this instant reflects that mass operation,
+ * NOT an editorial revision — so we don't advertise it as a modification. Doing
+ * so would put a "modified" date days after a (deliberately spread) publish date
+ * and disagree with the sitemap `<lastmod>` and `datePublished`, the exact
+ * inconsistency Google Search Console distrusts. Genuine edits after this cutoff
+ * advance `dateModified` normally.
  */
-export function modifiedDate(post: Post): string {
-  const published = publishDate(post);
-  return post.updatedAt && post.updatedAt >= published
-    ? post.updatedAt
-    : published;
+const FLEET_REPIN_CUTOFF = "2026-07-31T00:00:00.000Z";
+
+/** True when `updatedAt` represents a real post-publish edit worth advertising. */
+function isGenuineEdit(post: Post): boolean {
+  return Boolean(
+    post.updatedAt && post.updatedAt > FLEET_REPIN_CUTOFF && post.updatedAt > publishDate(post),
+  );
 }
 
 /**
- * Whether to show an "Updated" stamp. True only when Letterbrace supplied BOTH
- * a real `createdAt` and a later real `updatedAt` — so the stamp always reflects
- * a genuine revision against a genuine baseline, never a synthesized date.
+ * The last-modified date to advertise: a real later `updatedAt` when the post
+ * was genuinely edited (see {@link isGenuineEdit}), otherwise the publish date.
+ * Keeping it equal to the publish date for un-edited posts makes `dateModified`,
+ * the sitemap `<lastmod>`, and `datePublished` agree — one honest date, which is
+ * what GSC rewards — and guarantees `dateModified >= datePublished`.
+ */
+export function modifiedDate(post: Post): string {
+  return isGenuineEdit(post) ? (post.updatedAt as string) : publishDate(post);
+}
+
+/**
+ * Whether to show an "Updated" stamp. True only for a genuine post-publish edit,
+ * so the stamp never fires for the fleet re-pin or a synthesized baseline.
  */
 export function isUpdated(post: Post): boolean {
-  return Boolean(
-    post.createdAt && post.updatedAt && post.updatedAt > post.createdAt,
-  );
+  return Boolean(post.createdAt && isGenuineEdit(post));
 }
 
 /** Words past which a piece reads as a "long read" (worth a badge). */
