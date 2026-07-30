@@ -205,3 +205,18 @@ export function blogListingLd(posts: Post[]): Json {
     })),
   };
 }
+
+/** AboutPage for `/about`, wired to the Organization it describes (E-E-A-T). */
+export function aboutLd(): Json {
+  const url = absoluteUrl("/about");
+  return clean({
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${url}/#about`,
+    url,
+    name: `About ${env.siteTitle}`,
+    isPartOf: { "@id": SITE_ID },
+    mainEntity: { "@id": ORG_ID },
+    description: env.siteDescription || undefined,
+  });
+}

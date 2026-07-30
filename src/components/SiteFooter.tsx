@@ -15,7 +15,10 @@ export async function SiteFooter() {
   const year = new Date().getFullYear();
   const posts = await getPosts();
   const sections = env.sections
-    ? env.sections.split(",").map((s) => s.trim()).filter(Boolean)
+    ? env.sections
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
     : topSections(posts, 6);
   const established = env.established && `Est. ${env.established}`;
 
@@ -70,8 +73,19 @@ export async function SiteFooter() {
             <h2 className="kicker mb-4">{env.siteTitle}</h2>
             <ul className="flex flex-col gap-2.5 text-sm">
               <li>
-                <Link href="/" className="text-muted ul-link hover:text-foreground">
+                <Link
+                  href="/"
+                  className="text-muted ul-link hover:text-foreground"
+                >
                   Latest
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/about"
+                  className="text-muted ul-link hover:text-foreground"
+                >
+                  About
                 </Link>
               </li>
               <li>
