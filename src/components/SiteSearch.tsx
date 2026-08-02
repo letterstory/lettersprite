@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -31,6 +31,36 @@ export function SiteSearch({
   const router = useRouter();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcuts: "/" focuses search (unless already typing somewhere),
+  // and ⌘K / Ctrl+K from anywhere. Only the currently-visible instance of the
+  // box responds, so the hidden mobile/desktop copies don't steal the key.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = inputRef.current;
+      if (!el || el.offsetParent === null) return; // this instance is hidden
+      const t = e.target as HTMLElement | null;
+      const typing =
+        !!t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable);
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        el.focus();
+        return;
+      }
+      if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        el.focus();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   const query = q.trim();
 
@@ -69,18 +99,34 @@ export function SiteSearch({
           <path d="m20 20-3.5-3.5" />
         </svg>
         <input
+          ref={inputRef}
           type="search"
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onFocus={() => {
+            setOpen(true);
+            setFocused(true);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            setTimeout(() => setOpen(false), 150);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") inputRef.current?.blur();
+          }}
           placeholder="Search articles…"
           className="w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
           aria-label="Search articles"
         />
+        {/* "/" hint — hidden once focused or typing, and on narrow boxes. */}
+        {!focused && !q && (
+          <kbd className="pointer-events-none hidden shrink-0 rounded border border-border px-1.5 font-mono text-[0.7rem] leading-5 text-muted sm:inline-block">
+            /
+          </kbd>
+        )}
       </div>
 
       {open && query && (
