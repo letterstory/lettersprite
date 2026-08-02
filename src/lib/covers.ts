@@ -5,6 +5,7 @@ import {
   COVER_SETS,
   FALLBACK_COVER_DIR,
   VARIANTS_PER_SET,
+  type CoverSet,
 } from "./covers-config";
 
 /**
@@ -22,12 +23,23 @@ function hashString(input: string): number {
 }
 
 /**
- * The single cover *set* this blog uses for every fallback cover. Chosen once,
- * deterministically, from the blog title — so each deployment gets its own
- * stable visual family (waves, sunburst, gradient mesh…) without any config,
- * yet the choice never drifts across rebuilds.
+ * The single cover *set* this blog uses for every fallback cover.
+ *
+ * `SITE_COVER_SET` lets a deployment pick its pattern family deliberately
+ * (e.g. a fintech blog → `rings`, a food blog → `blobs`) so the cover art fits
+ * the brand. When it's unset or not a known set, we fall back to a stable pick
+ * hashed from the blog title — so each deployment still gets its own family
+ * with zero config, and the choice never drifts across rebuilds.
  */
-const activeCoverSet = COVER_SETS[hashString(env.siteTitle) % COVER_SETS.length];
+function resolveCoverSet(): CoverSet {
+  const requested = env.coverSet.trim().toLowerCase();
+  if (requested && (COVER_SETS as readonly string[]).includes(requested)) {
+    return requested as CoverSet;
+  }
+  return COVER_SETS[hashString(env.siteTitle) % COVER_SETS.length];
+}
+
+const activeCoverSet = resolveCoverSet();
 
 /**
  * Path to a generated cover, used when Letterbrace supplied no image. The blog's
