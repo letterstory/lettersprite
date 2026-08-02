@@ -13,7 +13,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 export function generateMetadata(): Metadata {
   const title = env.siteTitle;
   const description = env.siteDescription || undefined;
-  const favicon = siteFavicon(title);
+  const favicon = siteFavicon();
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.
   const indexable = hasLetterbraceKey;

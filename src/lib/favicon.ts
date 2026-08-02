@@ -17,6 +17,7 @@
 import { readdirSync } from "node:fs";
 import { extname, join } from "node:path";
 import { env } from "@/env";
+import { getActiveTheme } from "@/themes";
 
 /** Directory holding the selectable favicons, served at `/icons/*`. */
 const ICONS_DIR = join(process.cwd(), "public", "icons");
@@ -90,10 +91,52 @@ export function logoFavicon(): Favicon | undefined {
   };
 }
 
+/** Minimal XML escape for a single character dropped into SVG text. */
+function xmlEscape(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** First letter of the site title (leading "The/A/An" stripped), uppercased. */
+function siteInitial(): string {
+  const cleaned = env.siteTitle.replace(/^(the|a|an)\s+/i, "").trim();
+  const ch = cleaned[0] ?? env.siteTitle.trim()[0] ?? "·";
+  return ch.toUpperCase();
+}
+
 /**
- * The deployment's favicon: the generated logo when one is set (matches the
- * header), otherwise the stable per-title pick from `public/icons/`.
+ * A generated, per-site branded favicon: the site's initial on a rounded tile
+ * in the active theme's brand colour. Used when no `SITE_LOGO_SVG` is supplied,
+ * so every deployment gets a distinct, on-brand tab icon — instead of one of a
+ * handful of shared generic glyphs. Inlined as an SVG data URL (no asset
+ * pipeline), and it always reflects the deployment's real theme colour, so a
+ * rescramble that recolours the site recolours the tab icon too.
  */
-export function siteFavicon(name?: string): Favicon | undefined {
-  return logoFavicon() ?? pickFavicon(name);
+export function brandFavicon(): Favicon {
+  const { colors } = getActiveTheme();
+  const bg = colors.primary || "#111111";
+  const fg = colors.primaryForeground || "#ffffff";
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">` +
+    `<rect width="64" height="64" rx="14" fill="${bg}"/>` +
+    `<text x="50%" y="52%" dy=".35em" text-anchor="middle" ` +
+    `font-family="system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" ` +
+    `font-weight="700" font-size="38" fill="${fg}">${xmlEscape(siteInitial())}</text>` +
+    `</svg>`;
+  return {
+    url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
+    type: "image/svg+xml",
+  };
+}
+
+/**
+ * The deployment's tab favicon: the generated logo when one is set (matches the
+ * header), otherwise a branded initial tile in the theme's colour — so every
+ * site is individually branded, never a shared generic glyph.
+ */
+export function siteFavicon(): Favicon | undefined {
+  return logoFavicon() ?? brandFavicon();
 }
