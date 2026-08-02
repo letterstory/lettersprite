@@ -1,0 +1,116 @@
+import { describe, it, expect } from "vitest";
+import { classifyRequester } from "./classify";
+
+/**
+ * Real user-agent strings, copied from what these clients actually send.
+ * Synthesised UAs would test the regex against itself; the point of this file
+ * is to test it against the world.
+ */
+const UA = {
+	gptbot: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot",
+	chatgptUser:
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36; compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+	oaiSearch:
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-SearchBot/1.0; +https://openai.com/searchbot",
+	claudeBot: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ClaudeBot/1.0; +claudebot@anthropic.com",
+	anthropicAi: "anthropic-ai",
+	perplexity: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; PerplexityBot/1.0; +https://perplexity.ai/bot",
+	googleExtended: "Mozilla/5.0 (compatible; Google-Extended/1.0; +http://www.google.com/bot.html)",
+	googlebot: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+	bingbot: "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+	chromeMac:
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+	safariIphone:
+		"Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+	firefox: "Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0",
+	// A real Android phone whose model name contains "bot" — the string that
+	// breaks a naive includes("bot") check and misfiles a person as a robot.
+	cubot:
+		"Mozilla/5.0 (Linux; Android 11; CUBOT NOTE 20 PRO) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",
+	curl: "curl/8.4.0",
+	python: "python-requests/2.31.0",
+};
+
+describe("named AI agents", () => {
+	it("recognises all three OpenAI fetchers as ChatGPT", () => {
+		for (const ua of [UA.gptbot, UA.chatgptUser, UA.oaiSearch]) {
+			expect(classifyRequester(ua)).toEqual({ class: "ai_agent", agent: "chatgpt" });
+		}
+	});
+
+	it("recognises Anthropic's crawlers", () => {
+		expect(classifyRequester(UA.claudeBot)).toEqual({ class: "ai_agent", agent: "claude" });
+		expect(classifyRequester(UA.anthropicAi)).toEqual({ class: "ai_agent", agent: "claude" });
+	});
+
+	it("recognises Perplexity", () => {
+		expect(classifyRequester(UA.perplexity)).toEqual({ class: "ai_agent", agent: "perplexity" });
+	});
+
+	it("separates Google-Extended from Googlebot", () => {
+		// The distinction this whole feature exists to draw: Google-Extended is
+		// the AI fetcher, Googlebot is search indexing. Collapsing them would put
+		// ordinary SEO crawling into the "AI is reading us" number.
+		expect(classifyRequester(UA.googleExtended)).toEqual({ class: "ai_agent", agent: "gemini" });
+		expect(classifyRequester(UA.googlebot)).toEqual({ class: "search_crawler", agent: "google" });
+	});
+
+	it("is case-insensitive", () => {
+		expect(classifyRequester(UA.gptbot.toUpperCase()).agent).toBe("chatgpt");
+		expect(classifyRequester(UA.claudeBot.toLowerCase()).agent).toBe("claude");
+	});
+});
+
+describe("search crawlers", () => {
+	it("recognises the conventional ones", () => {
+		expect(classifyRequester(UA.bingbot)).toEqual({ class: "search_crawler", agent: "bing" });
+		expect(classifyRequester(UA.googlebot).class).toBe("search_crawler");
+	});
+});
+
+describe("browsers", () => {
+	it("classifies real browsers as browsers", () => {
+		for (const ua of [UA.chromeMac, UA.safariIphone, UA.firefox]) {
+			expect(classifyRequester(ua)).toEqual({ class: "browser", agent: "" });
+		}
+	});
+
+	it("does not misfile a phone whose model contains 'bot'", () => {
+		// CUBOT is a real Android manufacturer. A substring check for "bot" reads
+		// this human as automation, and the error is invisible: it only ever
+		// understates the human count, which is the number a client looks at.
+		expect(classifyRequester(UA.cubot)).toEqual({ class: "browser", agent: "" });
+	});
+});
+
+describe("generic automation", () => {
+	it("catches command-line and library clients", () => {
+		expect(classifyRequester(UA.curl).class).toBe("other_bot");
+		expect(classifyRequester(UA.python).class).toBe("other_bot");
+	});
+
+	it("treats a missing user-agent as automation, never as a human", () => {
+		// Every browser sends one. Counting silence as a person would inflate the
+		// number that matters most, in the direction that flatters us.
+		for (const ua of [null, undefined, "", "   "]) {
+			expect(classifyRequester(ua).class).toBe("other_bot");
+		}
+	});
+
+	it("treats an unrecognised non-browser string as automation", () => {
+		expect(classifyRequester("SomeInternalHealthCheck/2").class).toBe("other_bot");
+	});
+});
+
+describe("the shape of the answer", () => {
+	it("never returns a null agent, whatever the input", () => {
+		// The agent column is part of a unique key in Postgres, where NULLs are
+		// distinct — a null here would defeat the daily upsert and insert a fresh
+		// row per request.
+		const inputs = [null, "", UA.chromeMac, UA.curl, UA.gptbot, "\x00garbage"];
+		for (const ua of inputs) {
+			const result = classifyRequester(ua);
+			expect(typeof result.agent).toBe("string");
+		}
+	});
+});

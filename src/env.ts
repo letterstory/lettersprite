@@ -49,6 +49,16 @@ export const env = {
   /** Optional: restrict the blog to a single collection within the org. */
   collectionId: str("LETTERBRACE_COLLECTION_ID"),
 
+  /**
+   * Where `src/proxy.ts` reports page accesses. Empty (the default) turns
+   * access telemetry OFF completely — no proxy work, no outbound request.
+   *
+   * This is the fleet rollout switch: every phantom already deployed keeps
+   * behaving exactly as it does now until this value is pushed to it, so
+   * enabling telemetry is a setting rather than a release.
+   */
+  accessReportUrl: str("LETTERBRACE_ACCESS_URL"),
+
   /** Name of the theme to render (see src/themes). Falls back to the default. */
   theme: str("THEME", "sleek"),
 
