@@ -25,14 +25,32 @@ import { classifyRequester } from "@/lib/access/classify";
 import { accessReportingEnabled, reportAccess } from "@/lib/access/report";
 
 export function proxy(request: NextRequest, event: NextFetchEvent) {
+	const enabled = accessReportingEnabled();
+
+	// A one-word answer to "is telemetry live on this site?", readable with a
+	// single curl against any phantom in the fleet.
+	//
+	// Without it the two failure modes are indistinguishable from outside: a
+	// build with no proxy at all and a proxy whose env was never populated both
+	// look like a perfectly normal page. Diagnosing that meant reaching into the
+	// Vercel project of whichever site was misbehaving — which needs access to
+	// the team that owns 114 of them. Three states, one request:
+	//
+	//   x-phantom-access: on    reporting
+	//   x-phantom-access: off   proxy is deployed, env is not set
+	//   (header absent)         this build has no proxy
+	//
+	// It names no key, no URL and no visitor — just whether the switch is thrown.
+	const response = NextResponse.next();
+	response.headers.set("x-phantom-access", enabled ? "on" : "off");
+
 	// Cheap exit when the deployment hasn't been configured for reporting, which
-	// is every phantom until its env says otherwise. Checked first so an
-	// unconfigured site pays nothing but the function invocation.
-	if (!accessReportingEnabled()) return NextResponse.next();
+	// is every phantom until its env says otherwise.
+	if (!enabled) return response;
 
 	// Only GET is a page view. A HEAD is a liveness check and a POST isn't a
 	// read at all; counting either would quietly inflate the number.
-	if (request.method !== "GET") return NextResponse.next();
+	if (request.method !== "GET") return response;
 
 	const requester = classifyRequester(request.headers.get("user-agent"));
 
@@ -40,7 +58,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 	// waiting on it. This is the whole reason the response isn't delayed.
 	event.waitUntil(reportAccess(request.nextUrl.pathname, requester));
 
-	return NextResponse.next();
+	return response;
 }
 
 export const config = {
