@@ -49,15 +49,15 @@ export const config = {
 	 *
 	 * Every excluded path is excluded for a reason: `_next/static` and
 	 * `_next/image` are assets that would multiply one page view into a dozen
-	 * "accesses"; `favicon.ico`, `robots.txt` and `sitemap.xml` are fetched by
-	 * infrastructure rather than read by anyone. The trailing extension clause
-	 * catches images and fonts in `public/`.
+	 * "accesses"; `favicon.ico`, `robots.txt`, `sitemap.xml` and `feed.xml` are
+	 * fetched by infrastructure and feed readers rather than read by anyone. The
+	 * trailing extension clause catches images and fonts in `public/`.
 	 *
 	 * This matters for cost as well as correctness — proxy is billed per
 	 * invocation, and without a matcher it runs on literally every request,
 	 * including every CSS file.
 	 */
 	matcher: [
-		"/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|woff|woff2|ttf|otf|map)$).*)",
+		"/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|feed.xml|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|woff|woff2|ttf|otf|map)$).*)",
 	],
 };

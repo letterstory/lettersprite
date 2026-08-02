@@ -38,6 +38,10 @@ export interface Requester {
  * `google-extended` must precede any Googlebot rule, because it is Google's
  * AI-training fetcher rather than its search crawler and the distinction is
  * exactly what this feature exists to draw.
+ *
+ * Every `agent` label emitted here MUST also appear in Letterbrace's
+ * KNOWN_AGENTS (src/lib/phantom-access/report.ts) — a label named here but
+ * missing there is silently blanked at ingest. Add to both in the same change.
  */
 const AI_AGENTS: [pattern: string, agent: string][] = [
 	// OpenAI runs three, and they mean different things: GPTBot trains, OAI-SearchBot
