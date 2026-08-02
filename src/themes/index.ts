@@ -142,6 +142,73 @@ const LOGO_STYLES: LogoStyle[] = [
   "monogram",
 ];
 
+/**
+ * Approved sans-serif families. This is an ALLOWLIST on purpose: per product
+ * direction the masthead/headings and body must be sans-serif on every
+ * deployment — now *and going forward*. Anything not on this list (any serif
+ * we ship today, or any font a future theme introduces) is coerced to Inter,
+ * so the site can never render serif even as new themes/fonts are added. When
+ * you add a theme with a new *sans* face, add its family here to keep it.
+ * Generic sans keywords are covered by `isSans` below.
+ */
+const SANS_FAMILIES = new Set([
+  "Anton", "Archivo", "Archivo Narrow", "Baloo 2", "Barlow Semi Condensed",
+  "Bricolage Grotesque", "Chakra Petch", "Epilogue", "Figtree", "Hanken Grotesk",
+  "IBM Plex Sans", "Inter", "Jost", "Karla", "Lexend", "Libre Franklin",
+  "Manrope", "Mulish", "Nunito", "Outfit", "Plus Jakarta Sans", "Public Sans",
+  "Rajdhani", "Red Hat Display", "Red Hat Text", "Saira", "Sora",
+  "Source Sans 3", "Space Grotesk", "Syne",
+]);
+
+/** Generic sans keywords a pure system-font stack may lead with. */
+const SANS_KEYWORDS = new Set([
+  "system-ui", "ui-sans-serif", "sans-serif", "-apple-system",
+]);
+
+/** The sans-serif face unrecognized slots fall back to (Inter). */
+const SANS_FAMILY = "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif";
+
+/** First real family name in a CSS font stack (unquoted). */
+function primaryFamily(family: string): string {
+  return family.split(",")[0].replace(/['"]/g, "").trim();
+}
+
+function isSans(spec: FontSpec): boolean {
+  const name = primaryFamily(spec.family);
+  return SANS_FAMILIES.has(name) || SANS_KEYWORDS.has(name);
+}
+
+/** Keep known sans faces; coerce anything else (serif, or unknown) to Inter. */
+function toSans(spec: FontSpec | undefined): FontSpec | undefined {
+  if (!spec || isSans(spec)) return spec;
+  return {
+    family: SANS_FAMILY,
+    google: {
+      name: "Inter",
+      // Preserve the intended weights (headings keep their heft), default sane.
+      weights: spec.google?.weights ?? [400, 600, 700],
+      italic: spec.google?.italic,
+    },
+  };
+}
+
+/**
+ * Force the display, heading and body fonts to sans-serif. The mono slot
+ * (code / kickers) is intentionally left monospace. Applied last, so it also
+ * neutralizes any serif introduced by a `FONT_*` env override.
+ */
+function forceSansSerif(theme: Theme): Theme {
+  return {
+    ...theme,
+    fonts: {
+      ...theme.fonts,
+      display: toSans(theme.fonts.display),
+      heading: toSans(theme.fonts.heading) ?? theme.fonts.heading,
+      body: toSans(theme.fonts.body) ?? theme.fonts.body,
+    },
+  };
+}
+
 /** Replace a font with a Google-Fonts family named by an env override. */
 function overrideFont(googleName: string): FontSpec {
   return {
@@ -212,5 +279,5 @@ export function getActiveTheme(): Theme {
         `Available: ${Object.keys(themes).join(", ")}.`,
     );
   }
-  return applyOverrides(base ?? themes[DEFAULT_THEME]);
+  return forceSansSerif(applyOverrides(base ?? themes[DEFAULT_THEME]));
 }
