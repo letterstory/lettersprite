@@ -133,6 +133,13 @@ export const env = {
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
   showDrafts: bool("SHOW_DRAFTS", false),
+  /**
+   * Optional fallback cover-art family: one of tessellation, gradient-mesh,
+   * waves, rings, halftone, blobs, ridgeline, sunburst, scatter. Lets a site
+   * pick a pattern family that fits its brand; unset (or unknown) falls back to
+   * a stable per-title pick. See `src/lib/covers-config.ts` for the full list.
+   */
+  coverSet: str("SITE_COVER_SET"),
 } as const;
 
 /** True when a Letterbrace key is present; otherwise content calls no-op. */
