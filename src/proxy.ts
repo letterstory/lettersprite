@@ -26,8 +26,9 @@
 
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
-import { classifyRequester } from "@/lib/access/classify";
-import { accessReportingEnabled, reportAccess } from "@/lib/access/report";
+import { classifyRequester, extractBotToken } from "@/lib/access/classify";
+import { activeTables, provenanceOf, refreshManifestIfStale, verifyAgentIp } from "@/lib/access/manifest";
+import { accessReportingEnabled, reportAccess, type AccessExtras } from "@/lib/access/report";
 import redirectManifest from "@/generated/redirect-manifest.json";
 
 // Valid post/section slugs for THIS build (see scripts/gen-redirect-manifest.mjs).
@@ -97,11 +98,42 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 	// read at all; counting either would quietly inflate the number.
 	if (request.method !== "GET") return response;
 
-	const requester = classifyRequester(request.headers.get("user-agent"));
+	const userAgent = request.headers.get("user-agent");
+	// Manifest tables when available (baked at build / refreshed ~daily),
+	// embedded fallback otherwise — see manifest.ts for the three layers.
+	const requester = classifyRequester(userAgent, activeTables());
+
+	// The client IP, read ONLY to derive labels in-process and then dropped —
+	// it never enters the report, a log line, or storage. Vercel sets
+	// x-real-ip itself (a caller can't spoof it past the edge), with the
+	// x-forwarded-for head as the fallback shape.
+	const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0] ?? null;
+
+	const extras: AccessExtras = {
+		// A named agent's claim, checked against its vendor's published ranges.
+		// No ranges held for the label = false: verification only under-claims.
+		verified:
+			(requester.class === "ai_agent" || requester.class === "search_crawler") &&
+			requester.agent !== "" &&
+			verifyAgentIp(ip, requester.agent),
+		// Where the packets came from, for traffic that only CLAIMS to be a
+		// browser (or is anonymous automation). Named bots skip this: their
+		// question is "verified?", and Vercel's own screenshotter egresses from
+		// AWS — the UA name must always win over the IP.
+		provenance:
+			requester.agent === "" && (requester.class === "browser" || requester.class === "other_bot")
+				? provenanceOf(ip)
+				: "",
+		// What an UNNAMED bot called itself — the discovery ledger's raw
+		// material. Only meaningful where there is automation without a name.
+		botToken: requester.class === "other_bot" && requester.agent === "" ? extractBotToken(userAgent) : "",
+	};
 
 	// waitUntil keeps the invocation alive for the report without the reader
-	// waiting on it. This is the whole reason the response isn't delayed.
-	event.waitUntil(reportAccess(request.nextUrl.pathname, requester));
+	// waiting on it. This is the whole reason the response isn't delayed. The
+	// manifest refresh rides the same window (self-limits to ~1 fetch/day per
+	// instance and never throws).
+	event.waitUntil(Promise.all([reportAccess(request.nextUrl.pathname, requester, extras), refreshManifestIfStale()]));
 
 	return response;
 }

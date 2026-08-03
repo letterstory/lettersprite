@@ -27,15 +27,31 @@ export function accessReportingEnabled(): boolean {
 	return Boolean(env.accessReportUrl && hasLetterbraceKey);
 }
 
+/** IP-DERIVED LABELS, never the IP. Computed in-process at the proxy against
+ *  baked/refreshed range tables and shipped as booleans and closed-set
+ *  strings; the address itself is read, matched, and discarded. */
+export interface AccessExtras {
+	/** The claimed agent's IP fell inside its vendor's published ranges. */
+	verified: boolean;
+	/** Datacenter label for browser/anonymous traffic ('aws', …), '' = none. */
+	provenance: string;
+	/** Normalized self-identification token for an UNNAMED bot ('foobot'),
+	 *  '' = nothing to discover. Feeds Letterbrace's unknown-agents ledger. */
+	botToken: string;
+}
+
+const NO_EXTRAS: AccessExtras = { verified: false, provenance: "", botToken: "" };
+
 /**
  * Tell Letterbrace that a page was requested. Resolves either way; never throws.
  *
  * Note what is NOT sent: no IP address, no cookie, no identifier of any kind,
- * and no full URL. A path, a day, and what kind of thing asked. That is enough
- * for every question the feature answers, and it keeps the whole system clear
- * of personal data — which is a design constraint, not an oversight.
+ * and no full URL. A path, a day, what kind of thing asked, and labels DERIVED
+ * from the request in-process (see AccessExtras). That is enough for every
+ * question the feature answers, and it keeps the whole system clear of
+ * personal data — which is a design constraint, not an oversight.
  */
-export async function reportAccess(path: string, requester: Requester): Promise<void> {
+export async function reportAccess(path: string, requester: Requester, extras: AccessExtras = NO_EXTRAS): Promise<void> {
 	if (!accessReportingEnabled()) return;
 
 	try {
@@ -52,6 +68,9 @@ export async function reportAccess(path: string, requester: Requester): Promise<
 				date: new Date().toISOString().slice(0, 10),
 				requester_class: requester.class,
 				agent: requester.agent,
+				verified: extras.verified,
+				provenance: extras.provenance,
+				bot_token: extras.botToken,
 			}),
 			signal: AbortSignal.timeout(REPORT_TIMEOUT_MS),
 			// This must never be served from a cache, and there is nothing to cache.
