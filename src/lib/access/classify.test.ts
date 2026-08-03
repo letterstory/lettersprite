@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classifyRequester } from "./classify";
+import { classifyRequester, extractBotToken, EMBEDDED_TABLES } from "./classify";
 
 /**
  * Real user-agent strings, copied from what these clients actually send.
@@ -112,5 +112,116 @@ describe("the shape of the answer", () => {
 			const result = classifyRequester(ua);
 			expect(typeof result.agent).toBe("string");
 		}
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The registry expansion (2026-08 audit) — new named agents and the noise
+// ---------------------------------------------------------------------------
+
+const UA2 = {
+	googleAgent: "Mozilla/5.0 (compatible; Google-Agent/1.0; +https://developers.google.com/crawling)",
+	mistralUser: "Mozilla/5.0 (compatible; MistralAI-User/1.0; +https://docs.mistral.ai/robots)",
+	amazonbot: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/600.2.5 (KHTML, like Gecko) Version/8.0.2 Safari/600.2.5 (Amazonbot/0.1; +https://developer.amazon.com/support/amazonbot)",
+	duckAssist: "Mozilla/5.0 (compatible; DuckAssistBot/1.2; +http://duckduckgo.com/duckassistbot.html)",
+	tiktokSpider: "Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; TikTokSpider; ttspider-feedback@tiktok.com)",
+	ahrefs: "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)",
+	vercelScreenshot: "vercel-screenshot/1.0",
+	vercelbot: "Vercelbot (+https://vercel.com)",
+	// The trap this suite exists to pin: a COMPLETE Chrome UA with only a
+	// trailing monitor token. Checked after the browser markers, this counts
+	// as a person forever.
+	statusCake:
+		"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36 (StatusCake)",
+	betterStack:
+		"Better Uptime Bot Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+	slackExpander: "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+	expanse:
+		"Expanse, a Palo Alto Networks company, searches across the global IPv4 space multiple times per day to identify customers' presences on the Internet. If you would like to be excluded from our scans, please send IP addresses/domains to: scaninfo@paloaltonetworks.com",
+	newBot: "FooReaderAI/2.1 (+https://fooreader.ai/bot)",
+	bareBotWord: "meganewsbot (+https://example.com)",
+};
+
+describe("newly named AI agents", () => {
+	it("recognises Google-Agent (the consolidated agentic UA) as gemini", () => {
+		expect(classifyRequester(UA2.googleAgent)).toEqual({ class: "ai_agent", agent: "gemini" });
+	});
+
+	it("recognises Mistral, Amazon and DuckAssist", () => {
+		expect(classifyRequester(UA2.mistralUser)).toEqual({ class: "ai_agent", agent: "mistral" });
+		expect(classifyRequester(UA2.amazonbot)).toEqual({ class: "ai_agent", agent: "amazon" });
+		expect(classifyRequester(UA2.duckAssist)).toEqual({ class: "ai_agent", agent: "duckduckgo" });
+	});
+
+	it("recognises TikTokSpider alongside Bytespider", () => {
+		expect(classifyRequester(UA2.tiktokSpider)).toEqual({ class: "ai_agent", agent: "bytedance" });
+	});
+});
+
+describe("named noise (other_bot with a name)", () => {
+	it("names Vercel's own screenshotter — both UA forms", () => {
+		expect(classifyRequester(UA2.vercelScreenshot)).toEqual({ class: "other_bot", agent: "vercel" });
+		expect(classifyRequester(UA2.vercelbot)).toEqual({ class: "other_bot", agent: "vercel" });
+	});
+
+	it("names SEO crawlers before the generic bot tokens can eat them", () => {
+		// "AhrefsBot/7.0" contains "bot/" — generic-token-first would classify
+		// it as anonymous automation and lose the name.
+		expect(classifyRequester(UA2.ahrefs)).toEqual({ class: "other_bot", agent: "ahrefs" });
+	});
+
+	it("catches monitors wearing full Chrome user-agents", () => {
+		expect(classifyRequester(UA2.statusCake)).toEqual({ class: "other_bot", agent: "statuscake" });
+		expect(classifyRequester(UA2.betterStack)).toEqual({ class: "other_bot", agent: "betterstack" });
+	});
+
+	it("names link expanders and scanners", () => {
+		expect(classifyRequester(UA2.slackExpander)).toEqual({ class: "other_bot", agent: "slack" });
+		expect(classifyRequester(UA2.expanse)).toEqual({ class: "other_bot", agent: "paloalto" });
+	});
+});
+
+describe("extractBotToken — the discovery ledger's raw material", () => {
+	it("extracts a product token from an unrecognised bot", () => {
+		expect(extractBotToken(UA2.newBot)).toBe("fooreaderai");
+	});
+
+	it("falls back to a bare bot-word when there is no product token", () => {
+		expect(extractBotToken(UA2.bareBotWord)).toBe("meganewsbot");
+	});
+
+	it("returns '' for generic tooling — curl is not a discovery", () => {
+		expect(extractBotToken("curl/8.4.0")).toBe("");
+		expect(extractBotToken("python-requests/2.31.0")).toBe("");
+		expect(extractBotToken("Go-http-client/1.1")).toBe("");
+	});
+
+	it("returns '' for empty or missing user-agents", () => {
+		expect(extractBotToken("")).toBe("");
+		expect(extractBotToken(null)).toBe("");
+	});
+
+	it("never emits characters the ledger's charset would reject", () => {
+		for (const ua of [UA2.newBot, UA2.bareBotWord, "Weird<>&Bot/1.0", "ünïbot/2.0"]) {
+			const token = extractBotToken(ua);
+			expect(token === "" || /^[a-z0-9._-]{2,40}$/.test(token)).toBe(true);
+		}
+	});
+});
+
+describe("tables as data", () => {
+	it("classifies with SUPPLIED tables, not just the embedded copy", () => {
+		// The longevity contract: a bot named in Letterbrace's registry reaches
+		// this function as data. If this breaks, fleet updates silently stop.
+		const tables = {
+			...EMBEDDED_TABLES,
+			aiAgents: [["brandnewbot", "brandnew"] as [string, string], ...EMBEDDED_TABLES.aiAgents],
+		};
+		expect(classifyRequester("Mozilla/5.0 (compatible; BrandNewBot/1.0)", tables)).toEqual({
+			class: "ai_agent",
+			agent: "brandnew",
+		});
+		// …and the embedded default doesn't know it.
+		expect(classifyRequester("Mozilla/5.0 (compatible; BrandNewBot/1.0)").agent).toBe("");
 	});
 });
