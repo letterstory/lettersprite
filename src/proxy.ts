@@ -13,18 +13,63 @@
  * Writing this as middleware would still run today but is on its way out, and
  * setting `runtime` in a proxy file is an error rather than an option.
  *
- * It does not redirect, rewrite, or alter the response in any way. It reads one
- * header, hands off a report, and returns the request untouched. If this file
- * is ever tempted to make a routing decision, that belongs somewhere else — a
- * bug here breaks every page on the site at once.
+ * Beyond telemetry it makes exactly ONE routing decision, and only a
+ * deliberately narrow one: a `/posts/*` or `/sections/*` URL that this build
+ * does NOT serve (an old page a re-strategize removed, still indexed by Google)
+ * is 308-redirected to the homepage instead of serving a dead 404. The valid
+ * slugs are baked in at build time (scripts/gen-redirect-manifest.mjs) — there
+ * is NO request-time fetch — and the check is fail-safe: an un-generated or
+ * empty manifest, or a path that IS served, passes straight through untouched.
+ * A bug here breaks every page on the site at once, so the guards below are
+ * intentionally conservative — when in doubt, do not redirect.
  */
 
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { classifyRequester } from "@/lib/access/classify";
 import { accessReportingEnabled, reportAccess } from "@/lib/access/report";
+import redirectManifest from "@/generated/redirect-manifest.json";
+
+// Valid post/section slugs for THIS build (see scripts/gen-redirect-manifest.mjs).
+const manifest = redirectManifest as { ok: boolean; postSlugs: string[]; sectionSlugs: string[] };
+const POST_SLUGS = new Set(manifest.postSlugs);
+const SECTION_SLUGS = new Set(manifest.sectionSlugs);
+
+function safeDecode(segment: string): string {
+	try {
+		return decodeURIComponent(segment);
+	} catch {
+		return segment;
+	}
+}
+
+/**
+ * A 308 to the homepage when the path is a `/posts/<slug>` or `/sections/<slug>`
+ * this build doesn't serve, else null. Fail-safe: returns null (pass through)
+ * unless the manifest generated AND the relevant slug set is non-empty AND the
+ * slug is definitively absent — so a valid page can never be redirected.
+ */
+function removedUrlRedirect(request: NextRequest): NextResponse | null {
+	if (!manifest.ok) return null;
+	const { pathname } = request.nextUrl;
+
+	const post = /^\/posts\/([^/]+)\/?$/.exec(pathname);
+	if (post && POST_SLUGS.size > 0 && !POST_SLUGS.has(safeDecode(post[1]))) {
+		return NextResponse.redirect(new URL("/", request.url), 308);
+	}
+	const section = /^\/sections\/([^/]+)\/?$/.exec(pathname);
+	if (section && SECTION_SLUGS.size > 0 && !SECTION_SLUGS.has(safeDecode(section[1]))) {
+		return NextResponse.redirect(new URL("/", request.url), 308);
+	}
+	return null;
+}
 
 export function proxy(request: NextRequest, event: NextFetchEvent) {
+	// Removed-URL redirect runs first, so it works even on sites where access
+	// telemetry is off (which is most of them).
+	const redirect = removedUrlRedirect(request);
+	if (redirect) return redirect;
+
 	const enabled = accessReportingEnabled();
 
 	// A one-word answer to "is telemetry live on this site?", readable with a
