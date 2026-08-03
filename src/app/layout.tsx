@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { beaconEnabled, beaconScript } from "@/lib/access/beacon";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { env, hasLetterbraceKey } from "@/env";
@@ -91,6 +92,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
         <SiteFooter />
+        {beaconEnabled() && (
+          // Inline, at the end of body: it must not block first paint, and a
+          // separate file would be a second request to send a payload smaller
+          // than its own headers. Runs only where reporting is switched on.
+          <script dangerouslySetInnerHTML={{ __html: beaconScript() }} />
+        )}
       </body>
     </html>
   );
