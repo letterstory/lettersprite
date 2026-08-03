@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import { env } from "@/env";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
@@ -41,10 +41,12 @@ import { TopicTags } from "@/components/TopicTags";
 
 type Params = { params: Promise<{ slug: string }> };
 
-// Fully static: only posts that existed at build time are generated; any other
-// slug 404s rather than rendering on-demand (which would hit the API).
-export const dynamic = "force-static";
-export const dynamicParams = false;
+// Posts that exist at build time are prerendered (generateStaticParams) and stay
+// fully static. Any OTHER /posts/<slug> — typically an old URL removed by a
+// re-strategize that Google still has indexed, otherwise a dead 404 — is rendered
+// on-demand just long enough to 308-redirect it to the homepage (see the
+// permanentRedirect below), so its crawl equity is recovered instead of leaking.
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const posts = await getPosts();
@@ -98,7 +100,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function PostPage({ params }: Params) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-  if (!post) notFound();
+  // Unknown slug (e.g. a post removed by a re-strategize): 308-redirect to home
+  // rather than 404, keeping the URL's ranking equity and avoiding a dead link.
+  if (!post) permanentRedirect("/");
 
   const theme = getActiveTheme();
   const allPosts = await getPosts();

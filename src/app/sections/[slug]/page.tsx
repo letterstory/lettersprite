@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
 import {
@@ -13,8 +13,10 @@ import { Logo } from "@/components/Logo";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export const dynamic = "force-static";
-export const dynamicParams = false;
+// Sections that exist at build time are prerendered and stay fully static. Any
+// other /sections/<slug> — e.g. an old section left indexed after a re-strategize
+// — is rendered on-demand only to 308-redirect it to the homepage (below).
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const posts = await getPosts();
@@ -51,7 +53,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function SectionPage({ params }: Params) {
   const { slug } = await params;
   const section = await resolveSection(slug);
-  if (!section) notFound();
+  // Unknown section (e.g. removed by a re-strategize): 308-redirect to home
+  // rather than 404, keeping the URL's ranking equity and avoiding a dead link.
+  if (!section) permanentRedirect("/");
 
   const [lead, ...rest] = section.posts;
 
