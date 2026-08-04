@@ -32,46 +32,68 @@ const UA = {
 };
 
 describe("named AI agents", () => {
-	it("recognises all three OpenAI fetchers as ChatGPT", () => {
-		for (const ua of [UA.gptbot, UA.chatgptUser, UA.oaiSearch]) {
-			expect(classifyRequester(ua)).toEqual({ class: "ai_agent", agent: "chatgpt" });
-		}
+	it("recognises all three OpenAI fetchers as ChatGPT, with DIFFERENT purposes", () => {
+		// The whole point of the purpose axis: GPTBot trains (a routine sweep),
+		// OAI-SearchBot indexes (also routine), ChatGPT-User fetches live (someone
+		// asked a question right now). Collapsing these into one identical result
+		// is exactly the bug that let a training sweep read as "AI interest."
+		expect(classifyRequester(UA.gptbot)).toEqual({ class: "ai_agent", agent: "chatgpt", purpose: "training" });
+		expect(classifyRequester(UA.oaiSearch)).toEqual({ class: "ai_agent", agent: "chatgpt", purpose: "index" });
+		expect(classifyRequester(UA.chatgptUser)).toEqual({ class: "ai_agent", agent: "chatgpt", purpose: "live" });
 	});
 
-	it("recognises Anthropic's crawlers", () => {
-		expect(classifyRequester(UA.claudeBot)).toEqual({ class: "ai_agent", agent: "claude" });
-		expect(classifyRequester(UA.anthropicAi)).toEqual({ class: "ai_agent", agent: "claude" });
+	it("recognises Anthropic's crawlers as training-purpose", () => {
+		expect(classifyRequester(UA.claudeBot)).toEqual({ class: "ai_agent", agent: "claude", purpose: "training" });
+		expect(classifyRequester(UA.anthropicAi)).toEqual({ class: "ai_agent", agent: "claude", purpose: "training" });
 	});
 
-	it("recognises Perplexity", () => {
-		expect(classifyRequester(UA.perplexity)).toEqual({ class: "ai_agent", agent: "perplexity" });
+	it("recognises Perplexity's index bot", () => {
+		expect(classifyRequester(UA.perplexity)).toEqual({ class: "ai_agent", agent: "perplexity", purpose: "index" });
 	});
 
 	it("separates Google-Extended from Googlebot", () => {
 		// The distinction this whole feature exists to draw: Google-Extended is
 		// the AI fetcher, Googlebot is search indexing. Collapsing them would put
 		// ordinary SEO crawling into the "AI is reading us" number.
-		expect(classifyRequester(UA.googleExtended)).toEqual({ class: "ai_agent", agent: "gemini" });
-		expect(classifyRequester(UA.googlebot)).toEqual({ class: "search_crawler", agent: "google" });
+		expect(classifyRequester(UA.googleExtended)).toEqual({ class: "ai_agent", agent: "gemini", purpose: "training" });
+		expect(classifyRequester(UA.googlebot)).toEqual({ class: "search_crawler", agent: "google", purpose: "index" });
 	});
 
 	it("is case-insensitive", () => {
 		expect(classifyRequester(UA.gptbot.toUpperCase()).agent).toBe("chatgpt");
 		expect(classifyRequester(UA.claudeBot.toLowerCase()).agent).toBe("claude");
 	});
+
+	it("keeps ad validation and link previews out of the live-claim path (v4 re-mappings)", () => {
+		// OAI-AdsBot validates ad landing pages — an automated check, not a
+		// person asking; 'live' upstream mints "an AI read this" claims, so it
+		// must not carry that label.
+		expect(classifyRequester("Mozilla/5.0; compatible; OAI-AdsBot/1.0")).toEqual({
+			class: "ai_agent",
+			agent: "chatgpt",
+			purpose: "index",
+		});
+		// facebookexternalhit is a link previewer — same behavior as Slack and
+		// Discord, so it lives with them as named noise, not as an AI agent.
+		expect(classifyRequester("facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)")).toEqual({
+			class: "other_bot",
+			agent: "meta",
+			purpose: "live",
+		});
+	});
 });
 
 describe("search crawlers", () => {
-	it("recognises the conventional ones", () => {
-		expect(classifyRequester(UA.bingbot)).toEqual({ class: "search_crawler", agent: "bing" });
+	it("recognises the conventional ones, purpose-tagged index", () => {
+		expect(classifyRequester(UA.bingbot)).toEqual({ class: "search_crawler", agent: "bing", purpose: "index" });
 		expect(classifyRequester(UA.googlebot).class).toBe("search_crawler");
 	});
 });
 
 describe("browsers", () => {
-	it("classifies real browsers as browsers", () => {
+	it("classifies real browsers as browsers, with no purpose to claim", () => {
 		for (const ua of [UA.chromeMac, UA.safariIphone, UA.firefox]) {
-			expect(classifyRequester(ua)).toEqual({ class: "browser", agent: "" });
+			expect(classifyRequester(ua)).toEqual({ class: "browser", agent: "", purpose: "" });
 		}
 	});
 
@@ -79,7 +101,7 @@ describe("browsers", () => {
 		// CUBOT is a real Android manufacturer. A substring check for "bot" reads
 		// this human as automation, and the error is invisible: it only ever
 		// understates the human count, which is the number a client looks at.
-		expect(classifyRequester(UA.cubot)).toEqual({ class: "browser", agent: "" });
+		expect(classifyRequester(UA.cubot)).toEqual({ class: "browser", agent: "", purpose: "" });
 	});
 });
 
@@ -143,41 +165,41 @@ const UA2 = {
 };
 
 describe("newly named AI agents", () => {
-	it("recognises Google-Agent (the consolidated agentic UA) as gemini", () => {
-		expect(classifyRequester(UA2.googleAgent)).toEqual({ class: "ai_agent", agent: "gemini" });
+	it("recognises Google-Agent (the consolidated agentic UA) as gemini, purpose live", () => {
+		expect(classifyRequester(UA2.googleAgent)).toEqual({ class: "ai_agent", agent: "gemini", purpose: "live" });
 	});
 
-	it("recognises Mistral, Amazon and DuckAssist", () => {
-		expect(classifyRequester(UA2.mistralUser)).toEqual({ class: "ai_agent", agent: "mistral" });
-		expect(classifyRequester(UA2.amazonbot)).toEqual({ class: "ai_agent", agent: "amazon" });
-		expect(classifyRequester(UA2.duckAssist)).toEqual({ class: "ai_agent", agent: "duckduckgo" });
+	it("recognises Mistral (live), Amazon (training) and DuckAssist (live)", () => {
+		expect(classifyRequester(UA2.mistralUser)).toEqual({ class: "ai_agent", agent: "mistral", purpose: "live" });
+		expect(classifyRequester(UA2.amazonbot)).toEqual({ class: "ai_agent", agent: "amazon", purpose: "training" });
+		expect(classifyRequester(UA2.duckAssist)).toEqual({ class: "ai_agent", agent: "duckduckgo", purpose: "live" });
 	});
 
-	it("recognises TikTokSpider alongside Bytespider", () => {
-		expect(classifyRequester(UA2.tiktokSpider)).toEqual({ class: "ai_agent", agent: "bytedance" });
+	it("recognises TikTokSpider alongside Bytespider, both training-purpose", () => {
+		expect(classifyRequester(UA2.tiktokSpider)).toEqual({ class: "ai_agent", agent: "bytedance", purpose: "training" });
 	});
 });
 
 describe("named noise (other_bot with a name)", () => {
 	it("names Vercel's own screenshotter — both UA forms", () => {
-		expect(classifyRequester(UA2.vercelScreenshot)).toEqual({ class: "other_bot", agent: "vercel" });
-		expect(classifyRequester(UA2.vercelbot)).toEqual({ class: "other_bot", agent: "vercel" });
+		expect(classifyRequester(UA2.vercelScreenshot)).toEqual({ class: "other_bot", agent: "vercel", purpose: "index" });
+		expect(classifyRequester(UA2.vercelbot)).toEqual({ class: "other_bot", agent: "vercel", purpose: "index" });
 	});
 
 	it("names SEO crawlers before the generic bot tokens can eat them", () => {
 		// "AhrefsBot/7.0" contains "bot/" — generic-token-first would classify
 		// it as anonymous automation and lose the name.
-		expect(classifyRequester(UA2.ahrefs)).toEqual({ class: "other_bot", agent: "ahrefs" });
+		expect(classifyRequester(UA2.ahrefs)).toEqual({ class: "other_bot", agent: "ahrefs", purpose: "index" });
 	});
 
 	it("catches monitors wearing full Chrome user-agents", () => {
-		expect(classifyRequester(UA2.statusCake)).toEqual({ class: "other_bot", agent: "statuscake" });
-		expect(classifyRequester(UA2.betterStack)).toEqual({ class: "other_bot", agent: "betterstack" });
+		expect(classifyRequester(UA2.statusCake)).toEqual({ class: "other_bot", agent: "statuscake", purpose: "index" });
+		expect(classifyRequester(UA2.betterStack)).toEqual({ class: "other_bot", agent: "betterstack", purpose: "index" });
 	});
 
 	it("names link expanders and scanners", () => {
-		expect(classifyRequester(UA2.slackExpander)).toEqual({ class: "other_bot", agent: "slack" });
-		expect(classifyRequester(UA2.expanse)).toEqual({ class: "other_bot", agent: "paloalto" });
+		expect(classifyRequester(UA2.slackExpander)).toEqual({ class: "other_bot", agent: "slack", purpose: "live" });
+		expect(classifyRequester(UA2.expanse)).toEqual({ class: "other_bot", agent: "paloalto", purpose: "index" });
 	});
 });
 
@@ -215,11 +237,12 @@ describe("tables as data", () => {
 		// this function as data. If this breaks, fleet updates silently stop.
 		const tables = {
 			...EMBEDDED_TABLES,
-			aiAgents: [["brandnewbot", "brandnew"] as [string, string], ...EMBEDDED_TABLES.aiAgents],
+			aiAgents: [["brandnewbot", "brandnew", "live"] as [string, string, "live"], ...EMBEDDED_TABLES.aiAgents],
 		};
 		expect(classifyRequester("Mozilla/5.0 (compatible; BrandNewBot/1.0)", tables)).toEqual({
 			class: "ai_agent",
 			agent: "brandnew",
+			purpose: "live",
 		});
 		// …and the embedded default doesn't know it.
 		expect(classifyRequester("Mozilla/5.0 (compatible; BrandNewBot/1.0)").agent).toBe("");

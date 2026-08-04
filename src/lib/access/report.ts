@@ -68,6 +68,9 @@ export async function reportAccess(path: string, requester: Requester, extras: A
 				date: new Date().toISOString().slice(0, 10),
 				requester_class: requester.class,
 				agent: requester.agent,
+				// UA-derived (from classifyRequester, same as class/agent) — unlike
+				// verified/provenance/botToken below, this isn't an IP-derived label.
+				purpose: requester.purpose,
 				verified: extras.verified,
 				provenance: extras.provenance,
 				bot_token: extras.botToken,
