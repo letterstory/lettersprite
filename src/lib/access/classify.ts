@@ -66,8 +66,10 @@ export interface ClassifierTables {
 
 /**
  * The embedded fallback tables — a snapshot of Letterbrace's registry
- * (2026-08-04, purpose-taxonomy revision). Used only when neither the baked
- * manifest nor a runtime refresh is available.
+ * (2026-08-04, v4: purpose taxonomy + evidence re-mappings — oai-adsbot is
+ * index not live, facebookexternalhit is a link previewer not an AI agent).
+ * Used only when neither the baked manifest nor a runtime refresh is
+ * available.
  *
  * Ordering rules preserved from the registry:
  * - AI table before search: `google-agent`/`googleother` are Google's AI side
@@ -78,14 +80,15 @@ export interface ClassifierTables {
  *   trailing token (would count as browsers forever).
  */
 export const EMBEDDED_TABLES: ClassifierTables = {
-	version: 3,
+	version: 4,
 	aiAgents: [
 		// OpenAI: GPTBot trains, OAI-SearchBot indexes, ChatGPT-User fetches live
-		// (and carries agent-mode browsing), OAI-AdsBot validates ad landing pages
-		// (a targeted check, not a sweep — closer to live than training/index).
+		// (and carries agent-mode browsing). OAI-AdsBot validates ad landing
+		// pages — an automated check, not a person asking, so it must not carry
+		// the live label that mints "an AI read this" claims upstream.
 		["gptbot", "chatgpt", "training"],
 		["oai-searchbot", "chatgpt", "index"],
-		["oai-adsbot", "chatgpt", "live"],
+		["oai-adsbot", "chatgpt", "index"],
 		["chatgpt-user", "chatgpt", "live"],
 		["anthropic-ai", "claude", "training"],
 		["claudebot", "claude", "training"],
@@ -115,7 +118,8 @@ export const EMBEDDED_TABLES: ClassifierTables = {
 		["meta-externalfetcher", "meta", "live"],
 		["meta-webindexer", "meta", "index"],
 		["meta-externalads", "meta", "index"],
-		["facebookexternalhit", "meta", "live"],
+		// facebookexternalhit lives in namedOtherBots now — a link-preview fetch
+		// (same behavior as Slack/Discord), not an AI product reading a page.
 		["facebookbot", "meta", "training"],
 		["tiktokspider", "bytedance", "training"],
 		["bytespider", "bytedance", "training"],
@@ -172,6 +176,7 @@ export const EMBEDDED_TABLES: ClassifierTables = {
 		["better uptime bot", "betterstack", "index"],
 		["checkly", "checkly", "index"],
 		["datadogsynthetics", "datadog", "index"],
+		["facebookexternalhit", "meta", "live"],
 		["slackbot", "slack", "live"],
 		["twitterbot", "x", "live"],
 		["discordbot", "discord", "live"],

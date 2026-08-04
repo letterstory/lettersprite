@@ -63,6 +63,24 @@ describe("named AI agents", () => {
 		expect(classifyRequester(UA.gptbot.toUpperCase()).agent).toBe("chatgpt");
 		expect(classifyRequester(UA.claudeBot.toLowerCase()).agent).toBe("claude");
 	});
+
+	it("keeps ad validation and link previews out of the live-claim path (v4 re-mappings)", () => {
+		// OAI-AdsBot validates ad landing pages — an automated check, not a
+		// person asking; 'live' upstream mints "an AI read this" claims, so it
+		// must not carry that label.
+		expect(classifyRequester("Mozilla/5.0; compatible; OAI-AdsBot/1.0")).toEqual({
+			class: "ai_agent",
+			agent: "chatgpt",
+			purpose: "index",
+		});
+		// facebookexternalhit is a link previewer — same behavior as Slack and
+		// Discord, so it lives with them as named noise, not as an AI agent.
+		expect(classifyRequester("facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)")).toEqual({
+			class: "other_bot",
+			agent: "meta",
+			purpose: "live",
+		});
+	});
 });
 
 describe("search crawlers", () => {
