@@ -86,7 +86,10 @@ function compile(payload: ManifestPayload): CompiledManifest | null {
 }
 
 // Module scope: shared across requests on a warm instance, reset on cold start.
-let current: CompiledManifest | null = compile(bakedManifest as ManifestPayload);
+// The `unknown` hop matters: this JSON is REGENERATED per build (placeholder
+// today, a real payload tomorrow), so its build-time inferred shape is not
+// something to trust — `compile()` is what actually validates it, at runtime.
+let current: CompiledManifest | null = compile(bakedManifest as unknown as ManifestPayload);
 let lastAttemptAt = 0;
 
 const REFRESH_TTL_MS = 24 * 60 * 60 * 1000;
@@ -148,6 +151,6 @@ export async function refreshManifestIfStale(now: number = Date.now()): Promise<
 
 /** Test hook: reset module state (cold-start simulation). */
 export function __resetManifestForTests(payload?: ManifestPayload): void {
-	current = payload ? compile(payload) : compile(bakedManifest as ManifestPayload);
+	current = payload ? compile(payload) : compile(bakedManifest as unknown as ManifestPayload);
 	lastAttemptAt = 0;
 }
