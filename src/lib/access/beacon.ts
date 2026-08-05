@@ -12,8 +12,9 @@
  *   path            which page (the proxy already knows this; it is the join)
  *   seconds         how long the page was visible, capped
  *   scroll          furthest scroll depth reached, 0-100
- *   from            "chatgpt" | "perplexity" | ... when the referrer is an AI
- *                   product, else "" — never the raw referrer
+ *   from            "chatgpt" | "perplexity" | "google" | "bing" | ... when the
+ *                   referrer is a known AI product or search engine, else "" —
+ *                   never the raw referrer
  *
  * No identifier, no cookie, no IP, nothing that could distinguish one reader
  * from another or the same reader twice. A visit is a row of numbers, not a
@@ -55,14 +56,25 @@ export const BEACON_PATH = "/api/access";
 const MAX_SECONDS = 1800;
 
 /**
- * Referrer hosts that mean "a person clicked through from an AI answer".
+ * Referrer hosts that mean "a person clicked through" — from an AI answer OR
+ * from a search engine. Both are conversion (a human arriving), the other half
+ * of the two events the schema keeps apart from an agent's retrieval fetch.
  *
- * This is the OTHER half of the two events the schema keeps apart: an agent
- * fetching a page is retrieval, a human arriving from a citation is conversion.
+ * Search engines are the independent cross-check on Google Search Console: GSC
+ * knows Google clicks authoritatively, and this catches the same arrival (plus
+ * Bing/DuckDuckGo/etc. that GSC never sees) from the browser's own referrer —
+ * two eyes on the event, reconciled by neither.
+ *
  * Only the host is ever read — never the full referrer, which can carry a
- * conversation id or a search query.
+ * conversation id or a search query. Kept in lockstep with charlotte's
+ * referrer-sources.ts (the ingest allowlist derives from the same token set).
+ *
+ * The `from` token order is AI first, then search; the matcher (cameFrom) takes
+ * the first host suffix that matches. Google's gemini/bard entries precede the
+ * bare "google.com" search entry so an AI referral is never misread as search.
  */
-const AI_REFERRERS: [match: string, from: string][] = [
+const REFERRERS: [match: string, from: string][] = [
+	// AI answer engines
 	["chatgpt.com", "chatgpt"],
 	["chat.openai.com", "chatgpt"],
 	["openai.com", "chatgpt"],
@@ -71,6 +83,15 @@ const AI_REFERRERS: [match: string, from: string][] = [
 	["gemini.google.com", "gemini"],
 	["bard.google.com", "gemini"],
 	["copilot.microsoft.com", "copilot"],
+	// Search engines (the GSC cross-check). Google referrals arrive from the
+	// country TLD too (google.co.uk, …); "google.com" catches the dominant share,
+	// and GSC remains the authoritative Google source, so the tail is acceptable.
+	["google.com", "google"],
+	["bing.com", "bing"],
+	["duckduckgo.com", "duckduckgo"],
+	["search.yahoo.com", "yahoo"],
+	["ecosia.org", "ecosia"],
+	["search.brave.com", "brave"],
 ];
 
 export function beaconEnabled(): boolean {
@@ -99,7 +120,7 @@ const BEACON_INTERNAL_KEY = "__lb_internal";
  * still counts — because over-counting a reader is the worse error.
  */
 export function beaconScript(): string {
-	const referrers = JSON.stringify(AI_REFERRERS);
+	const referrers = JSON.stringify(REFERRERS);
 	return `(function(){
 try{
   // Automation that runs JS (headless Chrome / Playwright / Puppeteer) sets
