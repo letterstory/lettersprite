@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { sectionFor } from "@/lib/editorial";
@@ -43,9 +43,10 @@ export function GalleryHome({ posts }: { posts: Post[] }) {
                 className="group relative block break-inside-avoid overflow-hidden rounded-[var(--radius)] bg-surface"
               >
                 <img
-                  src={coverImageFor(post)}
+                  src={coverImageFor(post, 800)}
                   alt={coverAltFor(post)}
                   loading="lazy"
+                  decoding="async"
                   className={`w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] ${ASPECTS[i % ASPECTS.length]}`}
                 />
                 <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/75 via-black/10 to-transparent opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">

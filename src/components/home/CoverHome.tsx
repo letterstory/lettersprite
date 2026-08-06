@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { StoryCard } from "@/components/Story";
@@ -30,8 +30,10 @@ export function CoverHome({ posts }: { posts: Post[] }) {
             className="block overflow-hidden"
           >
             <img
-              src={coverImageFor(lead)}
+              src={coverImageFor(lead, 1600)}
               alt={coverAltFor(lead)}
+              fetchPriority="high"
+              decoding="async"
               className="h-[86vh] max-h-[900px] min-h-[520px] w-full object-cover"
             />
           </Link>

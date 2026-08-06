@@ -1,5 +1,6 @@
 import { getActiveTheme } from "@/themes";
 import { env } from "@/env";
+import { sizedCover } from "./cover-url";
 import type { Post } from "@/lib/letterbrace/types";
 import {
   COVER_SETS,
@@ -58,10 +59,16 @@ export function fallbackCover(name: string, themeName: string): string {
  * The cover image to render for a post: the one provided by Letterbrace, or a
  * theme-matched generated pattern fallback when none was provided. Always
  * returns a usable image URL, so callers can render a cover unconditionally.
+ *
+ * Pass `width` to serve a resized, WebP-negotiated variant sized to how the
+ * cover is actually displayed (see {@link sizedCover}). Omit it for uses that
+ * need the original bytes (e.g. Open Graph images).
  */
-export function coverImageFor(post: Post): string {
-  if (post.coverImage) return post.coverImage;
-  return fallbackCover(post.title || post.slug, getActiveTheme().name);
+export function coverImageFor(post: Post, width?: number): string {
+  const url = post.coverImage
+    ? post.coverImage
+    : fallbackCover(post.title || post.slug, getActiveTheme().name);
+  return width ? sizedCover(url, width) : url;
 }
 
 /**

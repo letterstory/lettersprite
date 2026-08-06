@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { Kicker } from "./Kicker";
@@ -45,9 +45,10 @@ export function Cover({
       } ${className}`}
     >
       <img
-        src={coverImageFor(post)}
+        src={coverImageFor(post, 1200)}
         alt={coverAltFor(post)}
         loading={priority ? "eager" : "lazy"}
+        decoding="async"
         className={`h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] ${RATIO[ratio]}`}
       />
     </Link>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { sectionFor } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 
