@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import type { LogoStyle } from "@/themes/types";

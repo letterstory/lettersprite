@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { formatDate } from "@/lib/format";
 import { bylineFor } from "@/lib/author";
 import {
