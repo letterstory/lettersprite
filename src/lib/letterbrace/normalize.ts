@@ -266,6 +266,24 @@ function toAuthor(raw: Raw): string | null {
 }
 
 /**
+ * Declared custom fields from a non-Classic collection type's payload
+ * (`custom_fields`: a flat object of key → value). Values are coerced to display
+ * strings and null/empty entries dropped, so the UI only renders fields that
+ * actually carry content. Returns {} for Classic posts, which ship no
+ * `custom_fields` — the reason a Classic post's rendering is unchanged.
+ */
+function toCustomFields(raw: Raw): Record<string, string> {
+  const cf = raw.custom_fields;
+  if (!cf || typeof cf !== "object" || Array.isArray(cf)) return {};
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(cf as Raw)) {
+    const s = asString(value);
+    if (s && s.trim()) out[key] = s.trim();
+  }
+  return out;
+}
+
+/**
  * Normalize one raw article object into a Post. Returns null only when there's
  * no usable id. Every other field degrades gracefully so unexpected payload
  * shapes don't break rendering.
@@ -313,5 +331,7 @@ export function normalizePost(raw: Raw): Post | null {
     ),
     updatedAt: toIso(raw.updated_at, raw.updatedAt, raw.modified_at),
     paperTrail: toPaperTrail(raw),
+    collectionType: pick(raw, ["collection_type"]),
+    customFields: toCustomFields(raw),
   };
 }
