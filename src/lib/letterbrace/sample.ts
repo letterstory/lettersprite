@@ -38,7 +38,7 @@ const P = (
   updatedAt: null,
   paperTrail: [],
   collectionType: null,
-  customFields: {},
+  customFields: [],
   ...extra,
 });
 

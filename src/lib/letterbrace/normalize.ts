@@ -1,5 +1,5 @@
 import { tightenPunctuationSpacing } from "@/lib/text";
-import type { PaperTrailSource, Post } from "./types";
+import type { CustomField, PaperTrailSource, Post } from "./types";
 
 type Raw = Record<string, unknown>;
 
@@ -267,18 +267,25 @@ function toAuthor(raw: Raw): string | null {
 
 /**
  * Declared custom fields from a non-Classic collection type's payload
- * (`custom_fields`: a flat object of key → value). Values are coerced to display
- * strings and null/empty entries dropped, so the UI only renders fields that
- * actually carry content. Returns {} for Classic posts, which ship no
- * `custom_fields` — the reason a Classic post's rendering is unchanged.
+ * (`custom_fields`: an ordered array of `{ key, label, value, type }`). Each entry
+ * carries the sender-declared label so the UI renders it verbatim. Entries without
+ * a usable value are dropped (the UI only shows fields with content), and order is
+ * preserved. Returns [] for Classic posts, which ship no `custom_fields` — the
+ * reason a Classic post's rendering is unchanged. Tolerant of malformed input.
  */
-function toCustomFields(raw: Raw): Record<string, string> {
+function toCustomFields(raw: Raw): CustomField[] {
   const cf = raw.custom_fields;
-  if (!cf || typeof cf !== "object" || Array.isArray(cf)) return {};
-  const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(cf as Raw)) {
-    const s = asString(value);
-    if (s && s.trim()) out[key] = s.trim();
+  if (!Array.isArray(cf)) return [];
+  const out: CustomField[] = [];
+  for (const item of cf) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Raw;
+    const key = asString(o.key)?.trim();
+    const value = asString(o.value)?.trim();
+    if (!key || !value) continue;
+    const label = asString(o.label)?.trim() || key;
+    const type = asString(o.type)?.trim() || null;
+    out.push({ key, label, value, type });
   }
   return out;
 }

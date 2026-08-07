@@ -124,6 +124,70 @@ export default async function PostPage({ params }: Params) {
   const linkableSlugs = allSections(allPosts).map((s) => sectionSlug(s));
   const words = wordCount(post);
 
+  // A non-Classic collection type surfaces custom fields; when present the post
+  // renders the sidebar fact-card layout. Classic posts have none and take the
+  // classic single-column path below, unchanged.
+  const hasCustomFields = Object.keys(post.customFields).length > 0;
+
+  // Cover image + caption, shared by both layouts (wrapped per-layout below).
+  const coverInner = (
+    <>
+      <img
+        src={coverImageFor(post)}
+        alt={coverAltFor(post)}
+        className="w-full rounded-[var(--radius)] object-cover"
+      />
+      <figcaption className="mt-2.5 text-xs text-muted">
+        {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+        {words.toLocaleString("en-US")} words
+      </figcaption>
+    </>
+  );
+
+  // Everything below the cover, shared by both layouts so the two paths can
+  // never drift.
+  const bodyInner = (
+    <>
+      <TableOfContents headings={headings} className="mb-10" />
+
+      <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+
+      {/* End-of-story mark (the printer's "fin"). */}
+      <div className="fin" aria-hidden />
+
+      {/* Paper Trail — the vetted sources Letterbrace shipped with the
+          article. Renders nothing when the article has no trail. */}
+      <PostSources sources={post.paperTrail} className="mt-10" />
+
+      <TopicTags tags={post.tags} linkableSlugs={linkableSlugs} className="mt-10" />
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+        <ShareRow url={postUrl(post)} title={post.title} withLabel />
+        <a
+          href="#top"
+          className="no-print kicker kicker-muted ul-link hover:text-primary"
+        >
+          Return to top ↑
+        </a>
+      </div>
+
+      <AuthorBio
+        byline={byline}
+        beats={authorBeats}
+        storyCount={authorPosts.length}
+        className="mt-12"
+      />
+
+      {env.newsletterEnabled && (
+        <NewsletterCTA variant="inline" className="mt-12 no-print" />
+      )}
+
+      <PostNav prev={prev} next={next} className="mt-12 no-print" />
+
+      <RelatedPosts posts={related} label={`More in ${section}`} />
+    </>
+  );
+
   return (
     <>
       <JsonLd data={articleLd(post)} />
@@ -175,73 +239,33 @@ export default async function PostPage({ params }: Params) {
           </div>
         </header>
 
-        {/* Custom fields for a non-Classic collection type ("configurable
-            collection fields"). Renders nothing for Classic posts (they ship no
-            custom fields), so this is fully inert on classic deployments. */}
-        <CustomFields
-          fields={post.customFields}
-          className="container-content mt-8"
-        />
-
-        {/* Hero cover — breaks out wider on feature layouts */}
-        <figure
-          className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
-        >
-          <img
-            src={coverImageFor(post)}
-            alt={coverAltFor(post)}
-            className="w-full rounded-[var(--radius)] object-cover"
-          />
-          <figcaption className="mt-2.5 text-xs text-muted">
-            {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
-            {words.toLocaleString("en-US")} words
-          </figcaption>
-        </figure>
-
-        {/* Body */}
-        <div className="container-content mt-10">
-          <TableOfContents headings={headings} className="mb-10" />
-
-          <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
-
-          {/* End-of-story mark (the printer's "fin"). */}
-          <div className="fin" aria-hidden />
-
-          {/* Paper Trail — the vetted sources Letterbrace shipped with the
-              article. Renders nothing when the article has no trail. */}
-          <PostSources sources={post.paperTrail} className="mt-10" />
-
-          <TopicTags
-            tags={post.tags}
-            linkableSlugs={linkableSlugs}
-            className="mt-10"
-          />
-
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-            <ShareRow url={postUrl(post)} title={post.title} withLabel />
-            <a
-              href="#top"
-              className="no-print kicker kicker-muted ul-link hover:text-primary"
-            >
-              Return to top ↑
-            </a>
+        {hasCustomFields ? (
+          /* Sidebar layout for a custom collection type: full-width cover, then
+             the body beside a sticky fact card. On mobile the card comes first
+             (details up top), then the body. Classic posts never take this
+             branch, so classic pages are unaffected. */
+          <div className="mx-auto mt-8 w-full max-w-5xl">
+            <figure>{coverInner}</figure>
+            <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+              <div className="min-w-0">{bodyInner}</div>
+              <aside className="order-first lg:order-none lg:sticky lg:top-8">
+                <CustomFields fields={post.customFields} />
+              </aside>
+            </div>
           </div>
+        ) : (
+          <>
+            {/* Hero cover — breaks out wider on feature layouts */}
+            <figure
+              className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
+            >
+              {coverInner}
+            </figure>
 
-          <AuthorBio
-            byline={byline}
-            beats={authorBeats}
-            storyCount={authorPosts.length}
-            className="mt-12"
-          />
-
-          {env.newsletterEnabled && (
-            <NewsletterCTA variant="inline" className="mt-12 no-print" />
-          )}
-
-          <PostNav prev={prev} next={next} className="mt-12 no-print" />
-
-          <RelatedPosts posts={related} label={`More in ${section}`} />
-        </div>
+            {/* Body */}
+            <div className="container-content mt-10">{bodyInner}</div>
+          </>
+        )}
       </article>
     </>
   );
