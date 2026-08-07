@@ -15,34 +15,42 @@ describe("normalizePost — collection type + custom fields", () => {
     slug: "a-post",
   };
 
-  it("maps collection_type and custom_fields for a non-Classic post", () => {
+  it("maps collection_type and the labelled custom_fields array for a non-Classic post", () => {
     const post = normalizePost({
       ...base,
       collection_type: "landing",
-      custom_fields: {
-        industry: " Fintech ", // trimmed
-        cta_url: "https://example.com/go",
-        count: 3, // coerced to string
-        blank: "   ", // dropped
-        missing: null, // dropped
-      },
+      custom_fields: [
+        { key: "industry", label: "Industry", value: " Fintech ", type: null }, // trimmed
+        { key: "demo", label: "Book a demo", value: "https://example.com/go", type: "cta" },
+        { key: "blank", label: "Blank", value: "   ", type: null }, // dropped (no value)
+        { key: "", label: "No key", value: "x", type: null }, // dropped (no key)
+      ],
     });
     expect(post?.collectionType).toBe("landing");
-    expect(post?.customFields).toEqual({
-      industry: "Fintech",
-      cta_url: "https://example.com/go",
-      count: "3",
+    // Order preserved; labels carried verbatim; empty/keyless entries dropped.
+    expect(post?.customFields).toEqual([
+      { key: "industry", label: "Industry", value: "Fintech", type: null },
+      { key: "demo", label: "Book a demo", value: "https://example.com/go", type: "cta" },
+    ]);
+  });
+
+  it("falls back label to key when the sender omits a label", () => {
+    const post = normalizePost({
+      ...base,
+      custom_fields: [{ key: "arr", value: "$40M" }],
     });
+    expect(post?.customFields).toEqual([{ key: "arr", label: "arr", value: "$40M", type: null }]);
   });
 
   it("defaults to Classic (null type, empty fields) when the payload omits them", () => {
     const post = normalizePost(base);
     expect(post?.collectionType).toBeNull();
-    expect(post?.customFields).toEqual({});
+    expect(post?.customFields).toEqual([]);
   });
 
   it("tolerates a malformed custom_fields blob", () => {
-    expect(normalizePost({ ...base, custom_fields: "nope" })?.customFields).toEqual({});
-    expect(normalizePost({ ...base, custom_fields: ["a", "b"] })?.customFields).toEqual({});
+    expect(normalizePost({ ...base, custom_fields: "nope" })?.customFields).toEqual([]);
+    expect(normalizePost({ ...base, custom_fields: { a: 1 } })?.customFields).toEqual([]);
+    expect(normalizePost({ ...base, custom_fields: ["a", "b"] })?.customFields).toEqual([]);
   });
 });

@@ -52,9 +52,21 @@ export interface Post {
    */
   collectionType: string | null;
   /**
-   * Declared custom fields for a non-Classic collection type, keyed by field key
-   * (from the payload's `custom_fields`). Empty for Classic posts — so the
-   * custom-field UI renders nothing and Classic layouts are unchanged.
+   * Declared custom fields for a non-Classic collection type, from the payload's
+   * `custom_fields`. Each carries the sender-declared `label` (rendered verbatim —
+   * never guessed from the key) and an optional `type` ("cta"/"url" → rendered as
+   * a call-to-action button whose text is the label). Empty for Classic posts, so
+   * the custom-field UI renders nothing and Classic layouts are unchanged.
    */
-  customFields: Record<string, string>;
+  customFields: CustomField[];
+}
+
+/** One custom field as consumed by the UI (see Post.customFields). */
+export interface CustomField {
+  key: string;
+  /** Sender-declared display label (e.g. "Annual Revenue", "Book a demo"). */
+  label: string;
+  value: string;
+  /** Optional render hint; "cta"/"url" → call-to-action button. */
+  type: string | null;
 }
