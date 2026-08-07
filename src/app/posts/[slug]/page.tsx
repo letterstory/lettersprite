@@ -26,6 +26,7 @@ import { formatDate } from "@/lib/format";
 import { getActiveTheme } from "@/themes";
 import { AuthorBio } from "@/components/AuthorBio";
 import { BackToTop } from "@/components/BackToTop";
+import { CustomFields } from "@/components/CustomFields";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -173,6 +174,14 @@ export default async function PostPage({ params }: Params) {
             <ShareRow url={postUrl(post)} title={post.title} />
           </div>
         </header>
+
+        {/* Custom fields for a non-Classic collection type ("configurable
+            collection fields"). Renders nothing for Classic posts (they ship no
+            custom fields), so this is fully inert on classic deployments. */}
+        <CustomFields
+          fields={post.customFields}
+          className="container-content mt-8"
+        />
 
         {/* Hero cover — breaks out wider on feature layouts */}
         <figure

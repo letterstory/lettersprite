@@ -45,4 +45,16 @@ export interface Post {
   updatedAt: string | null;
   /** The article's Paper Trail — vetted sources, or [] when there are none. */
   paperTrail: PaperTrailSource[];
+  /**
+   * The collection's type key ("configurable collection fields"), e.g. "landing".
+   * null for a Classic collection — the payload omits it, and the post renders
+   * exactly as it always has. Only non-Classic types carry `customFields`.
+   */
+  collectionType: string | null;
+  /**
+   * Declared custom fields for a non-Classic collection type, keyed by field key
+   * (from the payload's `custom_fields`). Empty for Classic posts — so the
+   * custom-field UI renders nothing and Classic layouts are unchanged.
+   */
+  customFields: Record<string, string>;
 }

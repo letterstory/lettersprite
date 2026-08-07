@@ -62,6 +62,16 @@ export const env = {
   /** Name of the theme to render (see src/themes). Falls back to the default. */
   theme: str("THEME", "sleek"),
 
+  /**
+   * SITE_LAYOUT — the collection type's layout key (Letterbrace's
+   * `lettersprite_layout`). Selects how this deployment's posts render.
+   * "classic" (the default) is today's layout exactly; a custom type (e.g.
+   * "landing") additionally surfaces the post's custom fields. Non-classic
+   * layouts only ADD to the classic rendering — body, byline, cover, dates and
+   * SEO are untouched, so URLs and indexed content never change.
+   */
+  layout: str("SITE_LAYOUT", "classic"),
+
   /** Site identity, used for the wordmark, metadata, OpenGraph and sitemap. */
   siteTitle: str("SITE_TITLE", "The Signal"),
   siteDescription: str("SITE_DESCRIPTION"),
