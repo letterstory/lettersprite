@@ -82,6 +82,18 @@ function authorNode(post: Post): Json {
 }
 
 /** BlogPosting for a single article. */
+/**
+ * Plain-text photo credit for the cover's ImageObject — "Ada Lovelace /
+ * Unsplash". Empty for generated covers and for licences that require no
+ * credit, matching what `components/CoverCredit` renders visibly.
+ */
+function creditText(post: Post): string {
+  const credit = post.coverCredit;
+  if (!credit?.required) return "";
+  const source = credit.source.charAt(0).toUpperCase() + credit.source.slice(1);
+  return credit.photographer ? `${credit.photographer} / ${source}` : source;
+}
+
 export function articleLd(post: Post): Json {
   const url = postUrl(post);
   return clean({
@@ -99,6 +111,10 @@ export function articleLd(post: Post): Json {
         "@type": "ImageObject",
         url: absoluteCover(post),
         caption: coverAltFor(post) || undefined,
+        // The machine-readable half of the visible photo credit, same as
+        // `citation` is for the Sources section. Only for stock covers whose
+        // licence requires attribution — see components/CoverCredit.
+        creditText: creditText(post) || undefined,
       }),
     ],
     datePublished: publishDate(post),
