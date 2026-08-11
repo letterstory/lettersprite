@@ -2,11 +2,12 @@ import Link from "next/link";
 import { pageHref, pageItems } from "@/lib/pagination";
 
 /**
- * Numbered page navigation for the home listing. Real `<a href>` links to the
- * static `/page/N` routes (page 1 is `/`), so it's crawlable and works without
- * JS. Prev/Next on the ends, first/last always shown with `…` gaps around a
- * window on the current page. Styled from theme tokens; the current page picks
- * up the theme primary. Renders nothing when there's only one page.
+ * Numbered page navigation for the home listing, styled editorially rather than
+ * as boxed app buttons: a hairline rule above, "Newer / Older" in letter-spaced
+ * masthead caps on the flanks, and plain numerals in the middle with the current
+ * page underlined in the theme primary. Real `<a href>` links to the static
+ * `/page/N` routes (page 1 is `/`), so it's crawlable and works without JS.
+ * Renders nothing when there's a single page.
  */
 export function Pagination({
   page,
@@ -23,53 +24,60 @@ export function Pagination({
   const prev = page > 1 ? page - 1 : null;
   const next = page < totalPages ? page + 1 : null;
 
-  const cell =
-    "inline-flex h-9 min-w-9 items-center justify-center rounded-[var(--radius)] border px-3 text-sm transition-colors";
-  const link = `${cell} border-border text-foreground hover:border-primary hover:text-primary`;
-  const disabled = `${cell} border-border text-muted opacity-40`;
+  const edge =
+    "font-heading text-xs font-semibold uppercase tracking-[0.2em] transition-colors";
 
   return (
     <nav
       aria-label="Pagination"
-      className={`flex flex-wrap items-center justify-center gap-1.5 ${className}`}
+      className={`flex flex-wrap items-center justify-center gap-x-8 gap-y-4 border-t border-border pt-10 ${className}`}
     >
       {prev ? (
-        <Link href={pageHref(prev)} rel="prev" aria-label="Previous page" className={link}>
-          ‹<span className="ml-1 hidden sm:inline">Prev</span>
+        <Link href={pageHref(prev)} rel="prev" className={`${edge} text-muted hover:text-primary`}>
+          ← <span className="hidden sm:inline">Newer</span>
         </Link>
       ) : (
-        <span aria-hidden className={disabled}>
-          ‹<span className="ml-1 hidden sm:inline">Prev</span>
+        <span aria-hidden className={`${edge} text-muted opacity-40`}>
+          ← <span className="hidden sm:inline">Newer</span>
         </span>
       )}
 
-      {items.map((it, i) =>
-        it === "ellipsis" ? (
-          <span key={`gap-${i}`} aria-hidden className="px-1 text-muted">
-            …
-          </span>
-        ) : it === page ? (
-          <span
-            key={it}
-            aria-current="page"
-            className={`${cell} border-primary bg-[color-mix(in_oklab,var(--primary)_12%,var(--surface))] font-semibold text-primary`}
-          >
-            {it}
-          </span>
-        ) : (
-          <Link key={it} href={pageHref(it)} aria-label={`Page ${it}`} className={link}>
-            {it}
-          </Link>
-        ),
-      )}
+      <ol className="flex items-center gap-5 text-sm tabular-nums">
+        {items.map((it, i) =>
+          it === "ellipsis" ? (
+            <li key={`gap-${i}`} aria-hidden className="text-muted">
+              …
+            </li>
+          ) : (
+            <li key={it}>
+              {it === page ? (
+                <span
+                  aria-current="page"
+                  className="font-semibold text-primary underline decoration-2 underline-offset-[6px]"
+                >
+                  {it}
+                </span>
+              ) : (
+                <Link
+                  href={pageHref(it)}
+                  aria-label={`Page ${it}`}
+                  className="text-muted transition-colors hover:text-foreground"
+                >
+                  {it}
+                </Link>
+              )}
+            </li>
+          ),
+        )}
+      </ol>
 
       {next ? (
-        <Link href={pageHref(next)} rel="next" aria-label="Next page" className={link}>
-          <span className="mr-1 hidden sm:inline">Next</span>›
+        <Link href={pageHref(next)} rel="next" className={`${edge} text-muted hover:text-primary`}>
+          <span className="hidden sm:inline">Older</span> →
         </Link>
       ) : (
-        <span aria-hidden className={disabled}>
-          <span className="mr-1 hidden sm:inline">Next</span>›
+        <span aria-hidden className={`${edge} text-muted opacity-40`}>
+          <span className="hidden sm:inline">Older</span> →
         </span>
       )}
     </nav>
