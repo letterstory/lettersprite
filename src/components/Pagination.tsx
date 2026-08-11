@@ -34,11 +34,11 @@ export function Pagination({
     >
       {prev ? (
         <Link href={pageHref(prev)} rel="prev" className={`${edge} text-muted hover:text-primary`}>
-          ← <span className="hidden sm:inline">Newer</span>
+          ← <span className="hidden sm:inline">Previous</span>
         </Link>
       ) : (
         <span aria-hidden className={`${edge} text-muted opacity-40`}>
-          ← <span className="hidden sm:inline">Newer</span>
+          ← <span className="hidden sm:inline">Previous</span>
         </span>
       )}
 
@@ -73,11 +73,11 @@ export function Pagination({
 
       {next ? (
         <Link href={pageHref(next)} rel="next" className={`${edge} text-muted hover:text-primary`}>
-          <span className="hidden sm:inline">Older</span> →
+          <span className="hidden sm:inline">Next</span> →
         </Link>
       ) : (
         <span aria-hidden className={`${edge} text-muted opacity-40`}>
-          <span className="hidden sm:inline">Older</span> →
+          <span className="hidden sm:inline">Next</span> →
         </span>
       )}
     </nav>
