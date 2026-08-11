@@ -227,7 +227,15 @@ export function SiteSearch({
                     aria-selected={activeIndex === i}
                     tabIndex={-1}
                     href={`/posts/${it.slug}`}
-                    className={`block px-4 py-2.5 transition-colors ${activeIndex === i ? "bg-surface" : "hover:bg-surface"}`}
+                    // Highlighted row uses the theme primary — a solid accent bar
+                    // plus a light primary tint — so keyboard users clearly see
+                    // which article is active. The 2px bar is reserved on every row
+                    // (transparent) so selecting one never shifts the text.
+                    className={`block border-l-2 px-4 py-2.5 transition-colors ${
+                      activeIndex === i
+                        ? "border-primary bg-[color-mix(in_oklab,var(--primary)_12%,var(--surface))]"
+                        : "border-transparent hover:bg-surface"
+                    }`}
                     onMouseEnter={() => setActiveIndex(i)}
                     onMouseDown={(e) => e.preventDefault()}
                   >
