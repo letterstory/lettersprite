@@ -145,12 +145,20 @@ const LOGO_STYLES: LogoStyle[] = [
 
 /**
  * Wordmark styles used to give each site its OWN masthead when it hasn't pinned
- * one. Kept to treatments that (a) stay visually distinct under the sans-serif
- * mandate (so "serif" — which coerces to sans — is left out as a near-duplicate
- * of "sans-bold") and (b) never depend on a primary-foreground fill, so each
- * reads well on any theme without a contrast surprise.
+ * one — the full set of visually-distinct treatments, so a fleet of sites doesn't
+ * read as spun from one source. "serif" is left out only because the sans-serif
+ * mandate (forceSansSerif) coerces it into a near-duplicate of "sans-bold". The
+ * fill treatments (boxed/monogram) are safe on every theme: each theme defines a
+ * contrasting `primaryForeground`.
  */
-const VARIED_LOGO_STYLES: LogoStyle[] = ["sans-bold", "condensed", "underline", "mono"];
+const VARIED_LOGO_STYLES: LogoStyle[] = [
+  "sans-bold",
+  "condensed",
+  "mono",
+  "underline",
+  "boxed",
+  "monogram",
+];
 
 /**
  * A per-site wordmark style, so sites on the same theme aren't visual twins.
