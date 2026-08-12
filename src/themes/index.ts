@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { hashString } from "@/lib/rng";
 import type { FontSpec, LogoStyle, Theme } from "./types";
 import { classic } from "./classic";
 import { magazine } from "./magazine";
@@ -143,6 +144,28 @@ const LOGO_STYLES: LogoStyle[] = [
 ];
 
 /**
+ * Wordmark styles used to give each site its OWN masthead when it hasn't pinned
+ * one. Kept to treatments that (a) stay visually distinct under the sans-serif
+ * mandate (so "serif" — which coerces to sans — is left out as a near-duplicate
+ * of "sans-bold") and (b) never depend on a primary-foreground fill, so each
+ * reads well on any theme without a contrast surprise.
+ */
+const VARIED_LOGO_STYLES: LogoStyle[] = ["sans-bold", "condensed", "underline", "mono"];
+
+/**
+ * A per-site wordmark style, so sites on the same theme aren't visual twins.
+ * Deterministic from the site title (stable across every rebuild) and drawn from
+ * the theme's own logo plus the contrast-safe styles — varied, but always
+ * on-theme (it uses the theme's fonts + primary). Superseded by an explicit
+ * SITE_LOGO_STYLE, and irrelevant when a SITE_LOGO_SVG emblem is supplied (that
+ * renders instead of the wordmark).
+ */
+function deriveLogoStyle(title: string, themeDefault: LogoStyle): LogoStyle {
+  const pool = Array.from(new Set<LogoStyle>([themeDefault, ...VARIED_LOGO_STYLES]));
+  return pool[hashString(title) % pool.length];
+}
+
+/**
  * Approved sans-serif families. This is an ALLOWLIST on purpose: per product
  * direction the masthead/headings and body must be sans-serif on every
  * deployment — now *and going forward*. Anything not on this list (any serif
@@ -239,7 +262,10 @@ function applyOverrides(theme: Theme): Theme {
   const logoOverride = LOGO_STYLES.includes(env.logoStyle as LogoStyle)
     ? (env.logoStyle as LogoStyle)
     : undefined;
-  if (!hasColorOverride && !hasFontOverride && !logoOverride) return theme;
+  // No explicit SITE_LOGO_STYLE → derive a per-site wordmark so same-theme sites
+  // don't share one masthead. An explicit override always wins.
+  const resolvedLogo = logoOverride ?? deriveLogoStyle(env.siteTitle, theme.logo);
+  if (!hasColorOverride && !hasFontOverride && resolvedLogo === theme.logo) return theme;
 
   const colors = { ...theme.colors };
   if (env.accentColor) colors.primary = env.accentColor;
@@ -256,7 +282,7 @@ function applyOverrides(theme: Theme): Theme {
   return {
     ...theme,
     colors,
-    logo: logoOverride ?? theme.logo,
+    logo: resolvedLogo,
     fonts: {
       ...theme.fonts,
       display: env.fontDisplay
