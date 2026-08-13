@@ -3,7 +3,7 @@ import { StoryCard } from "@/components/Story";
 import { Cover } from "@/components/Story";
 import { Kicker } from "@/components/Kicker";
 import { PostMeta } from "@/components/PostMeta";
-import Link from "next/link";
+import Link from "@/components/Link";
 
 /**
  * Mosaic front (New York Magazine / The Cut). A bold, asymmetric grid: an

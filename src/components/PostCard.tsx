@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { PostMeta } from "./PostMeta";
@@ -12,7 +12,7 @@ export function PostCard({
   featured?: boolean;
 }) {
   const href = `/posts/${post.slug}`;
-  const cover = coverImageFor(post);
+  const cover = coverImageFor(post, featured ? 1200 : 800);
   return (
     <article
       className={`group flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5 ${
@@ -26,6 +26,8 @@ export function PostCard({
         <img
           src={cover}
           alt={coverAltFor(post)}
+          loading="lazy"
+          decoding="async"
           className={`w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
             featured ? "h-64 sm:h-full" : "h-48"
           }`}

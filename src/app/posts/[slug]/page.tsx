@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const published = publishDate(post);
   // Cover resolves against metadataBase (OG allows relative here).
   const image = {
-    url: coverImageFor(post),
+    url: coverImageFor(post, 1200),
     width: 1200,
     height: 675,
     alt: coverAltFor(post) || post.title,
@@ -180,8 +180,10 @@ export default async function PostPage({ params }: Params) {
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >
           <img
-            src={coverImageFor(post)}
+            src={coverImageFor(post, 1600)}
             alt={coverAltFor(post)}
+            fetchPriority="high"
+            decoding="async"
             className="w-full rounded-[var(--radius)] object-cover"
           />
           <figcaption className="mt-2.5 text-xs text-muted">

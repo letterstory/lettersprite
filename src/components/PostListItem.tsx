@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { PostMeta } from "./PostMeta";
@@ -6,7 +6,7 @@ import { PostMeta } from "./PostMeta";
 /** Row used by the single-column list layout. */
 export function PostListItem({ post }: { post: Post }) {
   const href = `/posts/${post.slug}`;
-  const cover = coverImageFor(post);
+  const cover = coverImageFor(post, 1000);
   return (
     <article className="group border-b border-border py-9">
       <Link
@@ -16,6 +16,8 @@ export function PostListItem({ post }: { post: Post }) {
         <img
           src={cover}
           alt={coverAltFor(post)}
+          loading="lazy"
+          decoding="async"
           className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       </Link>

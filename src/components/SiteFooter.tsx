@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
 import { sectionHref, topSections } from "@/lib/editorial";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { publishDate } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";

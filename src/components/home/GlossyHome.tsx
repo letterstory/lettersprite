@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { env } from "@/env";
 import type { Post } from "@/lib/letterbrace/types";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
@@ -25,8 +25,10 @@ export function GlossyHome({ posts }: { posts: Post[] }) {
             className="block overflow-hidden"
           >
             <img
-              src={coverImageFor(lead)}
+              src={coverImageFor(lead, 1600)}
               alt={coverAltFor(lead)}
+              fetchPriority="high"
+              decoding="async"
               className="h-[52vh] max-h-[560px] min-h-[380px] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           </Link>
