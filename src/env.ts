@@ -132,6 +132,11 @@ export const env = {
 
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
+  /**
+   * Posts per page on the home listing (SITE_PAGE_SIZE). Page 1 is `/`, further
+   * pages are `/page/2`, `/page/3`… Clamped to a sane range; default 12.
+   */
+  pageSize: Math.min(Math.max(num("SITE_PAGE_SIZE", 12), 3), 50),
   showDrafts: bool("SHOW_DRAFTS", false),
   /**
    * Optional fallback cover-art family: one of tessellation, gradient-mesh,

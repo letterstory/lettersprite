@@ -33,6 +33,7 @@ const P = (
   author: null,
   coverImage: null,
   coverImageAlt: null,
+  coverCredit: null,
   tags: [tag],
   createdAt: null,
   updatedAt: null,

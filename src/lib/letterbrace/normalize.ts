@@ -1,5 +1,5 @@
 import { tightenPunctuationSpacing } from "@/lib/text";
-import type { PaperTrailSource, Post } from "./types";
+import type { CoverCredit, PaperTrailSource, Post } from "./types";
 
 type Raw = Record<string, unknown>;
 
@@ -249,6 +249,55 @@ function toCoverImageAlt(raw: Raw): string | null {
   return null;
 }
 
+/** A `CoverCredit` from an attribution object, or null when it isn't one. */
+function coverCreditFrom(value: unknown): CoverCredit | null {
+  if (!value || typeof value !== "object") return null;
+  const a = value as Raw;
+  // The source is the one field we can't render a credit without — it names
+  // both the library and, when there's no photographer, the whole credit.
+  const source = asString(a.source)?.trim();
+  if (!source) return null;
+  const str = (v: unknown): string | null => asString(v)?.trim() || null;
+  return {
+    source,
+    photographer: str(a.photographer),
+    photographerUrl: str(a.photographerUrl),
+    sourceUrl: str(a.sourceUrl),
+    license: str(a.license) ?? "",
+    required: a.required === true,
+  };
+}
+
+/**
+ * Photographer + licence for a stock-photo cover. Checked in order: the flat
+ * `cover_image_credit` field Letterbrace ships alongside `cover_image`, then
+ * the `attribution` object carried on `metadata.cover_image` — the same
+ * flat-then-metadata order `toCoverImage` and `toCoverImageAlt` use.
+ *
+ * Returns null for generated and uploaded covers. The caller must also null
+ * this out when there's no cover URL: `coverImageFor` silently substitutes a
+ * locally generated pattern, and crediting a photographer for the site's own
+ * artwork would be a false statement about where the image came from.
+ */
+function toCoverCredit(raw: Raw): CoverCredit | null {
+  const flat =
+    coverCreditFrom(raw.cover_image_credit) ??
+    coverCreditFrom(raw.coverImageCredit);
+  if (flat) return flat;
+  const fromCover = (value: unknown): CoverCredit | null =>
+    value && typeof value === "object"
+      ? coverCreditFrom((value as Raw).attribution)
+      : null;
+  const direct = fromCover(raw.cover_image) ?? fromCover(raw.coverImage);
+  if (direct) return direct;
+  const meta = raw.metadata;
+  if (meta && typeof meta === "object") {
+    const m = meta as Raw;
+    return fromCover(m.cover_image) ?? fromCover(m.coverImage);
+  }
+  return null;
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
   if (direct) return cleanAuthorName(direct);
@@ -291,6 +340,8 @@ export function normalizePost(raw: Raw): Post | null {
   const title = explicitTitle ?? summary ?? "Untitled";
   const suppliedExcerpt = explicitTitle ? summary : null;
   const suppliedSlug = pick(raw, ["slug", "permalink", "path"]);
+  // A credit only belongs to a real cover — see toCoverCredit.
+  const coverImage = toCoverImage(raw);
 
   return {
     id,
@@ -301,8 +352,9 @@ export function normalizePost(raw: Raw): Post | null {
     dek: suppliedExcerpt ? stripHtml(suppliedExcerpt) : null,
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
     author: toAuthor(raw),
-    coverImage: toCoverImage(raw),
+    coverImage,
     coverImageAlt: toCoverImageAlt(raw),
+    coverCredit: coverImage ? toCoverCredit(raw) : null,
     tags: toTags(raw),
     createdAt: toIso(
       raw.published_at,

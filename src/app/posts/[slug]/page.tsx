@@ -26,6 +26,7 @@ import { formatDate } from "@/lib/format";
 import { getActiveTheme } from "@/themes";
 import { AuthorBio } from "@/components/AuthorBio";
 import { BackToTop } from "@/components/BackToTop";
+import { CoverCredit } from "@/components/CoverCredit";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -186,8 +187,13 @@ export default async function PostPage({ params }: Params) {
             className="w-full rounded-[var(--radius)] object-cover"
           />
           <figcaption className="mt-2.5 text-xs text-muted">
-            {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
-            {words.toLocaleString("en-US")} words
+            <span>
+              {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+              {words.toLocaleString("en-US")} words
+            </span>
+            {/* Its own line: a photo credit is an obligation to a person, not
+                another stat in the dateline run. */}
+            <CoverCredit credit={post.coverCredit} className="mt-1 block" />
           </figcaption>
         </figure>
 
