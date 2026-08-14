@@ -663,3 +663,15 @@
     background: none !important;
   }
 }
+
+/* A horizontally swipeable strip: touch/trackpad scroll with the scrollbar
+   hidden and momentum scrolling on iOS. Used by the section nav so overflowing
+   sections can be swiped through instead of stranded on narrow screens. */
+.swipe-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.swipe-x::-webkit-scrollbar {
+  display: none;
+}
