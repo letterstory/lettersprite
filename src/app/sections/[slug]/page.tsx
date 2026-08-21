@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
+import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
 import {
   allSections,
   postsInSection,
+  sectionHref,
   sectionNameFor,
   sectionSlug,
 } from "@/lib/editorial";
 import { StoryCard } from "@/components/Story";
+import { SlateIndex } from "@/components/SlateIndex";
 import { Logo } from "@/components/Logo";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -52,6 +55,29 @@ export default async function SectionPage({ params }: Params) {
   const { slug } = await params;
   const section = await resolveSection(slug);
   if (!section) notFound();
+
+  // Slate treatment (opt-in per theme): oversized title + byline-first lead +
+  // story river. Other themes keep the classic card grid below.
+  const theme = getActiveTheme();
+  if (theme.features?.slateLists) {
+    const posts = await getPosts();
+    const siblings = allSections(posts)
+      .filter((s) => s !== section.name)
+      .map((s) => ({ label: s, href: sectionHref(s) }));
+    const count = section.posts.length;
+    return (
+      <SlateIndex
+        eyebrow="The latest in"
+        title={section.name}
+        accentLinks={siblings}
+        stat={`${count} ${count === 1 ? "story" : "stories"}`}
+        metaKind="section"
+        riverPrefix="Recently in"
+        posts={section.posts}
+        footer={<Logo size="sm" linked />}
+      />
+    );
+  }
 
   const [lead, ...rest] = section.posts;
 
