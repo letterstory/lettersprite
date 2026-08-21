@@ -1,11 +1,13 @@
+import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
-import { editionDate, topSections, sectionFor } from "@/lib/editorial";
+import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 import { Logo } from "./Logo";
 import { SectionNav } from "./SectionNav";
 import { SiteSearch, type SearchItem } from "./SiteSearch";
+import { StickyMasthead } from "./StickyMasthead";
 
 /**
  * The masthead. Two archetypes, chosen by the theme so different deployments
@@ -70,6 +72,94 @@ export async function SiteHeader() {
     theme.home === "column" ||
     Boolean(theme.features?.centeredMasthead);
   const topRule = theme.features?.topRule ?? centered;
+
+  // Editorial "Atlantic" masthead: a centered serif flag with flanking rules
+  // and a star ornament, section nav on the left, a prominent search box (with
+  // a Trending dropdown) on the right, plus a minimized sticky bar on scroll.
+  if (theme.features?.atlanticMasthead) {
+    const trending = searchIndex.slice(0, 6);
+    return (
+      <header className="no-print relative z-20 border-b border-border bg-background">
+        <StickyMasthead
+          title={env.siteTitle}
+          searchIndex={searchIndex}
+          trending={trending}
+        />
+        {topRule && <div className="hero-wash h-1 w-full" />}
+
+        {/* Utility bar: section nav left; a prominent keyboard-native search box
+            ("/" or ⌘K to focus, with a Trending dropdown) on the right. */}
+        <div className="container-wide px-6">
+          <div className="flex items-center justify-between gap-4 py-3">
+            <nav className="hidden items-center gap-5 md:flex">
+              {sections.slice(0, 3).map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="whitespace-nowrap font-heading text-sm text-foreground transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex flex-1 items-center justify-end">
+              <SiteSearch
+                index={searchIndex}
+                trending={trending}
+                className="w-full max-w-sm"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Centered serif flag with flanking rules + star ornament. */}
+        <div className="container-wide px-6 pb-6 pt-3">
+          <Link
+            href="/"
+            aria-label={env.siteTitle}
+            className="flex items-center justify-center gap-6"
+          >
+            <span aria-hidden className="hidden h-px flex-1 bg-border sm:block" />
+            <span className="text-center font-display text-[2rem] font-bold leading-none tracking-tight text-primary sm:text-[2.6rem] lg:text-[3rem]">
+              {env.siteTitle}
+            </span>
+            <span aria-hidden className="hidden h-px flex-1 bg-border sm:block" />
+          </Link>
+          {env.siteTagline && (
+            <div className="mt-3 flex items-center justify-center gap-2.5 text-xs">
+              <span className="text-[color:var(--secondary)]">★</span>
+              <span className="text-primary">★</span>
+              <span className="font-display italic text-muted">
+                {env.siteTagline}
+              </span>
+              <span className="text-primary">★</span>
+              <span className="text-[color:var(--secondary)]">★</span>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile: a finger-swipeable section strip. */}
+        {sections.length > 0 && (
+          <nav
+            aria-label="Sections"
+            className="swipe-x border-t border-border md:hidden"
+          >
+            <div className="flex w-max gap-6 px-6 py-2.5">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="kicker kicker-muted shrink-0 whitespace-nowrap hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
 
   if (centered) {
     return (

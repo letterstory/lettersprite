@@ -11,6 +11,7 @@ import { GalleryHome } from "./GalleryHome";
 import { DigestHome } from "./DigestHome";
 import { TimelineHome } from "./TimelineHome";
 import { BoardHome } from "./BoardHome";
+import { AtlanticHome } from "./AtlanticHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -27,6 +28,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   digest: DigestHome,
   timeline: TimelineHome,
   board: BoardHome,
+  atlantic: AtlanticHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */
