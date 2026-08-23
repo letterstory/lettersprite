@@ -1,9 +1,10 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { publishDate, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { Cover } from "@/components/Story";
+import { AdSlot } from "@/components/AdSlot";
 
 /**
  * Slate-style index layout, shared by section and author pages: an oversized
@@ -151,6 +152,7 @@ export function SlateIndex({
                 </Link>
               </article>
             ))}
+            <AdSlot className="pt-4" minHeightClass="min-h-[250px]" />
           </div>
         )}
       </section>
@@ -168,29 +170,37 @@ export function SlateIndex({
             </span>
           </div>
           <div className="flex flex-col divide-y divide-border">
-            {river.map((p) => (
-              <article key={p.id} className="group flex gap-5 py-5">
-                <Cover post={p} ratio="4/3" className="w-32 shrink-0 sm:w-44" />
-                <div className="min-w-0">
-                  <MetaLine post={p} metaKind={metaKind} />
-                  <Link href={`/posts/${p.slug}`}>
-                    <h3 className="mt-1.5 font-display text-xl font-bold leading-snug text-heading text-balance transition-colors group-hover:text-primary">
-                      {p.title}
-                    </h3>
-                  </Link>
-                  {p.dek && (
-                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-fg-soft">
-                      {p.dek}
-                    </p>
-                  )}
-                </div>
-              </article>
+            {river.map((p, idx) => (
+              <Fragment key={p.id}>
+                <article className="group flex gap-5 py-5">
+                  <Cover post={p} ratio="4/3" className="w-32 shrink-0 sm:w-44" />
+                  <div className="min-w-0">
+                    <MetaLine post={p} metaKind={metaKind} />
+                    <Link href={`/posts/${p.slug}`}>
+                      <h3 className="mt-1.5 font-display text-xl font-bold leading-snug text-heading text-balance transition-colors group-hover:text-primary">
+                        {p.title}
+                      </h3>
+                    </Link>
+                    {p.dek && (
+                      <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-fg-soft">
+                        {p.dek}
+                      </p>
+                    )}
+                  </div>
+                </article>
+                {idx === 2 && (
+                  <AdSlot className="py-5" minHeightClass="min-h-[140px]" />
+                )}
+              </Fragment>
             ))}
           </div>
         </>
       )}
 
-      {footer && <div className="mt-16 flex justify-center">{footer}</div>}
+      {/* Leaderboard ad zone at the foot of the index. */}
+      <AdSlot className="mt-10 border-t border-border pt-6" minHeightClass="min-h-[90px]" />
+
+      {footer && <div className="mt-12 flex justify-center">{footer}</div>}
     </div>
   );
 }
