@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
-import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
+import { editionDate, topSections, sectionFor } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 import { Logo } from "./Logo";
 import { SectionNav } from "./SectionNav";
@@ -87,33 +87,20 @@ export async function SiteHeader() {
         />
         {topRule && <div className="hero-wash h-1 w-full" />}
 
-        {/* Utility bar: section nav left; a prominent keyboard-native search box
-            ("/" or ⌘K to focus, with a Trending dropdown) on the right. */}
+        {/* Utility bar: a prominent keyboard-native search box ("/" or ⌘K to
+            focus, with a Trending dropdown), right-aligned. */}
         <div className="container-wide px-6">
-          <div className="flex items-center justify-between gap-4 py-3">
-            <nav className="hidden items-center gap-5 md:flex">
-              {sections.slice(0, 3).map((s) => (
-                <Link
-                  key={s}
-                  href={sectionHref(s)}
-                  className="whitespace-nowrap font-heading text-sm text-foreground transition-colors hover:text-primary"
-                >
-                  {s}
-                </Link>
-              ))}
-            </nav>
-            <div className="flex flex-1 items-center justify-end">
-              <SiteSearch
-                index={searchIndex}
-                trending={trending}
-                className="w-full max-w-sm"
-              />
-            </div>
+          <div className="flex items-center justify-end py-3">
+            <SiteSearch
+              index={searchIndex}
+              trending={trending}
+              className="w-full max-w-sm"
+            />
           </div>
         </div>
 
         {/* Centered serif flag with flanking rules + star ornament. */}
-        <div className="container-wide px-6 pb-6 pt-3">
+        <div className="container-wide px-6 pb-5 pt-1">
           <Link
             href="/"
             aria-label={env.siteTitle}
@@ -138,24 +125,15 @@ export async function SiteHeader() {
           )}
         </div>
 
-        {/* Mobile: a finger-swipeable section strip. */}
+        {/* Section bar: EVERY section, centered on wide screens and
+            finger-swipeable when it overflows — so no section is cut off on
+            phones. */}
         {sections.length > 0 && (
-          <nav
-            aria-label="Sections"
-            className="swipe-x border-t border-border md:hidden"
-          >
-            <div className="flex w-max gap-6 px-6 py-2.5">
-              {sections.map((s) => (
-                <Link
-                  key={s}
-                  href={sectionHref(s)}
-                  className="kicker kicker-muted shrink-0 whitespace-nowrap hover:text-primary"
-                >
-                  {s}
-                </Link>
-              ))}
+          <div className="border-t border-border">
+            <div className="container-wide px-6 py-2.5">
+              <SectionNav sections={sections} align="center" />
             </div>
-          </nav>
+          </div>
         )}
       </header>
     );
