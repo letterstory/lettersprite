@@ -1,8 +1,10 @@
+import { Fragment } from "react";
 import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { Cover, StoryCard } from "@/components/Story";
 import { Kicker } from "@/components/Kicker";
 import { PostMeta } from "@/components/PostMeta";
+import { AdSlot } from "@/components/AdSlot";
 
 /**
  * Atlantic-style front: a symmetric three-column page — image cards plus a
@@ -13,6 +15,10 @@ import { PostMeta } from "@/components/PostMeta";
  * Headlines use `font-display` (the theme's serif); the "Most Read" heading and
  * kickers use the sans heading font via the shared `.kicker`/`font-heading`
  * treatment, so the whole layout follows the active theme's fonts.
+ *
+ * Ad zones (`AdSlot`) sit in the rail, mid-column, and as a leaderboard; they
+ * render real AdSense units when the deployment configures it, and otherwise
+ * nothing in production (a labeled placeholder in dev).
  */
 export function AtlanticHome({ posts }: { posts: Post[] }) {
   const [lead, ...rest] = posts;
@@ -89,35 +95,37 @@ export function AtlanticHome({ posts }: { posts: Post[] }) {
 
           {centerSub.length > 0 && (
             <div className="mt-8 flex flex-col divide-y divide-border border-t-2 border-foreground pt-6">
-              {centerSub.map((p) => (
-                <article
-                  key={p.id}
-                  className="group flex items-start gap-5 py-5 first:pt-0 last:pb-0"
-                >
-                  <div className="min-w-0 flex-1">
-                    <Kicker post={p} />
-                    <Link href={`/posts/${p.slug}`}>
-                      <h3 className="mt-1.5 font-display text-xl font-bold leading-snug text-heading text-balance transition-colors group-hover:text-primary">
-                        {p.title}
-                      </h3>
-                    </Link>
-                    {p.dek && (
-                      <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-fg-soft">
-                        {p.dek}
-                      </p>
-                    )}
-                    <div className="mt-2">
-                      <PostMeta post={p} className="text-xs" />
+              {centerSub.map((p, idx) => (
+                <Fragment key={p.id}>
+                  <article className="group flex items-start gap-5 py-5 first:pt-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <Kicker post={p} />
+                      <Link href={`/posts/${p.slug}`}>
+                        <h3 className="mt-1.5 font-display text-xl font-bold leading-snug text-heading text-balance transition-colors group-hover:text-primary">
+                          {p.title}
+                        </h3>
+                      </Link>
+                      {p.dek && (
+                        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-fg-soft">
+                          {p.dek}
+                        </p>
+                      )}
+                      <div className="mt-2">
+                        <PostMeta post={p} className="text-xs" />
+                      </div>
                     </div>
-                  </div>
-                  <Cover post={p} ratio="4/3" className="w-32 shrink-0 sm:w-40" />
-                </article>
+                    <Cover post={p} ratio="4/3" className="w-32 shrink-0 sm:w-40" />
+                  </article>
+                  {idx === 0 && (
+                    <AdSlot className="py-5" minHeightClass="min-h-[140px]" />
+                  )}
+                </Fragment>
               ))}
             </div>
           )}
         </div>
 
-        {/* Right — text + thumbnail rail. */}
+        {/* Right — text + thumbnail rail, with an ad zone at the foot. */}
         <div className="flex flex-col divide-y divide-border lg:col-span-3 lg:border-l lg:border-border lg:pl-8">
           {rightList.map((p) => (
             <article
@@ -137,18 +145,19 @@ export function AtlanticHome({ posts }: { posts: Post[] }) {
               <Cover post={p} ratio="1/1" className="w-16 shrink-0 sm:w-20" />
             </article>
           ))}
+          <AdSlot className="pt-4" minHeightClass="min-h-[250px]" />
         </div>
       </section>
 
+      {/* Leaderboard ad zone between the front and the bottom grid. */}
+      <AdSlot className="my-10 border-y border-border py-6" minHeightClass="min-h-[90px]" />
+
       {below.length > 0 && (
-        <>
-          <div className="my-10 border-t-2 border-foreground" />
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-            {below.map((p) => (
-              <StoryCard key={p.id} post={p} size="sm" ratio="16/9" dek={false} />
-            ))}
-          </div>
-        </>
+        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          {below.map((p) => (
+            <StoryCard key={p.id} post={p} size="sm" ratio="16/9" dek={false} />
+          ))}
+        </div>
       )}
     </div>
   );
