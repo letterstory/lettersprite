@@ -34,9 +34,16 @@ export type SearchItem = {
 export function SiteSearch({
   index,
   className = "",
+  trending,
 }: {
   index: SearchItem[];
   className?: string;
+  /**
+   * When provided, focusing the empty box drops open a "Trending" shortlist so
+   * there's always something to browse or arrow into before you type. Omit it
+   * and the box behaves classically (dropdown only appears once you type).
+   */
+  trending?: SearchItem[];
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -96,6 +103,13 @@ export function SiteSearch({
 
   const preview = matches.slice(0, 5);
 
+  // The rows the dropdown is currently showing: search matches once you've
+  // typed, the optional Trending shortlist while the query is empty. Keyboard
+  // and mouse both navigate whichever list is live.
+  const trend = useMemo(() => (trending ?? []).slice(0, 6), [trending]);
+  const rows = query ? preview : trend;
+  const showDropdown = open && (query ? true : trend.length > 0);
+
   // Re-typing re-ranks the list, so any prior highlight is stale — reset it.
   useEffect(() => {
     setActiveIndex(-1);
@@ -124,14 +138,14 @@ export function SiteSearch({
       }
       return;
     }
-    if (!query) return;
+    if (!query && rows.length === 0) return;
     switch (e.key) {
       case "ArrowDown":
         // Open on the first press; then walk down, clamping at the last row.
         e.preventDefault();
         setOpen(true);
         setActiveIndex((i) =>
-          preview.length === 0 ? -1 : Math.min(i + 1, preview.length - 1),
+          rows.length === 0 ? -1 : Math.min(i + 1, rows.length - 1),
         );
         break;
       case "ArrowUp":
@@ -140,23 +154,24 @@ export function SiteSearch({
         setActiveIndex((i) => (i <= 0 ? -1 : i - 1));
         break;
       case "Home":
-        if (open && preview.length) {
+        if (open && rows.length) {
           e.preventDefault();
           setActiveIndex(0);
         }
         break;
       case "End":
-        if (open && preview.length) {
+        if (open && rows.length) {
           e.preventDefault();
-          setActiveIndex(preview.length - 1);
+          setActiveIndex(rows.length - 1);
         }
         break;
       case "Enter":
-        // A highlighted result opens that article; otherwise the form submits
-        // to the full results page (the default behaviour).
-        if (activeIndex >= 0 && preview[activeIndex]) {
+        // A highlighted row opens that article (a search match or a trending
+        // item); with a query but nothing highlighted the form submits to the
+        // full results page (the default behaviour).
+        if (activeIndex >= 0 && rows[activeIndex]) {
           e.preventDefault();
-          goToArticle(preview[activeIndex].slug);
+          goToArticle(rows[activeIndex].slug);
         }
         break;
     }
@@ -180,7 +195,7 @@ export function SiteSearch({
           ref={inputRef}
           type="search"
           role="combobox"
-          aria-expanded={open && !!query}
+          aria-expanded={showDropdown}
           aria-controls={listboxId}
           aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
           aria-autocomplete="list"
@@ -213,13 +228,24 @@ export function SiteSearch({
         )}
       </div>
 
-      {open && query && (
+      {showDropdown && (
         <div className="absolute right-0 z-50 mt-2 w-80 max-w-[85vw] overflow-hidden rounded-[var(--radius)] border border-border bg-background shadow-xl shadow-black/10">
-          {preview.length === 0 ? (
+          {/* "Trending" heading before you type; results speak for themselves. */}
+          {!query && (
+            <p className="border-b border-border bg-surface px-4 py-2 font-heading text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted">
+              Trending
+            </p>
+          )}
+          {query && preview.length === 0 ? (
             <p className="px-4 py-3 text-sm text-muted">No articles match “{query}”.</p>
           ) : (
-            <ul id={listboxId} role="listbox" aria-label="Search results" className="divide-y divide-border">
-              {preview.map((it, i) => (
+            <ul
+              id={listboxId}
+              role="listbox"
+              aria-label={query ? "Search results" : "Trending articles"}
+              className="divide-y divide-border"
+            >
+              {rows.map((it, i) => (
                 <li key={it.slug}>
                   <Link
                     id={optionId(i)}
@@ -231,7 +257,7 @@ export function SiteSearch({
                     // plus a light primary tint — so keyboard users clearly see
                     // which article is active. The 2px bar is reserved on every row
                     // (transparent) so selecting one never shifts the text.
-                    className={`block border-l-2 px-4 py-2.5 transition-colors ${
+                    className={`flex items-baseline gap-3 border-l-2 px-4 py-2.5 transition-colors ${
                       activeIndex === i
                         ? "border-primary bg-[color-mix(in_oklab,var(--primary)_12%,var(--surface))]"
                         : "border-transparent hover:bg-surface"
@@ -239,27 +265,37 @@ export function SiteSearch({
                     onMouseEnter={() => setActiveIndex(i)}
                     onMouseDown={(e) => e.preventDefault()}
                   >
-                    <span className="block font-heading text-[0.65rem] uppercase tracking-[0.18em] text-primary">
-                      {it.section}
-                    </span>
-                    <span className="mt-0.5 block text-sm font-semibold leading-snug text-heading">
-                      {it.title}
+                    {/* A rank numeral gives the trending list its "list" feel. */}
+                    {!query && (
+                      <span className="font-display text-sm font-bold leading-5 text-primary/70">
+                        {i + 1}
+                      </span>
+                    )}
+                    <span className="min-w-0">
+                      <span className="block font-heading text-[0.65rem] uppercase tracking-[0.18em] text-primary">
+                        {it.section}
+                      </span>
+                      <span className="mt-0.5 block text-sm font-semibold leading-snug text-heading">
+                        {it.title}
+                      </span>
                     </span>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
-          {/* Full-results affordance — the "hybrid" step. */}
-          <button
-            type="submit"
-            onMouseDown={(e) => e.preventDefault()}
-            className="block w-full border-t border-border bg-surface px-4 py-2.5 text-left font-heading text-xs font-semibold uppercase tracking-[0.14em] text-primary transition-colors hover:bg-background"
-          >
-            {matches.length > 0
-              ? `See all ${matches.length} result${matches.length === 1 ? "" : "s"} →`
-              : "Search all articles →"}
-          </button>
+          {/* Full-results affordance — only meaningful once there's a query. */}
+          {query && (
+            <button
+              type="submit"
+              onMouseDown={(e) => e.preventDefault()}
+              className="block w-full border-t border-border bg-surface px-4 py-2.5 text-left font-heading text-xs font-semibold uppercase tracking-[0.14em] text-primary transition-colors hover:bg-background"
+            >
+              {matches.length > 0
+                ? `See all ${matches.length} result${matches.length === 1 ? "" : "s"} →`
+                : "Search all articles →"}
+            </button>
+          )}
         </div>
       )}
     </form>

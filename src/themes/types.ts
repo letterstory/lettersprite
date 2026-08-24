@@ -41,7 +41,8 @@ export type HomeLayout =
   | "gallery"
   | "digest"
   | "timeline"
-  | "board";
+  | "board"
+  | "atlantic";
 
 /**
  * How the article page reads.
@@ -137,6 +138,23 @@ export interface ThemeFeatures {
   topRule?: boolean;
   /** Force the centered "flag" masthead even when the home layout is left-aligned. */
   centeredMasthead?: boolean;
+  /**
+   * Editorial "Atlantic" masthead: a centered serif flag with flanking rules
+   * and a star ornament, section nav left, a prominent search box with a
+   * Trending dropdown on the right. Opt-in per theme.
+   */
+  atlanticMasthead?: boolean;
+  /**
+   * Render section and author index pages in the "Slate" treatment — an
+   * oversized sans title with an italic eyebrow and accent sub-nav, a
+   * byline-first lead + rail, and a "Recently in …" river. Opt-in per theme.
+   */
+  slateLists?: boolean;
+  /**
+   * Allow serif display/heading fonts on this theme, bypassing the global
+   * sans-serif coercion. Requires product sign-off before enabling.
+   */
+  allowSerif?: boolean;
 }
 
 export interface Theme {

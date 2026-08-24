@@ -130,6 +130,16 @@ export const env = {
   /** Optional form `action` URL (e.g. a Mailchimp/Buttondown endpoint). */
   newsletterAction: str("NEWSLETTER_ACTION"),
 
+  /**
+   * Google AdSense. Set `SITE_ADSENSE_CLIENT` (e.g. `ca-pub-1234567890123456`)
+   * to turn on real ad units in the theme's ad zones; leave it unset and those
+   * zones render nothing in production (and a labeled placeholder in dev, so the
+   * layout is still visible). `SITE_ADSENSE_SLOT` is the default responsive ad
+   * unit id used when a zone doesn't specify its own.
+   */
+  adsenseClient: str("SITE_ADSENSE_CLIENT"),
+  adsenseSlot: str("SITE_ADSENSE_SLOT"),
+
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
   /**

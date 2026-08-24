@@ -6,6 +6,7 @@ import { midnight } from "./midnight";
 import { minimal } from "./minimal";
 import { sleek } from "./sleek";
 import { gazette } from "./gazette";
+import { derma } from "./derma";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -78,6 +79,7 @@ export const themes: Record<string, Theme> = {
   [midnight.name]: midnight,
   // Publication-grade magazine fronts.
   [gazette.name]: gazette, // broadsheet, paper-of-record serif
+  [derma.name]: derma, // Skin Comparisons: Atlantic front + Slate section pages (serif, opt-in)
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column
@@ -196,8 +198,12 @@ function toSans(spec: FontSpec | undefined): FontSpec | undefined {
  * Force the display, heading and body fonts to sans-serif. The mono slot
  * (code / kickers) is intentionally left monospace. Applied last, so it also
  * neutralizes any serif introduced by a `FONT_*` env override.
+ *
+ * A theme may opt out with `features.allowSerif` — reserved for looks that have
+ * product sign-off to ship serif (currently only `derma` / Skin Comparisons).
  */
 function forceSansSerif(theme: Theme): Theme {
+  if (theme.features?.allowSerif) return theme;
   return {
     ...theme,
     fonts: {

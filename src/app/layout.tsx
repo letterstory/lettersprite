@@ -81,6 +81,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <link rel="stylesheet" href={fontsHref} />
           </>
         )}
+        {env.adsenseClient && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${env.adsenseClient}`}
+            crossOrigin="anonymous"
+          />
+        )}
         <JsonLd data={siteGraphLd()} />
       </head>
       <body className="flex min-h-full flex-col antialiased">

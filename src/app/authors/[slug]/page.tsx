@@ -9,11 +9,13 @@ import {
   authorsFromPosts,
   type Byline,
 } from "@/lib/author";
-import { orderedByDate, sectionFor } from "@/lib/editorial";
+import { orderedByDate, sectionFor, sectionHref } from "@/lib/editorial";
+import { getActiveTheme } from "@/themes";
 import { authorLd } from "@/lib/seo";
 import type { Post } from "@/lib/letterbrace/types";
 import { JsonLd } from "@/components/JsonLd";
 import { StoryCard } from "@/components/Story";
+import { SlateIndex } from "@/components/SlateIndex";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -66,6 +68,39 @@ export default async function AuthorPage({ params }: Params) {
   const { byline, posts, beats } = author;
   const { bio, location } = authorProfile(byline, beats);
   const count = posts.length;
+
+  // Slate treatment (opt-in per theme): oversized name + byline-first lead +
+  // story river. Other themes keep the classic avatar header + card grid.
+  const theme = getActiveTheme();
+  if (theme.features?.slateLists) {
+    const stat = `${count} ${count === 1 ? "story" : "stories"}${
+      !byline.provided ? ` · ${location}` : ""
+    }`;
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <SlateIndex
+          eyebrow={byline.role}
+          title={byline.name}
+          avatar={{ initials: byline.initials, color: byline.color }}
+          bio={bio}
+          stat={stat}
+          accentLinks={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
+          metaKind="author"
+          riverPrefix="More from"
+          posts={posts}
+          footer={
+            <Link
+              href="/"
+              className="kicker kicker-muted ul-link hover:text-primary"
+            >
+              ← Back to {env.siteTitle}
+            </Link>
+          }
+        />
+      </>
+    );
+  }
 
   return (
     <div className="container-wide px-6 py-12">
