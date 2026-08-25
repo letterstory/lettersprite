@@ -12,6 +12,7 @@ import { DigestHome } from "./DigestHome";
 import { TimelineHome } from "./TimelineHome";
 import { BoardHome } from "./BoardHome";
 import { AtlanticHome } from "./AtlanticHome";
+import { WireHome } from "./WireHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -29,6 +30,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   timeline: TimelineHome,
   board: BoardHome,
   atlantic: AtlanticHome,
+  wire: WireHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */

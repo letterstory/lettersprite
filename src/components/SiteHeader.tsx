@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
-import { editionDate, topSections, sectionFor } from "@/lib/editorial";
+import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 import { Logo } from "./Logo";
 import { SectionNav } from "./SectionNav";
@@ -72,6 +72,75 @@ export async function SiteHeader() {
     theme.home === "column" ||
     Boolean(theme.features?.centeredMasthead);
   const topRule = theme.features?.topRule ?? centered;
+
+  // Mature technical-editorial masthead: a monospace dateline strip that
+  // scrolls away, above a sticky main bar (wordmark, pill section nav, search,
+  // subscribe). A swipeable mono section strip on small screens.
+  if (theme.features?.wireMasthead) {
+    const trending = searchIndex.slice(0, 6);
+    const tagline =
+      env.siteTagline || "APIs, integration & security — in depth";
+    return (
+      <header className="no-print bg-background">
+        {topRule && <div className="hero-wash h-0.5 w-full" />}
+        {/* Dateline strip. */}
+        <div className="border-b border-border">
+          <div className="container-wide flex items-center justify-between px-6 py-1.5">
+            <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted">
+              {tagline}
+            </span>
+            <span className="hidden font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted sm:inline">
+              {edition}
+            </span>
+          </div>
+        </div>
+        {/* Sticky main bar. */}
+        <div className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+          <div className="container-wide px-6">
+            <div className="flex items-center gap-4 py-4">
+              <Logo size="md" className="shrink-0" />
+              <nav className="mx-auto hidden items-center rounded-full border border-border p-1 lg:flex">
+                {sections.map((s) => (
+                  <Link
+                    key={s}
+                    href={sectionHref(s)}
+                    className="whitespace-nowrap rounded-full px-3.5 py-1.5 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:bg-surface hover:text-primary"
+                  >
+                    {s}
+                  </Link>
+                ))}
+              </nav>
+              <div className="ml-auto flex shrink-0 items-center gap-3">
+                <SiteSearch index={searchIndex} trending={trending} className="w-44 sm:w-56" />
+                <a
+                  href="#newsletter"
+                  className="hidden whitespace-nowrap rounded-full bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-[color:var(--primary-fg)] transition-opacity hover:opacity-90 sm:inline-block"
+                >
+                  Subscribe
+                </a>
+              </div>
+            </div>
+          </div>
+          {/* Swipeable mono section strip on < lg. */}
+          {sections.length > 0 && (
+            <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+              <div className="flex w-max gap-5 px-6 py-2.5">
+                {sections.map((s) => (
+                  <Link
+                    key={s}
+                    href={sectionHref(s)}
+                    className="shrink-0 whitespace-nowrap font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-primary"
+                  >
+                    {s}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          )}
+        </div>
+      </header>
+    );
+  }
 
   // Editorial "Atlantic" masthead: a centered serif flag with flanking rules
   // and a star ornament, section nav on the left, a prominent search box (with

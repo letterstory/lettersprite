@@ -16,6 +16,7 @@ import type { Post } from "@/lib/letterbrace/types";
 import { JsonLd } from "@/components/JsonLd";
 import { StoryCard } from "@/components/Story";
 import { SlateIndex } from "@/components/SlateIndex";
+import { WireIndex } from "@/components/WireIndex";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -69,9 +70,35 @@ export default async function AuthorPage({ params }: Params) {
   const { bio, location } = authorProfile(byline, beats);
   const count = posts.length;
 
+  const theme = getActiveTheme();
+
+  // ctrl.xyz-style index (opt-in): rounded card grid + pill chips + ad zones.
+  if (theme.features?.wireLists) {
+    const stat = `${count} ${count === 1 ? "story" : "stories"}${
+      !byline.provided ? ` · ${location}` : ""
+    }`;
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <WireIndex
+          eyebrow={byline.role}
+          title={byline.name}
+          avatar={{ initials: byline.initials, color: byline.color }}
+          stat={stat}
+          chips={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
+          posts={posts}
+          footer={
+            <Link href="/" className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-primary">
+              ← Back to {env.siteTitle}
+            </Link>
+          }
+        />
+      </>
+    );
+  }
+
   // Slate treatment (opt-in per theme): oversized name + byline-first lead +
   // story river. Other themes keep the classic avatar header + card grid.
-  const theme = getActiveTheme();
   if (theme.features?.slateLists) {
     const stat = `${count} ${count === 1 ? "story" : "stories"}${
       !byline.provided ? ` · ${location}` : ""
