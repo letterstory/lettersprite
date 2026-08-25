@@ -12,6 +12,7 @@ import {
 } from "@/lib/editorial";
 import { StoryCard } from "@/components/Story";
 import { SlateIndex } from "@/components/SlateIndex";
+import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -59,12 +60,31 @@ export default async function SectionPage({ params }: Params) {
   // Slate treatment (opt-in per theme): oversized title + byline-first lead +
   // story river. Other themes keep the classic card grid below.
   const theme = getActiveTheme();
+  const count = section.posts.length;
+
+  // ctrl.xyz-style index (opt-in): rounded card grid + pill chips + ad zones.
+  if (theme.features?.wireLists) {
+    const posts = await getPosts();
+    const siblings = allSections(posts)
+      .filter((s) => s !== section.name)
+      .map((s) => ({ label: s, href: sectionHref(s) }));
+    return (
+      <WireIndex
+        eyebrow="Section"
+        title={section.name}
+        stat={`${count} ${count === 1 ? "story" : "stories"} in ${section.name}`}
+        chips={siblings}
+        posts={section.posts}
+        footer={<Logo size="sm" linked />}
+      />
+    );
+  }
+
   if (theme.features?.slateLists) {
     const posts = await getPosts();
     const siblings = allSections(posts)
       .filter((s) => s !== section.name)
       .map((s) => ({ label: s, href: sectionHref(s) }));
-    const count = section.posts.length;
     return (
       <SlateIndex
         eyebrow="The latest in"

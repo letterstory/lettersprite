@@ -42,7 +42,8 @@ export type HomeLayout =
   | "digest"
   | "timeline"
   | "board"
-  | "atlantic";
+  | "atlantic"
+  | "wire";
 
 /**
  * How the article page reads.
@@ -144,6 +145,10 @@ export interface ThemeFeatures {
    * Trending dropdown on the right. Opt-in per theme.
    */
   atlanticMasthead?: boolean;
+  /** Dark developer news-portal masthead (AllAboutAPIs). */
+  wireMasthead?: boolean;
+  /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */
+  wireLists?: boolean;
   /**
    * Render section and author index pages in the "Slate" treatment — an
    * oversized sans title with an italic eyebrow and accent sub-nav, a
