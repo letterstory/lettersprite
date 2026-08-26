@@ -92,20 +92,61 @@ function publishedPath(params: Record<string, string> = {}): string {
 }
 
 /**
+ * How many posts to request per page. Small on purpose: a single unbounded
+ * `/published` fetch pulls the org's full frozen content in one query, which
+ * times out server-side on large orgs (observed: statement-timeout 500s that
+ * left those blogs rendering empty). We only ever render `postsLimit` (≤100)
+ * posts, and the list is newest-first, so paging a small window and stopping
+ * once we have enough keeps every request cheap.
+ */
+const PAGE_SIZE = 20;
+
+/** Read the keyset cursor envelope Letterbrace returns alongside `items`. */
+function readCursor(payload: unknown): { nextCursor: string | null; hasMore: boolean } {
+  if (payload && typeof payload === "object") {
+    const obj = payload as Record<string, unknown>;
+    const nextCursor = typeof obj.next_cursor === "string" && obj.next_cursor ? obj.next_cursor : null;
+    return { nextCursor, hasMore: obj.has_more === true };
+  }
+  return { nextCursor: null, hasMore: false };
+}
+
+/**
  * All visible published posts, newest first, capped at POSTS_LIMIT. Returns
  * sample posts when no key is configured, and [] (rather than throwing) on API
  * errors, so the site renders an empty state instead of a 500.
+ *
+ * Pages the `/published` list with a small `limit`, following `next_cursor`
+ * until it has enough visible posts or the feed ends — never the whole org in
+ * one request. Falls back gracefully if the API omits the cursor envelope: with
+ * no `next_cursor`/`has_more` the loop stops after the first page.
  */
 export async function getPosts(): Promise<Post[]> {
   if (!hasLetterbraceKey) return samplePosts;
   try {
-    const payload = await apiGet(publishedPath());
-    const posts = dedupeById(
-      extractArray(payload)
-        .map(normalizePost)
-        .filter((p): p is Post => p !== null)
-        .filter(isVisible),
-    )
+    // Enough pages to fill postsLimit (≤100), with margin for any filtered rows.
+    const maxPages = Math.ceil(env.postsLimit / PAGE_SIZE) + 2;
+    const collected: Post[] = [];
+    let cursor: string | undefined;
+
+    for (let page = 0; page < maxPages; page++) {
+      const params: Record<string, string> = { limit: String(PAGE_SIZE) };
+      if (cursor) params.cursor = cursor;
+      const payload = await apiGet(publishedPath(params));
+
+      collected.push(
+        ...extractArray(payload)
+          .map(normalizePost)
+          .filter((p): p is Post => p !== null)
+          .filter(isVisible),
+      );
+
+      const { nextCursor, hasMore } = readCursor(payload);
+      if (collected.length >= env.postsLimit || !hasMore || !nextCursor) break;
+      cursor = nextCursor;
+    }
+
+    const posts = dedupeById(collected)
       .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
       .slice(0, env.postsLimit);
     return ensureUniqueSlugs(posts);
