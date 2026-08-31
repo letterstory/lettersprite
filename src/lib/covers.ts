@@ -1,6 +1,7 @@
 import { getActiveTheme } from "@/themes";
 import { env } from "@/env";
 import { sizedCover } from "./cover-url";
+import { stockCoverFor } from "./stock-covers";
 import type { Post } from "@/lib/letterbrace/types";
 import {
   COVER_SETS,
@@ -65,9 +66,15 @@ export function fallbackCover(name: string, themeName: string): string {
  * need the original bytes (e.g. Open Graph images).
  */
 export function coverImageFor(post: Post, width?: number): string {
+  const theme = getActiveTheme();
+  // Themes that opt into curated stock photography (e.g. bourse / VC Letters)
+  // use it for every cover, everywhere, ignoring the stored (often AI) image.
+  if (theme.features?.stockCovers) {
+    return stockCoverFor(post, width ?? 1200);
+  }
   const url = post.coverImage
     ? post.coverImage
-    : fallbackCover(post.title || post.slug, getActiveTheme().name);
+    : fallbackCover(post.title || post.slug, theme.name);
   return width ? sizedCover(url, width) : url;
 }
 
@@ -77,6 +84,7 @@ export function coverImageFor(post: Post, width?: number): string {
  * purely decorative, so it correctly stays `alt=""`.
  */
 export function coverAltFor(post: Post): string {
+  if (getActiveTheme().features?.stockCovers) return "";
   if (!post.coverImage) return "";
   return post.coverImageAlt ?? post.title ?? "";
 }
