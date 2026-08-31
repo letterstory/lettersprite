@@ -26,7 +26,7 @@ export function PostListItem({ post }: { post: Post }) {
           {post.tags[0]}
         </span>
       )}
-      <h2 className="mt-2 font-heading text-2xl font-bold leading-snug tracking-tight">
+      <h2 className="mt-2 line-clamp-3 font-heading text-2xl font-bold leading-snug tracking-tight">
         <Link href={href} className="transition-colors hover:text-primary">
           {post.title}
         </Link>

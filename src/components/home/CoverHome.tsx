@@ -21,24 +21,36 @@ export function CoverHome({ posts }: { posts: Post[] }) {
 
   return (
     <div>
+      {/*
+        The cover: the image and the overlay share ONE grid cell, so the section
+        is as tall as whichever is taller.
+
+        It used to be a fixed-height image with an `absolute inset-0` overlay,
+        which gave the cover headline a hard ceiling it silently broke through:
+        at 1280x800 — an ordinary laptop — the kicker + a three-line 72px
+        headline + the dek came to 718px inside a 688px hero and spilled past
+        the bottom of the image, so the headline read as cut off. The height
+        target is unchanged (86vh, capped at 900, floored at 520); it is simply
+        a MINIMUM now rather than a fixed size.
+      */}
       {lead && (
-        <section className="relative">
+        <section className="relative grid min-h-[max(520px,min(86vh,900px))] grid-cols-1 grid-rows-1">
           <Link
             href={`/posts/${lead.slug}`}
             aria-hidden
             tabIndex={-1}
-            className="block overflow-hidden"
+            className="col-start-1 row-start-1 block overflow-hidden"
           >
             <img
               src={coverImageFor(lead, 1600)}
               alt={coverAltFor(lead)}
               fetchPriority="high"
               decoding="async"
-              className="h-[86vh] max-h-[900px] min-h-[520px] w-full object-cover"
+              className="h-full w-full object-cover"
             />
           </Link>
-          <div className="hero-tint pointer-events-none absolute inset-0" />
-          <div className="absolute inset-0 flex flex-col justify-between">
+          <div className="hero-tint pointer-events-none col-start-1 row-start-1" />
+          <div className="col-start-1 row-start-1 flex flex-col justify-between">
             {/* Coverlines — teasers, upper right, like a newsstand cover. */}
             {coverlines.length > 0 && (
               <div className="container-wide flex justify-end px-6 pt-8 sm:pt-10">
@@ -47,7 +59,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
                     <li key={post.id}>
                       <Link
                         href={`/posts/${post.slug}`}
-                        className="font-heading text-sm font-semibold uppercase leading-tight tracking-wide text-white/85 transition-colors hover:text-white"
+                        className="line-clamp-3 font-heading text-sm font-semibold uppercase leading-tight tracking-wide text-white/85 transition-colors hover:text-white"
                       >
                         {post.title}
                       </Link>
@@ -60,7 +72,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
             <div className="container-wide px-6 pb-10 text-white sm:pb-16">
               <Kicker post={lead} className="text-white/90" linked={false} />
               <Link href={`/posts/${lead.slug}`}>
-                <h2 className="display mt-3 max-w-3xl text-5xl font-black leading-[0.92] text-white [text-shadow:0_1px_16px_rgba(0,0,0,0.45)] sm:text-6xl md:text-7xl">
+                <h2 className="display mt-3 line-clamp-3 max-w-3xl text-5xl font-black leading-[0.92] text-white [text-shadow:0_1px_16px_rgba(0,0,0,0.45)] sm:text-6xl md:text-7xl">
                   {lead.title}
                 </h2>
               </Link>

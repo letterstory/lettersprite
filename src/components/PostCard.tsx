@@ -40,7 +40,7 @@ export function PostCard({
           </span>
         )}
         <h2
-          className={`font-heading font-bold leading-tight tracking-tight ${
+          className={`font-heading line-clamp-3 font-bold leading-tight tracking-tight ${
             featured ? "text-3xl" : "text-xl"
           }`}
         >

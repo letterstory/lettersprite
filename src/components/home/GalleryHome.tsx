@@ -54,7 +54,7 @@ export function GalleryHome({ posts }: { posts: Post[] }) {
                     <span className="kicker text-white/80">
                       {sectionFor(post)}
                     </span>
-                    <h3 className="mt-1 font-heading text-lg font-bold leading-snug text-white">
+                    <h3 className="mt-1 line-clamp-3 font-heading text-lg font-bold leading-snug text-white">
                       {post.title}
                     </h3>
                   </div>

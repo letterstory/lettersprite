@@ -77,7 +77,7 @@ export function AtlanticHome({ posts }: { posts: Post[] }) {
               <div className="mx-auto mt-6 max-w-2xl">
                 <Kicker post={lead} className="justify-center" />
                 <Link href={`/posts/${lead.slug}`}>
-                  <h2 className="mt-3 font-display text-3xl font-bold leading-[1.12] text-heading text-balance sm:text-[2.6rem]">
+                  <h2 className="mt-3 line-clamp-3 font-display text-3xl font-bold leading-[1.12] text-heading text-balance sm:text-[2.6rem]">
                     {lead.title}
                   </h2>
                 </Link>

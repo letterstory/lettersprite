@@ -37,7 +37,7 @@ export function DigestHome({ posts }: { posts: Post[] }) {
                 <div className="flex min-w-0 flex-col gap-2">
                   <Kicker post={post} />
                   <Link href={`/posts/${post.slug}`} className="headline-link">
-                    <h3 className="font-display text-2xl font-bold leading-snug">
+                    <h3 className="line-clamp-3 font-display text-2xl font-bold leading-snug">
                       {post.title}
                     </h3>
                   </Link>

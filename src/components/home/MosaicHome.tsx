@@ -24,7 +24,7 @@ export function MosaicHome({ posts }: { posts: Post[] }) {
             <div className="flex flex-col gap-3">
               <Kicker post={lead} />
               <Link href={`/posts/${lead.slug}`} className="headline-link">
-                <h2 className="display text-4xl font-black leading-[0.98] sm:text-5xl md:text-6xl">
+                <h2 className="display line-clamp-3 text-4xl font-black leading-[0.98] sm:text-5xl md:text-6xl">
                   {lead.title}
                 </h2>
               </Link>

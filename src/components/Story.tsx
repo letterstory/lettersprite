@@ -68,9 +68,15 @@ function Headline({
   level?: 2 | 3;
 }) {
   const Tag = level === 2 ? "h2" : "h3";
+  // `line-clamp-3` everywhere a headline renders: a card grid's rows are sized
+  // by their tallest member, so one long title stretches the whole row and
+  // pushes the meta line out of alignment across the front page. Three lines is
+  // past the point where any of these headlines are still readable at a glance.
   return (
     <Link href={`/posts/${post.slug}`} className="headline-link">
-      <Tag className={`${display ? "display" : "font-heading"} ${className}`}>
+      <Tag
+        className={`${display ? "display" : "font-heading"} line-clamp-3 ${className}`}
+      >
         {post.title}
       </Tag>
     </Link>
