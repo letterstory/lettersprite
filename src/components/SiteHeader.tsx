@@ -237,10 +237,13 @@ export async function SiteHeader() {
         <div className="sticky top-0 z-50 border-y border-border bg-background/85 backdrop-blur-md">
           <div className="container-wide px-6">
             <div className="flex items-center justify-center gap-4 py-2.5">
+              {/* `align="center"` already centres (safely); a plain
+                  `justify-center` here would override it and re-break the
+                  overflow case. */}
               <SectionNav
                 sections={sections}
                 align="center"
-                className="justify-center text-center"
+                className="text-center"
               />
               <SiteSearch index={searchIndex} className="hidden w-56 shrink-0 lg:block" />
             </div>
