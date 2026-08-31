@@ -70,7 +70,7 @@ function Tile({
       <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
         <Chip section={sectionFor(post)} className="bg-black/30 backdrop-blur-sm" />
         <h3
-          className={`mt-2.5 font-display font-bold leading-tight tracking-tight text-white text-balance ${
+          className={`mt-2.5 line-clamp-3 font-display font-bold leading-tight tracking-tight text-white text-balance ${
             big ? "text-2xl sm:text-3xl" : "text-base sm:text-lg"
           }`}
         >
@@ -100,7 +100,7 @@ function Card({ post }: { post: Post }) {
       <div className="flex flex-1 flex-col gap-3 p-5">
         <Chip section={sectionFor(post)} className="self-start" />
         <Link href={`/posts/${post.slug}`}>
-          <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-heading text-balance transition-colors group-hover:text-primary">
+          <h3 className="line-clamp-3 font-display text-lg font-semibold leading-snug tracking-tight text-heading text-balance transition-colors group-hover:text-primary">
             {post.title}
           </h3>
         </Link>

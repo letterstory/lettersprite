@@ -22,7 +22,7 @@ export function BoardHome({ posts }: { posts: Post[] }) {
             <div className="flex flex-col justify-center gap-3 sm:order-1">
               <Kicker post={lead} />
               <Link href={`/posts/${lead.slug}`} className="headline-link">
-                <h2 className="font-display text-3xl font-black leading-tight sm:text-4xl">
+                <h2 className="line-clamp-3 font-display text-3xl font-black leading-tight sm:text-4xl">
                   {lead.title}
                 </h2>
               </Link>
@@ -56,7 +56,7 @@ export function BoardHome({ posts }: { posts: Post[] }) {
                   <Kicker post={post} />
                   <Link href={`/posts/${post.slug}`} className="headline-link">
                     <h3
-                      className={`font-heading font-bold leading-snug ${
+                      className={`font-heading line-clamp-3 font-bold leading-snug ${
                         note ? "text-xl" : "text-lg"
                       }`}
                     >

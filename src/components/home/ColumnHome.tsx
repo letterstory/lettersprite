@@ -26,7 +26,7 @@ export function ColumnHome({ posts }: { posts: Post[] }) {
             <div className="flex flex-col gap-3 sm:order-1">
               <Kicker post={post} />
               <Link href={`/posts/${post.slug}`} className="headline-link">
-                <h2 className="font-display text-2xl font-bold leading-tight sm:text-[1.7rem]">
+                <h2 className="line-clamp-3 font-display text-2xl font-bold leading-tight sm:text-[1.7rem]">
                   {post.title}
                 </h2>
               </Link>

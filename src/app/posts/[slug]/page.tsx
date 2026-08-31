@@ -175,7 +175,17 @@ export default async function PostPage({ params }: Params) {
           </div>
         </header>
 
-        {/* Hero cover — breaks out wider on feature layouts */}
+        {/*
+          Hero cover — breaks out wider on feature layouts.
+
+          `aspect-[3/2]` is not decoration: it is the only thing bounding this
+          image's height. Without it `object-cover` has no box to cover, so the
+          hero renders at whatever aspect the source happens to be and one
+          oddly-shaped cover produces a hero taller than the viewport. Every
+          other cover slot in the app is constrained the same way — see `Cover`
+          in components/Story.tsx. 3:2 matches what Letterbrace mints, so a
+          generated cover is shown whole rather than cropped.
+        */}
         <figure
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >
@@ -184,7 +194,7 @@ export default async function PostPage({ params }: Params) {
             alt={coverAltFor(post)}
             fetchPriority="high"
             decoding="async"
-            className="w-full rounded-[var(--radius)] object-cover"
+            className="aspect-[3/2] w-full rounded-[var(--radius)] object-cover"
           />
           <figcaption className="mt-2.5 text-xs text-muted">
             <span>

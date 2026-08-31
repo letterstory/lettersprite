@@ -128,7 +128,7 @@ export function SlateIndex({
             <Cover post={lead} ratio="16/9" priority />
             <MetaLine post={lead} metaKind={metaKind} className="mt-4" />
             <Link href={`/posts/${lead.slug}`}>
-              <h2 className="mt-2 font-display text-3xl font-bold leading-[1.08] text-primary text-balance transition-opacity group-hover:opacity-80 sm:text-4xl">
+              <h2 className="mt-2 line-clamp-3 font-display text-3xl font-bold leading-[1.08] text-primary text-balance transition-opacity group-hover:opacity-80 sm:text-4xl">
                 {lead.title}
               </h2>
             </Link>

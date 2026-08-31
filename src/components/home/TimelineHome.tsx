@@ -27,7 +27,7 @@ export function TimelineHome({ posts }: { posts: Post[] }) {
           <div className="flex flex-col gap-3 lg:order-1">
             <Kicker post={lead} />
             <Link href={`/posts/${lead.slug}`} className="headline-link">
-              <h2 className="display text-3xl font-black leading-[1.03] sm:text-4xl md:text-5xl">
+              <h2 className="display line-clamp-3 text-3xl font-black leading-[1.03] sm:text-4xl md:text-5xl">
                 {lead.title}
               </h2>
             </Link>
@@ -61,7 +61,7 @@ export function TimelineHome({ posts }: { posts: Post[] }) {
                   <div className="flex min-w-0 flex-col gap-2">
                     <Kicker post={post} />
                     <Link href={`/posts/${post.slug}`} className="headline-link">
-                      <h3 className="font-display text-2xl font-bold leading-snug">
+                      <h3 className="line-clamp-3 font-display text-2xl font-bold leading-snug">
                         {post.title}
                       </h3>
                     </Link>

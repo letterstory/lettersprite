@@ -28,9 +28,14 @@ export function SectionNav({
     <nav
       aria-label="Sections"
       className={`swipe-x flex min-w-0 flex-nowrap items-center gap-x-6 ${
-        // Centre on wide screens where it fits; stay start-aligned when it
-        // overflows so the first sections are never scrolled out of reach.
-        align === "center" ? "md:justify-center" : ""
+        // `safe center` is what makes the stated rule actually hold: centre
+        // while the row fits, fall back to start-aligned the moment it
+        // overflows. Plain `justify-center` on an overflowing scroll container
+        // centres the content and clips BOTH ends — and the overflow past the
+        // start edge cannot be scrolled back to, so those sections become
+        // unreachable rather than merely off-screen. That is what put a
+        // half-cut "…AGEMENT" at the left edge of the masthead.
+        align === "center" ? "justify-center-safe" : ""
       } ${className}`}
     >
       {sections.map((s) => (
