@@ -43,7 +43,8 @@ export type HomeLayout =
   | "timeline"
   | "board"
   | "atlantic"
-  | "wire";
+  | "wire"
+  | "boom";
 
 /**
  * How the article page reads.
@@ -147,6 +148,10 @@ export interface ThemeFeatures {
   atlanticMasthead?: boolean;
   /** Dark developer news-portal masthead (AllAboutAPIs). */
   wireMasthead?: boolean;
+  /** Creative Boom-style two-row masthead: wordmark row + full-width topic bar. */
+  boomMasthead?: boolean;
+  /** Use curated stock photography for every cover instead of the stored image. */
+  stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */
   wireLists?: boolean;
   /**

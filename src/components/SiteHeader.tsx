@@ -257,6 +257,38 @@ export async function SiteHeader() {
     );
   }
 
+  // Creative Boom-style: a wordmark row, then a full-width, horizontally
+  // scrollable topic bar on its own line so long section names all fit and
+  // stay reachable.
+  if (theme.features?.boomMasthead) {
+    return (
+      <header className="no-print sticky top-0 z-50 bg-background/90 backdrop-blur-md">
+        <div className="border-b border-border">
+          <div className="container-wide flex items-center justify-between gap-6 px-6 py-4">
+            <Logo size="md" />
+            <div className="flex items-center gap-4">
+              <SiteSearch index={searchIndex} className="hidden w-56 sm:block" />
+              <SubscribeButton />
+            </div>
+          </div>
+        </div>
+        <div className="border-b border-border">
+          <nav className="container-wide flex gap-7 overflow-x-auto whitespace-nowrap px-6 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="shrink-0 text-[0.78rem] font-semibold uppercase tracking-wide text-heading/75 transition-colors hover:text-primary"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
+    );
+  }
+
   // Modern: single sticky bar, left wordmark + nav + subscribe.
   return (
     <header className="no-print sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
