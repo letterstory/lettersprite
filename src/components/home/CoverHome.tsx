@@ -16,6 +16,11 @@ export function CoverHome({ posts }: { posts: Post[] }) {
   // The first few are teased as "coverlines" over the image on desktop; the
   // full remainder always fills the "In This Issue" grid so every story stays
   // reachable at every breakpoint (the coverlines are a desktop re-surfacing).
+  //
+  // These are TEASES, not headlines — on a real cover they run three or four
+  // words. Ours are whole titles set in uppercase inside a 16rem rail, so an
+  // unbounded one ran to five lines and three of them turned the top-right of
+  // the cover into a wall of capitals. They are clamped to two lines below.
   const coverlines = rest.slice(0, 3);
   const issue = rest;
 
@@ -59,7 +64,7 @@ export function CoverHome({ posts }: { posts: Post[] }) {
                     <li key={post.id}>
                       <Link
                         href={`/posts/${post.slug}`}
-                        className="line-clamp-3 font-heading text-sm font-semibold uppercase leading-tight tracking-wide text-white/85 transition-colors hover:text-white"
+                        className="line-clamp-2 font-heading text-sm font-semibold uppercase leading-tight tracking-wide text-white/85 transition-colors hover:text-white"
                       >
                         {post.title}
                       </Link>
