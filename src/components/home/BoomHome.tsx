@@ -184,20 +184,26 @@ export function BoomHome({ posts }: { posts: Post[] }) {
       </section>
 
       {/* Most read. */}
-      <section className="container-wide px-6 py-14">
-        <SectionTitle>Most read</SectionTitle>
-        <div className="mt-8 grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-1">{mrLead && <Card post={mrLead} cover={cv(mrLead.slug)} size="lg" />}</div>
-          {mrMed.map((p) => (
-            <Card key={p.id} post={p} cover={cv(p.slug)} size="md" />
-          ))}
-        </div>
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {mrRow.map((p) => (
-            <Card key={p.id} post={p} cover={cv(p.slug)} size="sm" />
-          ))}
-        </div>
-      </section>
+      {mrLead && (
+        <section className="container-wide px-6 py-14">
+          <SectionTitle>Most read</SectionTitle>
+          <div className="mt-8 grid gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <Card post={mrLead} cover={cv(mrLead.slug)} size="lg" />
+            </div>
+            {mrMed.map((p) => (
+              <Card key={p.id} post={p} cover={cv(p.slug)} size="md" />
+            ))}
+          </div>
+          {mrRow.length > 0 && (
+            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {mrRow.map((p) => (
+                <Card key={p.id} post={p} cover={cv(p.slug)} size="sm" />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Black promo band — the newsletter. */}
       <section className="bg-[#15181c] text-[#eef1f4]">
@@ -229,15 +235,17 @@ export function BoomHome({ posts }: { posts: Post[] }) {
       </section>
 
       {/* Latest. */}
-      <section className="container-wide px-6 py-14">
-        <SectionTitle>Latest</SectionTitle>
-        <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {latest.map((p) => (
-            <Card key={p.id} post={p} cover={cv(p.slug)} size="sm" />
-          ))}
-        </div>
-        <AdSlot className="mt-14" minHeightClass="min-h-[90px]" />
-      </section>
+      {latest.length > 0 && (
+        <section className="container-wide px-6 py-14">
+          <SectionTitle>Latest</SectionTitle>
+          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {latest.map((p) => (
+              <Card key={p.id} post={p} cover={cv(p.slug)} size="sm" />
+            ))}
+          </div>
+          <AdSlot className="mt-14" minHeightClass="min-h-[90px]" />
+        </section>
+      )}
     </div>
   );
 }
