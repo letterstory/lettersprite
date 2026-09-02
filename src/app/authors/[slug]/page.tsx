@@ -16,6 +16,7 @@ import type { Post } from "@/lib/letterbrace/types";
 import { JsonLd } from "@/components/JsonLd";
 import { StoryCard } from "@/components/Story";
 import { SlateIndex } from "@/components/SlateIndex";
+import { FolioIndex } from "@/components/FolioIndex";
 import { WireIndex } from "@/components/WireIndex";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -71,6 +72,22 @@ export default async function AuthorPage({ params }: Params) {
   const count = posts.length;
 
   const theme = getActiveTheme();
+
+  // grafill-style index (opt-in): category switcher + big-card grid.
+  if (theme.features?.folioLists) {
+    const stat = `${count} ${count === 1 ? "story" : "stories"} by ${byline.name}`;
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <FolioIndex
+          title={byline.name}
+          siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
+          stat={stat}
+          posts={posts}
+        />
+      </>
+    );
+  }
 
   // ctrl.xyz-style index (opt-in): rounded card grid + pill chips + ad zones.
   if (theme.features?.wireLists) {

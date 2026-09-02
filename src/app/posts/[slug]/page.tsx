@@ -108,6 +108,7 @@ export default async function PostPage({ params }: Params) {
   const section = sectionFor(post);
   const iso = publishDate(post);
   const feature = theme.article === "feature";
+  const folio = theme.home === "folio";
   const dropCap = Boolean(theme.features?.dropCap);
 
   // Sanitize once, then inject heading anchors and extract the outline for the
@@ -132,12 +133,62 @@ export default async function PostPage({ params }: Params) {
       <ReadingProgress />
       <BackToTop />
 
-      <article id="top" className="px-6 py-10">
+      {/* Folio (grafill) — a fixed full-bleed hero the content scrolls up over, so
+          the image "dies" into the background. The masthead overlays it (see
+          globals.css); the article below is opaque and pulled down 100vh. */}
+      {folio && (
+        <div
+          data-folio-hero
+          className="fixed inset-x-0 top-0 z-0 h-screen w-full overflow-hidden bg-heading"
+        >
+          <img
+            src={coverImageFor(post, 1600)}
+            alt={coverAltFor(post)}
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/45 to-transparent" />
+          {/* Overlaid breadcrumb masthead: wordmark — section — title. */}
+          <div className="absolute inset-x-0 top-0 z-20">
+            <div className="container-wide flex items-center gap-3 px-6 py-5 text-white">
+              <Link
+                href="/"
+                className="shrink-0 font-display text-xl font-extrabold tracking-tight text-white"
+              >
+                {env.siteTitle}
+              </Link>
+              <span aria-hidden className="text-white/40">——</span>
+              <Link
+                href={sectionHref(section)}
+                className="hidden shrink-0 font-sans text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-white sm:inline"
+              >
+                {section}
+              </Link>
+              <span aria-hidden className="hidden text-white/40 sm:inline">
+                ——
+              </span>
+              <span className="min-w-0 truncate font-sans text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-white/90">
+                {post.title}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <article
+        id="top"
+        className={
+          folio
+            ? "relative z-10 mt-[80vh] bg-background px-6 pb-10 pt-9"
+            : "px-6 py-10"
+        }
+      >
         {/* Header, constrained to the reading measure */}
         <header className="container-content">
           <nav
             aria-label="Breadcrumb"
-            className="no-print mb-6 flex items-center gap-2 text-xs text-muted"
+            className={`no-print mb-6 flex items-center gap-2 text-xs text-muted ${folio ? "hidden" : ""}`}
           >
             <Link href="/" className="ul-link hover:text-foreground">
               Home
@@ -153,7 +204,7 @@ export default async function PostPage({ params }: Params) {
             {isLongread(post) && <span className="pill">Long read</span>}
           </div>
           <h1
-            className={`${feature ? "display" : "font-display"} text-3xl font-black leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl`}
+            className={`${feature ? "display" : "font-display"} ${folio ? "uppercase" : ""} text-3xl font-black leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl`}
           >
             {post.title}
           </h1>
@@ -186,6 +237,7 @@ export default async function PostPage({ params }: Params) {
           in components/Story.tsx. 3:2 matches what Letterbrace mints, so a
           generated cover is shown whole rather than cropped.
         */}
+        {!folio && (
         <figure
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >
@@ -206,6 +258,7 @@ export default async function PostPage({ params }: Params) {
             <CoverCredit credit={post.coverCredit} className="mt-1 block" />
           </figcaption>
         </figure>
+        )}
 
         {/* Body */}
         <div className="container-content mt-10">

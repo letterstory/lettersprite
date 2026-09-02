@@ -12,6 +12,7 @@ import {
 } from "@/lib/editorial";
 import { StoryCard } from "@/components/Story";
 import { SlateIndex } from "@/components/SlateIndex";
+import { FolioIndex } from "@/components/FolioIndex";
 import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
 
@@ -61,6 +62,22 @@ export default async function SectionPage({ params }: Params) {
   // story river. Other themes keep the classic card grid below.
   const theme = getActiveTheme();
   const count = section.posts.length;
+
+  // grafill-style index (opt-in): category switcher + big-card grid.
+  if (theme.features?.folioLists) {
+    const posts = await getPosts();
+    const siblings = allSections(posts)
+      .filter((s) => s !== section.name)
+      .map((s) => ({ label: s, href: sectionHref(s) }));
+    return (
+      <FolioIndex
+        title={section.name}
+        siblings={siblings}
+        stat={`${count} ${count === 1 ? "story" : "stories"} in ${section.name}`}
+        posts={section.posts}
+      />
+    );
+  }
 
   // ctrl.xyz-style index (opt-in): rounded card grid + pill chips + ad zones.
   if (theme.features?.wireLists) {

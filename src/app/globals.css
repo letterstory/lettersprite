@@ -28,6 +28,12 @@
   --font-mono: var(--font-mono);
 }
 
+/* Folio (grafill) article: hide the global masthead — the article renders its
+   own breadcrumb masthead ("Site — Section — Title") overlaid on the hero. */
+body:has([data-folio-hero]) [data-folio-masthead] {
+  display: none;
+}
+
 /* Baseline defaults (a clean light theme) so the document is fully styled even
    before the active theme's variables are applied to <html>. */
 :root {
