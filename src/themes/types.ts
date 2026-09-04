@@ -44,7 +44,8 @@ export type HomeLayout =
   | "board"
   | "atlantic"
   | "wire"
-  | "boom";
+  | "boom"
+  | "folio";
 
 /**
  * How the article page reads.
@@ -150,6 +151,10 @@ export interface ThemeFeatures {
   wireMasthead?: boolean;
   /** Creative Boom-style two-row masthead: wordmark row + full-width topic bar. */
   boomMasthead?: boolean;
+  /** grafill-style masthead: serif wordmark + inline serif nav + utility item. */
+  folioMasthead?: boolean;
+  /** grafill-style section/author index: category switcher + big-card grid. */
+  folioLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */

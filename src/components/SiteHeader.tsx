@@ -257,6 +257,49 @@ export async function SiteHeader() {
     );
   }
 
+  // grafill-style: a serif wordmark with inline serif section nav and a search
+  // + subscribe on the right, in one slim bar.
+  if (theme.features?.folioMasthead) {
+    return (
+      <header data-folio-masthead className="no-print sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+        <div className="container-wide flex items-center gap-6 px-6 py-4">
+          <Logo size="md" className="shrink-0" />
+          <nav className="hidden items-center gap-6 lg:flex">
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="whitespace-nowrap font-display text-[0.98rem] leading-none text-heading transition-colors hover:text-primary"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+          <div data-hero-hide className="ml-auto flex shrink-0 items-center gap-4">
+            <SiteSearch index={searchIndex} className="hidden w-44 md:block" />
+            <SubscribeButton />
+          </div>
+        </div>
+        {/* Section strip on small screens. */}
+        {sections.length > 0 && (
+          <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+            <div className="flex w-max gap-5 px-6 py-2.5">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 whitespace-nowrap font-display text-sm text-heading transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
+
   // Creative Boom-style: a wordmark row, then a full-width, horizontally
   // scrollable topic bar on its own line so long section names all fit and
   // stay reachable.

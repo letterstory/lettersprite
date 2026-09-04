@@ -9,6 +9,7 @@ import { gazette } from "./gazette";
 import { derma } from "./derma";
 import { apiwire } from "./apiwire";
 import { bourse } from "./bourse";
+import { folio } from "./folio";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -83,7 +84,8 @@ export const themes: Record<string, Theme> = {
   [gazette.name]: gazette, // broadsheet, paper-of-record serif
   [derma.name]: derma, // Skin Comparisons: Atlantic front + Slate section pages (serif, opt-in)
   [apiwire.name]: apiwire, // AllAboutAPIs: dark developer news-portal (prototype)
-  [bourse.name]: bourse, // Venture Capital Letters: dark financial trading desk
+  [bourse.name]: bourse, // Venture Capital Letters: Creative Boom-style magazine
+  [folio.name]: folio, // HammerFin: grafill-style design-magazine editorial
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column
