@@ -259,6 +259,49 @@ export async function SiteHeader() {
 
   // grafill-style: a serif wordmark with inline serif section nav and a search
   // + subscribe on the right, in one slim bar.
+  // Taste-style newsstand: a wordmark + utility row, then an uppercase,
+  // horizontally scrollable section nav on its own line.
+  if (theme.features?.kioskMasthead) {
+    return (
+      <header data-kiosk-masthead className="no-print sticky top-0 z-50 bg-background/95 backdrop-blur-md">
+        {/* Dateline strip — reads as a real publication of record. */}
+        <div className="border-b border-border/70">
+          <div className="container-wide flex items-center justify-center px-6 py-2 font-mono text-[0.64rem] uppercase tracking-[0.22em] text-muted">
+            {edition}
+          </div>
+        </div>
+        <div className="border-b border-border">
+          <div className="container-wide grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-5">
+            <span aria-hidden />
+            <Logo size="md" className="justify-self-center" />
+            <div data-hero-hide className="flex shrink-0 items-center gap-4 justify-self-end">
+              <SiteSearch index={searchIndex} className="hidden w-48 md:block" />
+              <SubscribeButton />
+            </div>
+          </div>
+        </div>
+        {sections.length > 0 && (
+          <div className="border-b border-border">
+            <nav
+              aria-label="Sections"
+              className="container-wide flex gap-7 overflow-x-auto whitespace-nowrap px-6 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-heading/75 transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
+      </header>
+    );
+  }
+
   if (theme.features?.folioMasthead) {
     return (
       <header data-folio-masthead className="no-print sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
