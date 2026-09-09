@@ -13,6 +13,7 @@ import {
 import { StoryCard } from "@/components/Story";
 import { SlateIndex } from "@/components/SlateIndex";
 import { FolioIndex } from "@/components/FolioIndex";
+import { KioskIndex } from "@/components/KioskIndex";
 import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
 
@@ -62,6 +63,22 @@ export default async function SectionPage({ params }: Params) {
   // story river. Other themes keep the classic card grid below.
   const theme = getActiveTheme();
   const count = section.posts.length;
+
+  // Taste-style index (opt-in): centered ruled title + 3-col card grid.
+  if (theme.features?.kioskLists) {
+    const posts = await getPosts();
+    const siblings = allSections(posts)
+      .filter((s) => s !== section.name)
+      .map((s) => ({ label: s, href: sectionHref(s) }));
+    return (
+      <KioskIndex
+        title={section.name}
+        siblings={siblings}
+        stat={`${count} ${count === 1 ? "story" : "stories"} in ${section.name}`}
+        posts={section.posts}
+      />
+    );
+  }
 
   // grafill-style index (opt-in): category switcher + big-card grid.
   if (theme.features?.folioLists) {

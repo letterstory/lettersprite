@@ -15,6 +15,7 @@ import { AtlanticHome } from "./AtlanticHome";
 import { WireHome } from "./WireHome";
 import { BoomHome } from "./BoomHome";
 import { FolioHome } from "./FolioHome";
+import { KioskHome } from "./KioskHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -35,6 +36,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   wire: WireHome,
   boom: BoomHome,
   folio: FolioHome,
+  kiosk: KioskHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */

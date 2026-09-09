@@ -45,7 +45,8 @@ export type HomeLayout =
   | "atlantic"
   | "wire"
   | "boom"
-  | "folio";
+  | "folio"
+  | "kiosk";
 
 /**
  * How the article page reads.
@@ -155,6 +156,10 @@ export interface ThemeFeatures {
   folioMasthead?: boolean;
   /** grafill-style section/author index: category switcher + big-card grid. */
   folioLists?: boolean;
+  /** Taste-style newsstand masthead: bold sans wordmark + inline nav + search. */
+  kioskMasthead?: boolean;
+  /** Taste-style section/author index: centered ruled title + 3-col card grid. */
+  kioskLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */
