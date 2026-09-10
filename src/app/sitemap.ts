@@ -3,7 +3,7 @@ import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
 import { allSections, publishDate, sectionSlug, postsInSection } from "@/lib/editorial";
 import { authorsFromPosts } from "@/lib/author";
-import { absoluteCover } from "@/lib/url";
+import { absoluteCover, xmlSafeUrl } from "@/lib/url";
 import type { Post } from "@/lib/letterbrace/types";
 
 export const dynamic = "force-static";
@@ -25,12 +25,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // reads as churn and that made this sitemap unhealthy. publishDate is the
   // set-once publish date: spread across the real timeline, stable across rebuilds,
   // and consistent with the page's datePublished.
+  // Next's sitemap serializer emits every <loc>/<image:loc> value RAW (no XML
+  // escaping), so each URL is escaped here before it reaches the document. Cover
+  // URLs are the live hazard — Unsplash hotlinks carry `&`-joined query params —
+  // but page URLs are escaped too as defense in depth against a stray `&` in a slug.
   const postEntries: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${env.siteUrl}/posts/${post.slug}`,
+    url: xmlSafeUrl(`${env.siteUrl}/posts/${post.slug}`),
     lastModified: publishDate(post),
     changeFrequency: "monthly",
     priority: 0.7,
-    images: [absoluteCover(post)],
+    images: [xmlSafeUrl(absoluteCover(post))],
   }));
 
   // One entry per section SLUG. Several tag spellings can collapse to the same
@@ -44,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!slug || seenSection.has(slug)) continue;
     seenSection.add(slug);
     sectionEntries.push({
-      url: `${env.siteUrl}/sections/${slug}`,
+      url: xmlSafeUrl(`${env.siteUrl}/sections/${slug}`),
       lastModified: latestPublish(postsInSection(posts, slug)) ?? latest,
       changeFrequency: "weekly",
       priority: 0.5,
@@ -52,7 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const authorEntries: MetadataRoute.Sitemap = authorsFromPosts(posts).map((a) => ({
-    url: `${env.siteUrl}/authors/${a.slug}`,
+    url: xmlSafeUrl(`${env.siteUrl}/authors/${a.slug}`),
     lastModified: latest,
     changeFrequency: "weekly",
     priority: 0.4,
@@ -60,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: env.siteUrl,
+      url: xmlSafeUrl(env.siteUrl),
       lastModified: latest,
       changeFrequency: "daily",
       priority: 1,
