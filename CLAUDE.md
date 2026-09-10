@@ -16,7 +16,9 @@ is configured entirely by environment variables. **No database, no admin panel.*
   layout, a `logo` treatment (`src/components/Logo.tsx`), and `features` flags.
   `css.ts` serializes the palette to CSS vars on `<html>`; derived tones are
   computed in `app/globals.css` via `color-mix`. Tailwind utilities bind to the
-  vars there. 15 themes ship.
+  vars there. 55 themes ship, and the set is shared: `@letterstory/design/themes.json`
+  is the registry a customer picks from, and `src/themes/registry.test.ts` fails if it
+  and this directory stop naming the same themes.
 - **Generated editorial metadata** (no database, all deterministic so it never
   drifts across builds): persistent bylines (`lib/author.ts`), stable datelines +
   reading time + sections (`lib/editorial.ts`), suggested reading (`lib/related.ts`),
@@ -30,5 +32,7 @@ is configured entirely by environment variables. **No database, no admin panel.*
   rebuild. Article HTML is sanitized in `src/lib/sanitize.ts` before render.
 
 To add a theme: create `src/themes/<name>.ts` (copy `sleek.ts`), register it in
-`src/themes/index.ts`, then run `npm run generate:covers`. No component changes
+`src/themes/index.ts`, add it to `design/themes.json` in letterstory/letterstory (or
+nobody can pick it, and `registry.test.ts` fails), then run `npm run generate:covers`.
+No component changes
 needed.
