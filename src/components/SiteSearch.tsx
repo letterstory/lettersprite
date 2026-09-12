@@ -35,6 +35,8 @@ export function SiteSearch({
   index,
   className = "",
   trending,
+  bare = false,
+  placeholder = "Search articles…",
 }: {
   index: SearchItem[];
   className?: string;
@@ -44,6 +46,13 @@ export function SiteSearch({
    * and the box behaves classically (dropdown only appears once you type).
    */
   trending?: SearchItem[];
+  /**
+   * "Bare" treatment (Franklin Azzi / vitrine): no border, icon or "/" hint —
+   * just a large, centered, letter-spaced ghosted placeholder.
+   */
+  bare?: boolean;
+  /** Placeholder text (default "Search articles…"). */
+  placeholder?: string;
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -186,11 +195,29 @@ export function SiteSearch({
       }}
       className={`relative ${className}`}
     >
-      <div className="flex items-center gap-2 rounded-[var(--radius)] border border-border bg-surface px-3 py-1.5 focus-within:border-primary">
-        <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </svg>
+      <div
+        className={
+          bare
+            ? "relative flex items-center justify-center py-1"
+            : "flex items-center gap-2 rounded-[var(--radius)] border border-border bg-surface px-3 py-1.5 focus-within:border-primary"
+        }
+      >
+        {/* Before focus: a static "SEARCH" with a blinking terminal caret. */}
+        {bare && !focused && !q && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 flex items-center justify-center text-2xl font-light uppercase tracking-[0.25em] text-muted/60 sm:text-[1.6rem]"
+          >
+            <span className="vitrine-caret mr-2 inline-block h-[1.05em] w-px translate-y-[0.06em] bg-foreground/80" />
+            {placeholder}
+          </span>
+        )}
+        {!bare && (
+          <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+        )}
         <input
           ref={inputRef}
           type="search"
@@ -216,12 +243,16 @@ export function SiteSearch({
             }, 150);
           }}
           onKeyDown={onInputKeyDown}
-          placeholder="Search articles…"
-          className="w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
+          placeholder={bare ? "" : placeholder}
+          className={
+            bare
+              ? "w-full min-w-0 bg-transparent text-center text-2xl font-light uppercase tracking-[0.25em] text-heading placeholder:text-muted/60 focus:outline-none sm:text-[1.6rem]"
+              : "w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
+          }
           aria-label="Search articles"
         />
         {/* "/" hint — hidden once focused or typing, and on narrow boxes. */}
-        {!focused && !q && (
+        {!bare && !focused && !q && (
           <kbd className="pointer-events-none hidden shrink-0 rounded border border-border px-1.5 font-mono text-[0.7rem] leading-5 text-muted sm:inline-block">
             /
           </kbd>

@@ -46,7 +46,8 @@ export type HomeLayout =
   | "wire"
   | "boom"
   | "folio"
-  | "kiosk";
+  | "kiosk"
+  | "vitrine";
 
 /**
  * How the article page reads.
@@ -160,6 +161,10 @@ export interface ThemeFeatures {
   kioskMasthead?: boolean;
   /** Taste-style section/author index: centered ruled title + 3-col card grid. */
   kioskLists?: boolean;
+  /** Franklin Azzi-style spread masthead: nav — centered wordmark — nav + tabs. */
+  vitrineMasthead?: boolean;
+  /** Franklin Azzi-style section/author index: dense captioned image grid. */
+  vitrineLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */

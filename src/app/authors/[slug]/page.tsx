@@ -18,6 +18,7 @@ import { StoryCard } from "@/components/Story";
 import { SlateIndex } from "@/components/SlateIndex";
 import { FolioIndex } from "@/components/FolioIndex";
 import { KioskIndex } from "@/components/KioskIndex";
+import { VitrineIndex } from "@/components/VitrineIndex";
 import { WireIndex } from "@/components/WireIndex";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -73,6 +74,22 @@ export default async function AuthorPage({ params }: Params) {
   const count = posts.length;
 
   const theme = getActiveTheme();
+
+  // Franklin Azzi-style index (opt-in): uppercase title + tabs + captioned grid.
+  if (theme.features?.vitrineLists) {
+    const stat = `${count} ${count === 1 ? "story" : "stories"}`;
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <VitrineIndex
+          title={byline.name}
+          siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
+          stat={stat}
+          posts={posts}
+        />
+      </>
+    );
+  }
 
   // Taste-style index (opt-in): centered ruled title + 3-col card grid.
   if (theme.features?.kioskLists) {
