@@ -110,6 +110,9 @@ export default async function PostPage({ params }: Params) {
   const feature = theme.article === "feature";
   const folio = theme.home === "folio";
   const kiosk = theme.home === "kiosk";
+  // Franklin Azzi-style: a static full-bleed hero, then a centered header over a
+  // narrow reading column.
+  const vitrine = theme.home === "vitrine";
   // Immersive article treatment: a fixed full-bleed hero the content scrolls up
   // over, with an overlaid breadcrumb masthead and the title peeking at the
   // bottom of the first screen. Shared by folio (grafill) and kiosk (Taste).
@@ -207,19 +210,36 @@ export default async function PostPage({ params }: Params) {
         </div>
       )}
 
+      {/* Franklin Azzi: a static full-bleed cover hero above a centered header. */}
+      {vitrine && (
+        <div className="w-full overflow-hidden bg-surfaceAlt">
+          <img
+            src={coverImageFor(post, 1600)}
+            alt={coverAltFor(post)}
+            fetchPriority="high"
+            decoding="async"
+            className="h-[42vh] w-full object-cover sm:h-[54vh]"
+          />
+        </div>
+      )}
+
       <article
         id="top"
         className={
           immersive
             ? `relative z-10 ${kiosk ? "mt-[68vh]" : "mt-[80vh]"} bg-background px-6 pb-10 pt-9`
-            : "px-6 py-10"
+            : vitrine
+              ? "relative z-10 -mt-24 px-6 pb-10 sm:-mt-36"
+              : "px-6 py-10"
         }
       >
         {/* Header, constrained to the reading measure */}
-        <header className="container-content">
+        <header
+          className={`container-content ${vitrine ? "bg-background/70 px-6 pt-9 text-center backdrop-blur-[3px] sm:px-10" : ""}`}
+        >
           <nav
             aria-label="Breadcrumb"
-            className={`no-print mb-6 flex items-center gap-2 text-xs text-muted ${immersive ? "hidden" : ""}`}
+            className={`no-print mb-6 flex items-center gap-2 text-xs text-muted ${immersive || vitrine ? "hidden" : ""}`}
           >
             <Link href="/" className="ul-link hover:text-foreground">
               Home
@@ -230,7 +250,9 @@ export default async function PostPage({ params }: Params) {
             </Link>
           </nav>
 
-          <div className="mb-3 flex flex-wrap items-center gap-3">
+          <div
+            className={`mb-3 flex flex-wrap items-center gap-3 ${vitrine ? "justify-center" : ""}`}
+          >
             <Kicker post={post} className="text-sm" />
             {isLongread(post) && <span className="pill">Long read</span>}
           </div>
@@ -245,7 +267,9 @@ export default async function PostPage({ params }: Params) {
             </p>
           )}
 
-          <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-y border-border py-4">
+          <div
+            className={`mt-7 flex flex-wrap items-center gap-4 border-y border-border py-4 ${vitrine ? "justify-center" : "justify-between"}`}
+          >
             <PostMeta
               post={post}
               variant="byline"
@@ -253,7 +277,7 @@ export default async function PostPage({ params }: Params) {
               linkAuthor
               showUpdated
             />
-            <ShareRow url={postUrl(post)} title={post.title} />
+            {!vitrine && <ShareRow url={postUrl(post)} title={post.title} />}
           </div>
         </header>
 
@@ -268,7 +292,7 @@ export default async function PostPage({ params }: Params) {
           in components/Story.tsx. 3:2 matches what Letterbrace mints, so a
           generated cover is shown whole rather than cropped.
         */}
-        {!immersive && (
+        {!immersive && !vitrine && (
         <figure
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >

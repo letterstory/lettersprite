@@ -259,6 +259,66 @@ export async function SiteHeader() {
 
   // grafill-style: a serif wordmark with inline serif section nav and a search
   // + subscribe on the right, in one slim bar.
+  // Franklin Azzi-style spread: a three-part row (nav — centered wordmark — nav),
+  // a ghosted centered search, then an understated uppercase section-tab row.
+  if (theme.features?.vitrineMasthead) {
+    const flankL = sections[0];
+    const flankR = sections.length > 1 ? sections[sections.length - 1] : undefined;
+    return (
+      <header data-vitrine-masthead className="no-print bg-background">
+        <div className="container-wide grid grid-cols-3 items-center gap-4 px-6 pb-5 pt-7">
+          <div className="justify-self-start">
+            {flankL && (
+              <Link
+                href={sectionHref(flankL)}
+                className="font-display text-sm font-bold uppercase tracking-[0.1em] text-heading transition-colors hover:text-primary"
+              >
+                {flankL}
+              </Link>
+            )}
+          </div>
+          <div className="justify-self-center">
+            <Logo size="md" />
+          </div>
+          <div className="justify-self-end">
+            {flankR && (
+              <Link
+                href={sectionHref(flankR)}
+                className="font-display text-sm font-bold uppercase tracking-[0.1em] text-heading transition-colors hover:text-primary"
+              >
+                {flankR}
+              </Link>
+            )}
+          </div>
+        </div>
+        {/* Centered SEARCH with a hairline running along both sides. */}
+        <div data-hero-hide className="container-wide flex items-center gap-6 px-6 pb-7 pt-1">
+          <span aria-hidden className="h-px flex-1 bg-border" />
+          <SiteSearch index={searchIndex} bare placeholder="Search" className="w-64 shrink-0" />
+          <span aria-hidden className="h-px flex-1 bg-border" />
+        </div>
+        {sections.length > 0 && (
+          <div className="border-y border-border">
+            <nav
+              aria-label="Sections"
+              className="container-wide flex flex-wrap items-center justify-center gap-x-10 gap-y-2 px-6 py-2.5"
+            >
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="font-mono text-[0.64rem] uppercase tracking-[0.16em] text-muted transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
+      </header>
+    );
+  }
+
   // Taste-style newsstand: a wordmark + utility row, then an uppercase,
   // horizontally scrollable section nav on its own line.
   if (theme.features?.kioskMasthead) {
