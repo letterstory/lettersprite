@@ -36,6 +36,7 @@ export function SiteSearch({
   className = "",
   trending,
   bare = false,
+  bareSize = "lg",
   placeholder = "Search articles…",
 }: {
   index: SearchItem[];
@@ -51,6 +52,8 @@ export function SiteSearch({
    * just a large, centered, letter-spaced ghosted placeholder.
    */
   bare?: boolean;
+  /** Bare size: "lg" (big ghosted, vitrine) or "sm" (inline, commons masthead). */
+  bareSize?: "sm" | "lg";
   /** Placeholder text (default "Search articles…"). */
   placeholder?: string;
 }) {
@@ -198,17 +201,19 @@ export function SiteSearch({
       <div
         className={
           bare
-            ? "relative flex items-center justify-center py-1"
+            ? `relative flex items-center py-1 ${bareSize === "sm" ? "justify-start" : "justify-center"}`
             : "flex items-center gap-2 rounded-[var(--radius)] border border-border bg-surface px-3 py-1.5 focus-within:border-primary"
         }
       >
-        {/* Before focus: a static "SEARCH" with a blinking terminal caret. */}
+        {/* Before focus: a static placeholder with a blinking terminal caret. */}
         {bare && !focused && !q && (
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 flex items-center justify-center text-2xl font-light uppercase tracking-[0.25em] text-muted/60 sm:text-[1.6rem]"
+            className={`pointer-events-none absolute inset-0 flex items-center text-muted/60 ${bareSize === "sm" ? "justify-start text-sm font-normal" : "justify-center text-2xl font-light uppercase tracking-[0.25em] sm:text-[1.6rem]"}`}
           >
-            <span className="vitrine-caret mr-2 inline-block h-[1.05em] w-px translate-y-[0.06em] bg-foreground/80" />
+            <span
+              className={`vitrine-caret inline-block w-px translate-y-[0.06em] bg-foreground/80 ${bareSize === "sm" ? "mr-1.5 h-[1em]" : "mr-2 h-[1.05em]"}`}
+            />
             {placeholder}
           </span>
         )}
@@ -246,7 +251,7 @@ export function SiteSearch({
           placeholder={bare ? "" : placeholder}
           className={
             bare
-              ? "w-full min-w-0 bg-transparent text-center text-2xl font-light uppercase tracking-[0.25em] text-heading placeholder:text-muted/60 focus:outline-none sm:text-[1.6rem]"
+              ? `w-full min-w-0 bg-transparent text-heading placeholder:text-muted/60 focus:outline-none ${bareSize === "sm" ? "text-left text-sm font-normal" : "text-center text-2xl font-light uppercase tracking-[0.25em] sm:text-[1.6rem]"}`
               : "w-full min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
           }
           aria-label="Search articles"

@@ -113,6 +113,8 @@ export default async function PostPage({ params }: Params) {
   // Franklin Azzi-style: a static full-bleed hero, then a centered header over a
   // narrow reading column.
   const vitrine = theme.home === "vitrine";
+  // syg.ma-style: a subtle top-left author byline (no avatar), keeping the cover.
+  const commons = theme.home === "commons";
   // Immersive article treatment: a fixed full-bleed hero the content scrolls up
   // over, with an overlaid breadcrumb masthead and the title peeking at the
   // bottom of the first screen. Shared by folio (grafill) and kiosk (Taste).
@@ -237,9 +239,25 @@ export default async function PostPage({ params }: Params) {
         <header
           className={`container-content ${vitrine ? "bg-background/70 px-6 pt-9 text-center backdrop-blur-[3px] sm:px-10" : ""}`}
         >
+          {/* syg.ma-style subtle top-left byline: author (no avatar), linked to
+              the author's other Salesly pieces, plus date and reading time. */}
+          {commons && (
+            <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.82rem] text-muted">
+              <Link
+                href={`/authors/${byline.slug}`}
+                className="font-medium text-heading underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+              >
+                {byline.name}
+              </Link>
+              <span aria-hidden>·</span>
+              <span>{formatDate(iso)}</span>
+              <span aria-hidden>·</span>
+              <span>{readingTimeLabel(post)}</span>
+            </div>
+          )}
           <nav
             aria-label="Breadcrumb"
-            className={`no-print mb-6 flex items-center gap-2 text-xs text-muted ${immersive || vitrine ? "hidden" : ""}`}
+            className={`no-print mb-6 flex items-center gap-2 text-xs text-muted ${immersive || vitrine || commons ? "hidden" : ""}`}
           >
             <Link href="/" className="ul-link hover:text-foreground">
               Home
@@ -257,7 +275,7 @@ export default async function PostPage({ params }: Params) {
             {isLongread(post) && <span className="pill">Long read</span>}
           </div>
           <h1
-            className={`${feature ? "display" : "font-display"} ${folio ? "uppercase" : ""} text-3xl font-black leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl`}
+            className={`${feature ? "display" : "font-display"} ${folio ? "uppercase" : ""} ${commons ? "font-normal tracking-normal" : "font-black tracking-tight"} text-3xl leading-[1.08] text-balance sm:text-4xl md:text-5xl`}
           >
             {post.title}
           </h1>
@@ -267,18 +285,20 @@ export default async function PostPage({ params }: Params) {
             </p>
           )}
 
-          <div
-            className={`mt-7 flex flex-wrap items-center gap-4 border-y border-border py-4 ${vitrine ? "justify-center" : "justify-between"}`}
-          >
-            <PostMeta
-              post={post}
-              variant="byline"
-              readingTime
-              linkAuthor
-              showUpdated
-            />
-            {!vitrine && <ShareRow url={postUrl(post)} title={post.title} />}
-          </div>
+          {!commons && (
+            <div
+              className={`mt-7 flex flex-wrap items-center gap-4 border-y border-border py-4 ${vitrine ? "justify-center" : "justify-between"}`}
+            >
+              <PostMeta
+                post={post}
+                variant="byline"
+                readingTime
+                linkAuthor
+                showUpdated
+              />
+              {!vitrine && <ShareRow url={postUrl(post)} title={post.title} />}
+            </div>
+          )}
         </header>
 
         {/*

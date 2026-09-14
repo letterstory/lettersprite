@@ -47,7 +47,8 @@ export type HomeLayout =
   | "boom"
   | "folio"
   | "kiosk"
-  | "vitrine";
+  | "vitrine"
+  | "commons";
 
 /**
  * How the article page reads.
@@ -165,6 +166,10 @@ export interface ThemeFeatures {
   vitrineMasthead?: boolean;
   /** Franklin Azzi-style section/author index: dense captioned image grid. */
   vitrineLists?: boolean;
+  /** syg.ma-style masthead: minimal wordmark + search + nav. */
+  commonsMasthead?: boolean;
+  /** syg.ma-style section/author index: dense mixed image/text masonry feed. */
+  commonsLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */

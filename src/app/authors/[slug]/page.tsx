@@ -19,6 +19,7 @@ import { SlateIndex } from "@/components/SlateIndex";
 import { FolioIndex } from "@/components/FolioIndex";
 import { KioskIndex } from "@/components/KioskIndex";
 import { VitrineIndex } from "@/components/VitrineIndex";
+import { CommonsIndex } from "@/components/CommonsIndex";
 import { WireIndex } from "@/components/WireIndex";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -74,6 +75,22 @@ export default async function AuthorPage({ params }: Params) {
   const count = posts.length;
 
   const theme = getActiveTheme();
+
+  // syg.ma-style index (opt-in): minimal title + tabs + mixed masonry feed.
+  if (theme.features?.commonsLists) {
+    const stat = `${count} ${count === 1 ? "entry" : "entries"}`;
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <CommonsIndex
+          title={byline.name}
+          siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
+          stat={stat}
+          posts={posts}
+        />
+      </>
+    );
+  }
 
   // Franklin Azzi-style index (opt-in): uppercase title + tabs + captioned grid.
   if (theme.features?.vitrineLists) {
