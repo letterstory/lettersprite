@@ -12,6 +12,7 @@ import { bourse } from "./bourse";
 import { folio } from "./folio";
 import { kiosk } from "./kiosk";
 import { vitrine } from "./vitrine";
+import { commons } from "./commons";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -90,6 +91,7 @@ export const themes: Record<string, Theme> = {
   [folio.name]: folio, // HammerFin: grafill-style design-magazine editorial
   [kiosk.name]: kiosk, // techfounderwriting: Taste-style warm editorial newsstand
   [vitrine.name]: vitrine, // Interfacer: Franklin Azzi-style minimalist gallery
+  [commons.name]: commons, // Salesly: syg.ma-style minimal publishing archive
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column

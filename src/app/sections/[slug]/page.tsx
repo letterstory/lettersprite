@@ -15,6 +15,7 @@ import { SlateIndex } from "@/components/SlateIndex";
 import { FolioIndex } from "@/components/FolioIndex";
 import { KioskIndex } from "@/components/KioskIndex";
 import { VitrineIndex } from "@/components/VitrineIndex";
+import { CommonsIndex } from "@/components/CommonsIndex";
 import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
 
@@ -64,6 +65,22 @@ export default async function SectionPage({ params }: Params) {
   // story river. Other themes keep the classic card grid below.
   const theme = getActiveTheme();
   const count = section.posts.length;
+
+  // syg.ma-style index (opt-in): minimal title + tabs + mixed masonry feed.
+  if (theme.features?.commonsLists) {
+    const posts = await getPosts();
+    const siblings = allSections(posts)
+      .filter((s) => s !== section.name)
+      .map((s) => ({ label: s, href: sectionHref(s) }));
+    return (
+      <CommonsIndex
+        title={section.name}
+        siblings={siblings}
+        stat={`${count} ${count === 1 ? "entry" : "entries"}`}
+        posts={section.posts}
+      />
+    );
+  }
 
   // Franklin Azzi-style index (opt-in): uppercase title + tabs + captioned grid.
   if (theme.features?.vitrineLists) {

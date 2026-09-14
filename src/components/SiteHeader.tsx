@@ -259,6 +259,59 @@ export async function SiteHeader() {
 
   // grafill-style: a serif wordmark with inline serif section nav and a search
   // + subscribe on the right, in one slim bar.
+  // syg.ma-style: a minimal single bar — small wordmark, inline section nav,
+  // search + subscribe. Understated, system type.
+  if (theme.features?.commonsMasthead) {
+    return (
+      <header
+        data-commons-masthead
+        className="no-print sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md"
+      >
+        <div className="container-wide flex items-center gap-6 px-6 py-3">
+          <Logo size="sm" className="shrink-0" />
+          <div data-hero-hide className="hidden shrink-0 sm:block">
+            <SiteSearch
+              index={searchIndex}
+              bare
+              bareSize="sm"
+              placeholder="Search"
+              className="w-36"
+            />
+          </div>
+          <nav className="hidden items-center gap-5 md:flex">
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="whitespace-nowrap text-[0.82rem] text-muted transition-colors hover:text-primary"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto shrink-0">
+            <SubscribeButton compact />
+          </div>
+        </div>
+        {sections.length > 0 && (
+          <nav aria-label="Sections" className="swipe-x border-t border-border md:hidden">
+            <div className="flex w-max gap-4 px-6 py-2">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 whitespace-nowrap text-sm text-muted transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
+
   // Franklin Azzi-style spread: a three-part row (nav — centered wordmark — nav),
   // a ghosted centered search, then an understated uppercase section-tab row.
   if (theme.features?.vitrineMasthead) {
