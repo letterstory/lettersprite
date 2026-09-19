@@ -49,7 +49,8 @@ export type HomeLayout =
   | "kiosk"
   | "vitrine"
   | "commons"
-  | "blitz";
+  | "blitz"
+  | "quarto";
 
 /**
  * How the article page reads.
@@ -179,6 +180,10 @@ export interface ThemeFeatures {
   blitzArticle?: boolean;
   /** Show a reader dark/light toggle in the masthead (requires `colorsLight`). */
   modeToggle?: boolean;
+  /** Serif review-journal masthead: large wordmark + italic tagline + colophon/search bar. */
+  quartoMasthead?: boolean;
+  /** Serif review-journal section/author index: header + square-thumbnail card grid. */
+  quartoLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */
