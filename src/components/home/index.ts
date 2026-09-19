@@ -19,6 +19,7 @@ import { KioskHome } from "./KioskHome";
 import { VitrineHome } from "./VitrineHome";
 import { CommonsHome } from "./CommonsHome";
 import { BlitzHome } from "./BlitzHome";
+import { QuartoHome } from "./QuartoHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -43,6 +44,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   vitrine: VitrineHome,
   commons: CommonsHome,
   blitz: BlitzHome,
+  quarto: QuartoHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */

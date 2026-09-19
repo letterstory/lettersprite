@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
@@ -327,6 +328,94 @@ export async function SiteHeader() {
             </nav>
           </div>
         )}
+      </header>
+    );
+  }
+
+  // Classic journal masthead: a centered emblem, double rules, a big
+  // letter-spaced serif wordmark flanked by Vol./Est., and a dotted section nav.
+  if (theme.features?.quartoMasthead) {
+    const ink = "var(--secondary)"; // navy — the masthead ink
+    const initials = env.siteTitle
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase();
+    const Rule = () => (
+      <div aria-hidden style={{ borderTop: `1.5px solid ${ink}` }} />
+    );
+    return (
+      <header
+        data-quarto-masthead
+        className="no-print bg-background"
+      >
+        {/* Emblem — the deployment logo (SITE_LOGO_SVG, in lockstep with the
+            favicon) when set, else an original monogram roundel fallback. */}
+        <div className="mx-auto flex max-w-5xl justify-center px-6 pb-5 pt-8">
+          <Link href="/" aria-label={env.siteTitle} className="block h-24 w-24">
+            {env.logoSvg ? (
+              <span
+                className="block h-24 w-24 [&>svg]:h-full [&>svg]:w-full"
+                dangerouslySetInnerHTML={{ __html: env.logoSvg }}
+              />
+            ) : (
+              <span
+                className="flex h-24 w-24 items-center justify-center rounded-full font-display text-2xl font-semibold tracking-[0.02em]"
+                style={{ border: `2.5px solid ${ink}`, color: ink }}
+                aria-hidden
+              >
+                {initials}
+              </span>
+            )}
+          </Link>
+        </div>
+        <Rule />
+        {/* Big centered wordmark, flanked by Vol. / Est. */}
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="relative py-6">
+            <span className="absolute left-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
+              Vol.&nbsp;I
+            </span>
+            <Link
+              href="/"
+              className="mx-auto block max-w-3xl text-center font-display text-4xl font-semibold uppercase leading-[1.04] tracking-[0.05em] sm:text-5xl md:text-[3.4rem]"
+              style={{ color: ink }}
+            >
+              {env.siteTitle}
+            </Link>
+            <span className="absolute right-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
+              Est.&nbsp;2026
+            </span>
+          </div>
+        </div>
+        <Rule />
+        {/* Dotted section nav — spans the full width, evenly spread. */}
+        {sections.length > 0 && (
+          <nav
+            aria-label="Sections"
+            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-6 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: ink }}
+          >
+            {sections.map((s, i) => (
+              <Fragment key={s}>
+                {i > 0 && (
+                  <span aria-hidden className="text-muted">
+                    •
+                  </span>
+                )}
+                <Link
+                  href={sectionHref(s)}
+                  className="whitespace-nowrap transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              </Fragment>
+            ))}
+          </nav>
+        )}
+        <Rule />
       </header>
     );
   }
