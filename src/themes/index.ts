@@ -13,6 +13,7 @@ import { folio } from "./folio";
 import { kiosk } from "./kiosk";
 import { vitrine } from "./vitrine";
 import { commons } from "./commons";
+import { blitz } from "./blitz";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -92,6 +93,7 @@ export const themes: Record<string, Theme> = {
   [kiosk.name]: kiosk, // techfounderwriting: Taste-style warm editorial newsstand
   [vitrine.name]: vitrine, // Interfacer: Franklin Azzi-style minimalist gallery
   [commons.name]: commons, // Salesly: syg.ma-style minimal publishing archive
+  [blitz.name]: blitz, // videocontentforstartups: bold culture-news grid
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column
@@ -172,6 +174,9 @@ const SANS_FAMILIES = new Set([
   "Manrope", "Mulish", "Nunito", "Outfit", "Plus Jakarta Sans", "Public Sans",
   "Rajdhani", "Red Hat Display", "Red Hat Text", "Saira", "Sora",
   "Source Sans 3", "Space Grotesk", "Syne",
+  // System grotesques (no Google load) — all unambiguously sans, so they satisfy
+  // the sans-only rule. Lets a theme match a Helvetica-based reference exactly.
+  "Helvetica Neue", "Helvetica", "Arial",
 ]);
 
 /** Generic sans keywords a pure system-font stack may lead with. */

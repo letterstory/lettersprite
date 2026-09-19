@@ -16,6 +16,7 @@ import { FolioIndex } from "@/components/FolioIndex";
 import { KioskIndex } from "@/components/KioskIndex";
 import { VitrineIndex } from "@/components/VitrineIndex";
 import { CommonsIndex } from "@/components/CommonsIndex";
+import { BlitzIndex } from "@/components/BlitzIndex";
 import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
 
@@ -65,6 +66,22 @@ export default async function SectionPage({ params }: Params) {
   // story river. Other themes keep the classic card grid below.
   const theme = getActiveTheme();
   const count = section.posts.length;
+
+  // Culture-news index (opt-in): bold title + tabs + dense 4-col metric grid.
+  if (theme.features?.blitzLists) {
+    const posts = await getPosts();
+    const siblings = allSections(posts)
+      .filter((s) => s !== section.name)
+      .map((s) => ({ label: s, href: sectionHref(s) }));
+    return (
+      <BlitzIndex
+        title={section.name}
+        siblings={siblings}
+        stat={`${count} ${count === 1 ? "story" : "stories"}`}
+        posts={section.posts}
+      />
+    );
+  }
 
   // syg.ma-style index (opt-in): minimal title + tabs + mixed masonry feed.
   if (theme.features?.commonsLists) {

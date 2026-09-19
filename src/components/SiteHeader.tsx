@@ -4,7 +4,9 @@ import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
 import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
+import { EditionDate } from "./EditionDate";
 import { Logo } from "./Logo";
+import { ModeToggle } from "./ModeToggle";
 import { SectionNav } from "./SectionNav";
 import { SiteSearch, type SearchItem } from "./SiteSearch";
 import { StickyMasthead } from "./StickyMasthead";
@@ -259,6 +261,76 @@ export async function SiteHeader() {
 
   // grafill-style: a serif wordmark with inline serif section nav and a search
   // + subscribe on the right, in one slim bar.
+  // Culture-news: a utility bar with a wide search, a centered wordmark, then a
+  // centered uppercase category nav.
+  if (theme.features?.blitzMasthead) {
+    return (
+      <header
+        data-blitz-masthead
+        className="no-print sticky top-0 z-50 bg-background/95 backdrop-blur-md"
+      >
+        {/* Row 1 — utility bar: a wide prominent search, subscribe on the right. */}
+        <div className="border-b border-border">
+          <div data-hero-hide className="container-wide flex items-center gap-4 px-6 py-2.5">
+            <EditionDate className="hidden shrink-0 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-muted lg:inline" />
+            <SiteSearch index={searchIndex} className="min-w-0 flex-1" />
+            <div className="flex shrink-0 items-center gap-4">
+              <SubscribeButton compact />
+            </div>
+          </div>
+        </div>
+        {/* Row 2 — brand row: menu + socials left · centered wordmark · moon right. */}
+        <div className="border-b border-border">
+          <div className="container-wide grid grid-cols-[1fr_auto_1fr] items-center px-6 py-3.5">
+            <div className="flex items-center gap-4 justify-self-start text-heading">
+              <span aria-hidden className="flex flex-col gap-[3px]">
+                <span className="block h-[2px] w-5 bg-current" />
+                <span className="block h-[2px] w-5 bg-current" />
+                <span className="block h-[2px] w-5 bg-current" />
+              </span>
+              {env.twitterHandle && (
+                <a
+                  href={`https://x.com/${env.twitterHandle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                  className="hidden text-muted transition-colors hover:text-heading sm:block"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+                    <path d="M18.9 1.6h3.5l-7.6 8.7L23.7 22h-7l-5.5-7.2L4.9 22H1.4l8.1-9.3L.7 1.6h7.2l5 6.6 5.9-6.6Zm-1.2 18.3h1.9L6.9 3.6H4.8l12.9 16.3Z" />
+                  </svg>
+                </a>
+              )}
+            </div>
+            <Logo size="md" className="justify-self-center" />
+            <div className="flex items-center justify-self-end">
+              <ModeToggle />
+            </div>
+          </div>
+        </div>
+        {/* Row 3 — centered uppercase category nav. */}
+        {sections.length > 0 && (
+          <div className="border-b border-border">
+            <nav
+              aria-label="Sections"
+              className="container-wide flex justify-start gap-7 overflow-x-auto whitespace-nowrap px-6 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:justify-center [&::-webkit-scrollbar]:hidden"
+            >
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 text-[0.72rem] font-medium uppercase tracking-[0.1em] text-heading transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
+      </header>
+    );
+  }
+
   // syg.ma-style: a minimal single bar — small wordmark, inline section nav,
   // search + subscribe. Understated, system type.
   if (theme.features?.commonsMasthead) {

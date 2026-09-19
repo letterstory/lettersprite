@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { Theme } from "./types";
+import type { Theme, ThemeColors } from "./types";
 
 /**
  * Serialize a theme's tokens into CSS custom properties. These are applied as
@@ -11,6 +11,33 @@ import type { Theme } from "./types";
  * `globals.css`) so themes stay lean and every deployment gets a coherent set
  * of dynamic surfaces for free.
  */
+/**
+ * Just the color custom properties for a palette, as plain `--var: value` pairs.
+ * Used by the reader dark/light toggle, which swaps these at runtime via the
+ * CSSOM (fonts/radius/widths are shared across modes, so they're not included).
+ */
+export function paletteColorVars(c: ThemeColors): Record<string, string> {
+  const secondary = c.secondary ?? c.primary;
+  const accent = c.accent ?? secondary;
+  return {
+    "--bg": c.background,
+    "--surface": c.surface,
+    "--surface-alt": c.surfaceAlt ?? c.surface,
+    "--fg": c.foreground,
+    "--muted": c.muted,
+    "--border": c.border,
+    "--primary": c.primary,
+    "--primary-fg": c.primaryForeground,
+    "--secondary": secondary,
+    "--accent": accent,
+    "--link": c.link ?? c.primary,
+    "--heading-color": c.heading ?? c.foreground,
+    "--kicker": c.kicker ?? c.primary,
+    "--hero-from": c.heroFrom ?? c.primary,
+    "--hero-to": c.heroTo ?? accent,
+  };
+}
+
 export function themeToCssVars(theme: Theme): CSSProperties {
   const c = theme.colors;
   const secondary = c.secondary ?? c.primary;
