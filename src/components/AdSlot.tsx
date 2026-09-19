@@ -18,6 +18,7 @@ export function AdSlot({
   className = "",
   minHeightClass = "min-h-[120px]",
   format = "auto",
+  house,
 }: {
   /** Ad unit id; falls back to `SITE_ADSENSE_SLOT`. */
   slot?: string;
@@ -25,6 +26,12 @@ export function AdSlot({
   /** Reserve height to limit layout shift while the unit loads. */
   minHeightClass?: string;
   format?: string;
+  /**
+   * When no real ad is configured, fill the zone with a self-promo "house ad"
+   * (in dev AND production) instead of a dev-only placeholder / empty box.
+   * `tower` is a vertical sidebar creative; `banner` a horizontal leaderboard.
+   */
+  house?: "tower" | "banner";
 }) {
   const client = env.adsenseClient;
   const unit = slot || env.adsenseSlot;
@@ -50,6 +57,40 @@ export function AdSlot({
           data-full-width-responsive="true"
         />
         <AdsPush />
+      </div>
+    );
+  }
+
+  // Unconfigured but the zone asked for a house ad: a self-promo creative, so
+  // the slot reads as a filled ad rather than an empty box (dev and prod).
+  if (house) {
+    const tower = house === "tower";
+    return (
+      <div className={`no-print ${className}`}>
+        {label}
+        <div
+          className={`flex ${minHeightClass} overflow-hidden rounded border border-border bg-gradient-to-b from-tint to-surface ${
+            tower
+              ? "flex-col items-center justify-center gap-4 px-6 py-10 text-center"
+              : "flex-col items-center justify-center gap-3 px-6 py-6 text-center sm:flex-row sm:justify-between sm:gap-6 sm:text-left"
+          }`}
+        >
+          <div className={tower ? "" : "sm:flex-1"}>
+            <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-primary">
+              Newsletter
+            </span>
+            <p className="mt-2 font-display text-xl font-bold leading-tight text-heading">
+              {env.siteTitle}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              The playbooks and case studies behind great startup video — in your
+              inbox, weekly.
+            </p>
+          </div>
+          <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[color:var(--primary-fg)]">
+            Subscribe →
+          </span>
+        </div>
       </div>
     );
   }

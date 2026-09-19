@@ -7,6 +7,7 @@ import { siteFavicon } from "@/lib/favicon";
 import { siteGraphLd } from "@/lib/seo";
 import { getActiveTheme } from "@/themes";
 import { googleFontsHref, themeToCssVars } from "@/themes/css";
+import { modeBootScript } from "@/lib/mode";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -61,6 +62,7 @@ export function generateMetadata(): Metadata {
 export default function RootLayout({ children }: { children: ReactNode }) {
   const theme = getActiveTheme();
   const fontsHref = googleFontsHref(theme);
+  const modeScript = modeBootScript(theme);
 
   return (
     <html
@@ -68,6 +70,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       data-theme={theme.name}
       style={themeToCssVars(theme)}
       className="h-full"
+      // The mode boot script sets data-mode + palette vars on <html> before
+      // hydration; that intentional pre-paint mutation is the only diff here.
+      suppressHydrationWarning
     >
       <head>
         {fontsHref && (
@@ -89,6 +94,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           />
         )}
         <JsonLd data={siteGraphLd()} />
+        {modeScript && (
+          // Runs before first paint so the saved dark/light choice applies with
+          // no flash; exposes window.__applyMode for the masthead toggle.
+          <script dangerouslySetInnerHTML={{ __html: modeScript }} />
+        )}
       </head>
       <body className="flex min-h-full flex-col antialiased">
         <a href="#main" className="skip-link">
