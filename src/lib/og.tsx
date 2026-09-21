@@ -505,6 +505,10 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
 
   const useLogo = !!opts.logo;
   const useSvgLogo = useLogo && !!env.logoSvg;
+  // `SITE_LOGO_ICON_ONLY=false` (or unset) means the SVG is an icon that the
+  // masthead pairs with the site title text. Same flag `src/components/Logo.tsx`
+  // reads — an OG card should show the same brand as the site header.
+  const pairSvgWithWordmark = useSvgLogo && !env.logoIconOnly;
   const brand = useLogo ? mastheadTitle(opts.title) : opts.title;
 
   // Logo mode paints the card on `background` — the ground the letterstory
@@ -524,6 +528,12 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   const logoFont = logoFontFor(theme, logoStyle);
   const lWeight = maxWeight(logoFont.spec, logoFont.weight);
 
+  // The paired wordmark uses the theme's heading font at max weight — matches
+  // `SvgMark` in `src/components/Logo.tsx`, which renders "font-heading
+  // font-bold" beside the icon regardless of `theme.logo`.
+  const pairSpec = theme.fonts.heading;
+  const pairWeight = maxWeight(pairSpec, 700);
+
   // Characters we need in the logo face. The logo may render uppercased
   // (condensed, boxed), initials-only (monogram), or lowercased with `/_.`
   // (mono) — subset every form we might paint so Google Fonts serves complete
@@ -541,6 +551,9 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
     ...(useLogo && !useSvgLogo
       ? [{ name: logoFont.spec.google?.name, weight: lWeight, text: logoText }]
       : []),
+    ...(pairSvgWithWordmark
+      ? [{ name: pairSpec.google?.name, weight: pairWeight, text: brand }]
+      : []),
     ...(useLogo
       ? []
       : [{ name: dSpec.google?.name, weight: dWeight, text: opts.title }]),
@@ -557,6 +570,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   const displayFamily = loaded(dSpec.google?.name, dWeight);
   const bodyFamily = loaded(bSpec.google?.name, bWeight);
   const logoFamily = loaded(logoFont.spec.google?.name, lWeight);
+  const pairFamily = loaded(pairSpec.google?.name, pairWeight);
 
   // Only set `fontFamily` when the face actually loaded. A build-time Google
   // Fonts fetch can flake, leaving these undefined — and Satori throws
@@ -567,18 +581,48 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
 
   // Fit the embedded logo inside the card's content area (padding 80x76 →
   // ~1040x478). Wordmarks from letterstory can be very wide (6:1, 8:1); scale
-  // by whichever axis binds first so the mark never overflows or crops.
-  const svgMaxW = 900;
-  const svgMaxH = 240;
+  // by whichever axis binds first so the mark never overflows or crops. In
+  // paired-with-wordmark mode the SVG is a small companion icon, so cap it
+  // tighter to leave room for the text next to it.
   const svgAr = useSvgLogo ? svgAspectRatio(env.logoSvg) ?? 3 : 1;
-  const svgH = Math.min(svgMaxH, svgMaxW / svgAr);
-  const svgW = svgH * svgAr;
+  const soloMaxW = 900;
+  const soloMaxH = 240;
+  const soloH = Math.min(soloMaxH, soloMaxW / svgAr);
+  const soloW = soloH * svgAr;
+  const iconMaxW = 420;
+  const iconMaxH = 180;
+  const iconH = Math.min(iconMaxH, iconMaxW / svgAr);
+  const iconW = iconH * svgAr;
+  const wordmarkSize = logoSize(brand, "sans-bold");
 
-  const headline = useSvgLogo ? (
+  const headline = pairSvgWithWordmark ? (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <img
+        src={svgDataUri(env.logoSvg)}
+        width={iconW}
+        height={iconH}
+        alt=""
+      />
+      <div
+        style={{
+          display: "flex",
+          marginLeft: 28,
+          fontSize: wordmarkSize,
+          fontWeight: pairWeight,
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+          color: fg,
+          ...fam(pairFamily),
+        }}
+      >
+        {brand}
+      </div>
+    </div>
+  ) : useSvgLogo ? (
     <img
       src={svgDataUri(env.logoSvg)}
-      width={svgW}
-      height={svgH}
+      width={soloW}
+      height={soloH}
       alt=""
     />
   ) : useLogo ? (
