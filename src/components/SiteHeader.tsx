@@ -6,6 +6,7 @@ import { getPosts } from "@/lib/letterbrace/client";
 import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 import { EditionDate } from "./EditionDate";
+import { FluxMenu } from "./FluxMenu";
 import { Logo } from "./Logo";
 import { ModeToggle } from "./ModeToggle";
 import { SectionNav } from "./SectionNav";
@@ -328,6 +329,65 @@ export async function SiteHeader() {
             </nav>
           </div>
         )}
+      </header>
+    );
+  }
+
+  // Bold tech-portal masthead: a Subscribe / Sign In utility row, then a heavy
+  // wordmark with a slash-separated section nav over a rule.
+  if (theme.features?.fluxMasthead) {
+    return (
+      <header data-flux-masthead className="no-print bg-background">
+        <div className="container-wide flex items-center justify-end gap-4 px-6 pb-2 pt-4">
+          <a
+            href="#newsletter"
+            className="bg-primary px-3 py-1.5 font-display text-[0.64rem] font-bold uppercase tracking-[0.1em] text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+          >
+            Subscribe
+          </a>
+          <span className="font-display text-[0.64rem] font-bold uppercase tracking-[0.1em] text-heading">
+            Sign In
+          </span>
+        </div>
+        <div className="container-wide flex items-center gap-4 border-b-2 border-foreground px-6 pb-3">
+          <Link
+            href="/"
+            className="shrink-0 font-display text-2xl font-extrabold tracking-[-0.02em] text-heading transition-colors hover:text-primary sm:text-[1.9rem]"
+          >
+            {env.siteTitle}
+          </Link>
+          {sections.length > 0 && (
+            <nav
+              aria-label="Sections"
+              className="hidden min-w-0 items-center gap-2.5 overflow-hidden lg:flex"
+            >
+              {sections.map((s) => (
+                <span key={s} className="flex shrink-0 items-center gap-2.5">
+                  <span aria-hidden className="text-muted">
+                    /
+                  </span>
+                  <Link
+                    href={sectionHref(s)}
+                    className="whitespace-nowrap font-display text-sm font-semibold text-heading transition-colors hover:text-primary"
+                  >
+                    {s}
+                  </Link>
+                </span>
+              ))}
+              <span aria-hidden className="text-muted">
+                /
+              </span>
+            </nav>
+          )}
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <SiteSearch
+              index={searchIndex}
+              placeholder="Search"
+              className="hidden w-52 md:mr-6 md:block"
+            />
+            <FluxMenu items={sections.map((s) => ({ name: s, href: sectionHref(s) }))} />
+          </div>
+        </div>
       </header>
     );
   }
