@@ -15,6 +15,7 @@ import { vitrine } from "./vitrine";
 import { commons } from "./commons";
 import { blitz } from "./blitz";
 import { quarto } from "./quarto";
+import { stark } from "./stark";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -96,6 +97,7 @@ export const themes: Record<string, Theme> = {
   [commons.name]: commons, // Salesly: syg.ma-style minimal publishing archive
   [blitz.name]: blitz, // videocontentforstartups: bold culture-news grid
   [quarto.name]: quarto, // relationshipmanagementreviews: serif review journal
+  [stark.name]: stark, // compmrkt: minimal monospace image archive
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column

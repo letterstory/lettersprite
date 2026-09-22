@@ -50,7 +50,8 @@ export type HomeLayout =
   | "vitrine"
   | "commons"
   | "blitz"
-  | "quarto";
+  | "quarto"
+  | "stark";
 
 /**
  * How the article page reads.
@@ -184,6 +185,10 @@ export interface ThemeFeatures {
   quartoMasthead?: boolean;
   /** Serif review-journal section/author index: header + square-thumbnail card grid. */
   quartoLists?: boolean;
+  /** Minimal mono image-archive masthead: wordmark + search over a slim section nav. */
+  starkMasthead?: boolean;
+  /** Minimal mono image-archive index: centered mono captions over a single image column. */
+  starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */
