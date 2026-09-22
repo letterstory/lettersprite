@@ -1,0 +1,30 @@
+name: CI
+
+# The one required check for main. Every Vercel fleet project reports its own
+# status and many go red for non-code reasons (rate limits), so those can't
+# gate a merge. This job runs the same `npm run build` Vercel runs — with no
+# Letterbrace env, which the manifest scripts and client already fall back
+# from — so a type or build break fails here, once, before it fans out.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npm run build
