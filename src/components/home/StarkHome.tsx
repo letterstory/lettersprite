@@ -50,15 +50,17 @@ function ListModule({
   posts: Post[];
   numbered?: boolean;
 }) {
-  const Heading = href ? Link : "h2";
+  const headingClass =
+    "block border-b border-foreground pb-2 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-heading";
   return (
     <div>
-      <Heading
-        {...(href ? { href } : {})}
-        className={`block border-b border-foreground pb-2 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-heading ${href ? "transition-colors hover:text-primary" : ""}`}
-      >
-        {title}
-      </Heading>
+      {href ? (
+        <Link href={href} className={`${headingClass} transition-colors hover:text-primary`}>
+          {title}
+        </Link>
+      ) : (
+        <h2 className={headingClass}>{title}</h2>
+      )}
       <ol className="mt-1 divide-y divide-border">
         {posts.map((p, i) => (
           <li key={p.id} className="group flex gap-3.5 py-3.5">
