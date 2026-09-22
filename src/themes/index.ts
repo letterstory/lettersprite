@@ -16,6 +16,7 @@ import { commons } from "./commons";
 import { blitz } from "./blitz";
 import { quarto } from "./quarto";
 import { stark } from "./stark";
+import { flux } from "./flux";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -98,6 +99,7 @@ export const themes: Record<string, Theme> = {
   [blitz.name]: blitz, // videocontentforstartups: bold culture-news grid
   [quarto.name]: quarto, // relationshipmanagementreviews: serif review journal
   [stark.name]: stark, // compmrkt: minimal monospace image archive
+  [flux.name]: flux, // theproductionrun: bold ad-supported tech-editorial front
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column

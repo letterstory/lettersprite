@@ -51,7 +51,8 @@ export type HomeLayout =
   | "commons"
   | "blitz"
   | "quarto"
-  | "stark";
+  | "stark"
+  | "flux";
 
 /**
  * How the article page reads.
@@ -185,6 +186,12 @@ export interface ThemeFeatures {
   quartoMasthead?: boolean;
   /** Serif review-journal section/author index: header + square-thumbnail card grid. */
   quartoLists?: boolean;
+  /** Bold tech-portal masthead: Subscribe + slash-separated nav under a heavy wordmark. */
+  fluxMasthead?: boolean;
+  /** Bold tech-portal section/author index: colored banner + stream + right rail + ads. */
+  fluxLists?: boolean;
+  /** Bold tech-portal article: kicker + heavy headline + hero + serif column + rail/ads. */
+  fluxArticle?: boolean;
   /** Minimal mono image-archive masthead: wordmark + search over a slim section nav. */
   starkMasthead?: boolean;
   /** Minimal mono image-archive index: centered mono captions over a single image column. */
