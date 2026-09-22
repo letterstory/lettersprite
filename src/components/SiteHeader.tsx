@@ -332,6 +332,60 @@ export async function SiteHeader() {
     );
   }
 
+  // Minimal monospace image-archive masthead: wordmark + search on one hairline
+  // row, a slim centered mono section nav below.
+  if (theme.features?.starkMasthead) {
+    return (
+      <header data-stark-masthead className="no-print bg-background">
+        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-6">
+          <Link
+            href="/"
+            className="justify-self-start font-mono text-xl font-semibold tracking-tight text-heading transition-colors hover:text-primary sm:text-2xl"
+          >
+            {env.siteTitle}
+          </Link>
+          <SiteSearch
+            index={searchIndex}
+            bare
+            bareSize="lg"
+            placeholder="Search"
+            className="w-full max-w-xs justify-self-center"
+          />
+          <div className="flex items-center justify-self-end gap-2.5">
+            <Link
+              href="/latest"
+              className="hidden border border-border px-3 py-1.5 font-mono text-[0.64rem] uppercase tracking-[0.15em] text-heading transition-colors hover:border-primary hover:text-primary sm:inline-block"
+            >
+              Latest
+            </Link>
+            <Link
+              href="#newsletter"
+              className="border border-primary bg-primary px-3 py-1.5 font-mono text-[0.64rem] uppercase tracking-[0.15em] text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+            >
+              Subscribe
+            </Link>
+          </div>
+        </div>
+        {sections.length > 0 && (
+          <nav
+            aria-label="Sections"
+            className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-7 gap-y-1.5 px-6 pb-6 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-muted"
+          >
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="transition-colors hover:text-primary"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+        )}
+      </header>
+    );
+  }
+
   // Classic journal masthead: a centered emblem, double rules, a big
   // letter-spaced serif wordmark flanked by Vol./Est., and a dotted section nav.
   if (theme.features?.quartoMasthead) {
