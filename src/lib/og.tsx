@@ -494,6 +494,20 @@ function LogoMark({
   }
 }
 
+/**
+ * Best-guess dominant fill color of an SVG. Returns the last hex `fill="…"`
+ * attribute (usually the main path's ink for a typical single-color wordmark
+ * or icon), or null when the SVG relies on CSS / `currentColor` / gradients /
+ * nothing we can eyeball from the source. Used by the plate heuristic to
+ * decide whether the ink actually contrasts with the card background.
+ */
+function svgDominantFill(svg: string): string | null {
+  const matches = svg.matchAll(/fill\s*=\s*"(#[0-9a-fA-F]{3,8})"/g);
+  let last: string | null = null;
+  for (const m of matches) last = m[1];
+  return last;
+}
+
 /** Rough px-length of an SVG intrinsic width for aspect-ratio scaling. */
 function svgAspectRatio(svg: string): number | null {
   const vb = svg.match(/viewBox\s*=\s*["']([-\d.\s]+)["']/i);
@@ -634,14 +648,39 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
     CARD_CONTENT_WIDTH - iconW - iconGap,
   );
 
+  // Letterstory-generated SVGs are authored against `background`, but a mark
+  // colored for one theme becomes invisible when a phantom later pairs it with
+  // a theme whose background matches the ink (dark-on-dark, or light-on-light
+  // after a theme swap). The correct place to prevent that mismatch is
+  // upstream in letterstory's picker, which knows both sides at phantom
+  // creation time. Here on the OG surface we just need to ship a legible
+  // card, so we detect the SVG's dominant fill and plate the mark against the
+  // theme's `foreground` when its luminance is too close to `background`.
+  // `foreground` is contrast-perfect for the bg by design, so the plate reads
+  // correctly on either scheme. When we can't parse a fill (currentColor,
+  // gradients), fall back to plating on dark themes — the more common break.
+  const svgFill = useSvgLogo ? svgDominantFill(env.logoSvg) : null;
+  const bgLum = luminance(c.background);
+  const svgClashesBg =
+    svgFill !== null
+      ? Math.abs(luminance(svgFill) - bgLum) < 0.3
+      : theme.colorScheme === "dark";
+  const plate = useSvgLogo && svgClashesBg;
+  const platePad = 20;
+  const plateStyle = plate
+    ? {
+        display: "flex",
+        padding: platePad,
+        backgroundColor: c.foreground,
+        borderRadius: cssLengthToPx(theme.radius) + platePad / 2,
+      }
+    : { display: "flex" };
+
   const headline = pairSvgWithWordmark ? (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <img
-        src={svgDataUri(env.logoSvg)}
-        width={iconW}
-        height={iconH}
-        alt=""
-      />
+      <div style={plateStyle}>
+        <img src={svgDataUri(env.logoSvg)} width={iconW} height={iconH} alt="" />
+      </div>
       <div
         style={{
           display: "flex",
@@ -658,12 +697,9 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
       </div>
     </div>
   ) : useSvgLogo ? (
-    <img
-      src={svgDataUri(env.logoSvg)}
-      width={soloW}
-      height={soloH}
-      alt=""
-    />
+    <div style={plateStyle}>
+      <img src={svgDataUri(env.logoSvg)} width={soloW} height={soloH} alt="" />
+    </div>
   ) : useLogo ? (
     <LogoMark
       style={logoStyle}
