@@ -18,6 +18,7 @@
 import { ImageResponse } from "next/og";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
+import { mastheadTitle, sanitizeSvg } from "@/components/Logo";
 import type { FontSpec, LogoStyle, Theme } from "@/themes/types";
 
 /** OG's sweet-spot ratio (1.91:1): fills a preview card without cropping. */
@@ -67,16 +68,6 @@ function readableTones(from: string, to: string) {
 
 // --- title / logo helpers --------------------------------------------------
 
-/**
- * Mirrors `mastheadTitle` in `src/components/Logo.tsx`: many titles are
- * "Brand: descriptive tagline" — the whole string swamps a wordmark. Take the
- * part before the first strong separator so the OG mark reads as a clean brand.
- */
-function mastheadTitle(full: string): string {
-  const brand = full.split(/:\s|\s+[—–|]\s+|\s+-\s+/)[0]?.trim();
-  return brand || full;
-}
-
 /** Two-letter (or single-word two-char) initials for `monogram` themes. */
 function initials(title: string): string {
   const words = title
@@ -92,16 +83,6 @@ function initials(title: string): string {
 /** The wordmark text for the `mono` logo (matches Logo.tsx's treatment). */
 function monoWordmark(title: string): string {
   return title.replace(/\s+/g, "_").toLowerCase();
-}
-
-/**
- * Neutralize the two SVG-specific script vectors before we inline a supplied
- * `SITE_LOGO_SVG`. Same policy as `src/components/Logo.tsx`.
- */
-function sanitizeSvg(svg: string): string {
-  return svg
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
 }
 
 /** Turn a raw SVG string into a data URI suitable for Satori's `<img>` src. */
@@ -213,6 +194,35 @@ function titleSize(title: string): number {
   return 52;
 }
 
+/** Content width available for the headline (card width minus the 80px H padding). */
+const CARD_CONTENT_WIDTH = OG_SIZE.width - 80 * 2;
+
+/**
+ * Rough per-glyph width factor by style, given the style's font weight and case.
+ * Used to cap `logoSize` so long titles don't overflow the card horizontally —
+ * particularly the `mono` style, where `/site_name_underscored.` is much longer
+ * than the source title.
+ */
+function widthFactor(style: LogoStyle): number {
+  switch (style) {
+    case "mono":
+      return 0.62; // monospace: uniform, wide
+    case "condensed":
+      return 0.42; // condensed uppercase, tight tracking wins some back
+    case "boxed":
+      return 0.6; // uppercase + horizontal padding of ~0.56em each side
+    default:
+      return 0.55; // display / heavy sans wordmarks
+  }
+}
+
+/** How long, in characters, will the rendered wordmark actually be? */
+function renderedLength(title: string, style: LogoStyle): number {
+  if (style === "mono") return title.replace(/\s+/g, "_").length + 2; // `/…` plus cursor
+  if (style === "monogram") return 2 + title.length; // initial tile ≈ 2 chars, plus wordmark
+  return title.length;
+}
+
 /** Logo size — larger than plain titles because the mark IS the composition. */
 function logoSize(title: string, style: LogoStyle): number {
   const n = title.length;
@@ -220,24 +230,30 @@ function logoSize(title: string, style: LogoStyle): number {
   const wide = style === "condensed" || style === "boxed";
   // `mono` wordmark reads as `/name_underscored.` — always longer than the source.
   const long = style === "mono";
+  let size: number;
   if (long) {
-    if (n <= 8) return 120;
-    if (n <= 14) return 100;
-    if (n <= 22) return 80;
-    return 64;
-  }
-  if (wide) {
-    if (n <= 8) return 148;
-    if (n <= 14) return 118;
-    if (n <= 22) return 92;
-    if (n <= 32) return 72;
-    return 58;
-  }
-  if (n <= 8) return 168;
-  if (n <= 14) return 134;
-  if (n <= 22) return 104;
-  if (n <= 32) return 82;
-  return 64;
+    if (n <= 8) size = 120;
+    else if (n <= 14) size = 100;
+    else if (n <= 22) size = 80;
+    else size = 64;
+  } else if (wide) {
+    if (n <= 8) size = 148;
+    else if (n <= 14) size = 118;
+    else if (n <= 22) size = 92;
+    else if (n <= 32) size = 72;
+    else size = 58;
+  } else if (n <= 8) size = 168;
+  else if (n <= 14) size = 134;
+  else if (n <= 22) size = 104;
+  else if (n <= 32) size = 82;
+  else size = 64;
+  // Cap so the fully-rendered wordmark fits the card width. Without this the
+  // `mono` style's `/really_long_title.` overflows the right edge for long
+  // titles, since underscoring bloats the character count. A 24px floor keeps
+  // even a pathological title readable at 1200x630 (an OG card is big); fit
+  // wins over the tabular target so nothing clips.
+  const maxByWidth = CARD_CONTENT_WIDTH / (renderedLength(title, style) * widthFactor(style));
+  return Math.max(24, Math.min(size, Math.floor(maxByWidth)));
 }
 
 /** The bare host of the site URL, e.g. "thesignal.example" — the footer mark. */
@@ -505,10 +521,16 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
 
   const useLogo = !!opts.logo;
   const useSvgLogo = useLogo && !!env.logoSvg;
+  const svgAr = useSvgLogo ? svgAspectRatio(env.logoSvg) ?? 3 : 1;
   // `SITE_LOGO_ICON_ONLY=false` (or unset) means the SVG is an icon that the
   // masthead pairs with the site title text. Same flag `src/components/Logo.tsx`
-  // reads — an OG card should show the same brand as the site header.
-  const pairSvgWithWordmark = useSvgLogo && !env.logoIconOnly;
+  // reads — an OG card should show the same brand as the site header. But when
+  // the SVG's aspect ratio is very wide (> 4:1) it's almost certainly already a
+  // wordmark, and pairing it with a plaintext title crams the icon down to a
+  // thin strip and clips the text against the card edge. Treat those as solo.
+  const svgIsLikelyWordmark = svgAr > 4;
+  const pairSvgWithWordmark =
+    useSvgLogo && !env.logoIconOnly && !svgIsLikelyWordmark;
   const brand = useLogo ? mastheadTitle(opts.title) : opts.title;
 
   // Logo mode paints the card on `background` — the ground the letterstory
@@ -584,7 +606,6 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   // by whichever axis binds first so the mark never overflows or crops. In
   // paired-with-wordmark mode the SVG is a small companion icon, so cap it
   // tighter to leave room for the text next to it.
-  const svgAr = useSvgLogo ? svgAspectRatio(env.logoSvg) ?? 3 : 1;
   const soloMaxW = 900;
   const soloMaxH = 240;
   const soloH = Math.min(soloMaxH, soloMaxW / svgAr);
