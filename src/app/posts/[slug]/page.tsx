@@ -24,6 +24,8 @@ import { buildToc } from "@/lib/toc";
 import { postUrl } from "@/lib/url";
 import { formatDate } from "@/lib/format";
 import { getActiveTheme } from "@/themes";
+import { BlitzArticle } from "@/components/article/BlitzArticle";
+import { FluxArticle } from "@/components/article/FluxArticle";
 import { AuthorBio } from "@/components/AuthorBio";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
@@ -134,6 +136,52 @@ export default async function PostPage({ params }: Params) {
 
   const linkableSlugs = allSections(allPosts).map((s) => sectionSlug(s));
   const words = wordCount(post);
+
+  // Bold tech-portal article (opt-in): kicker + heavy headline + hero, then a
+  // serif reading column beside a right rail (ad, Most Popular, mock post).
+  if (theme.features?.fluxArticle) {
+    return (
+      <FluxArticle
+        post={post}
+        bodyHtml={bodyHtml}
+        headings={headings}
+        section={section}
+        iso={iso}
+        byline={byline}
+        authorBeats={authorBeats}
+        authorPostsCount={authorPosts.length}
+        related={related}
+        prev={prev}
+        next={next}
+        linkableSlugs={linkableSlugs}
+        dropCap={dropCap}
+        allPosts={allPosts}
+        words={words}
+      />
+    );
+  }
+
+  // Culture-news article (opt-in): centered title, sticky meta/share rail, a
+  // summary box, and a sticky ad rail. Self-contained, so it returns early.
+  if (theme.features?.blitzArticle) {
+    return (
+      <BlitzArticle
+        post={post}
+        bodyHtml={bodyHtml}
+        headings={headings}
+        section={section}
+        iso={iso}
+        byline={byline}
+        authorBeats={authorBeats}
+        authorPostsCount={authorPosts.length}
+        related={related}
+        prev={prev}
+        next={next}
+        linkableSlugs={linkableSlugs}
+        dropCap={dropCap}
+      />
+    );
+  }
 
   return (
     <>

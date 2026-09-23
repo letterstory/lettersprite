@@ -48,7 +48,11 @@ export type HomeLayout =
   | "folio"
   | "kiosk"
   | "vitrine"
-  | "commons";
+  | "commons"
+  | "blitz"
+  | "quarto"
+  | "stark"
+  | "flux";
 
 /**
  * How the article page reads.
@@ -170,6 +174,28 @@ export interface ThemeFeatures {
   commonsMasthead?: boolean;
   /** syg.ma-style section/author index: dense mixed image/text masonry feed. */
   commonsLists?: boolean;
+  /** Culture-news masthead: utility bar + centered wordmark + uppercase nav. */
+  blitzMasthead?: boolean;
+  /** Culture-news section/author index: header + dense 4-col metric grid. */
+  blitzLists?: boolean;
+  /** Culture-news article: centered title + meta/share rail + summary + ad rail. */
+  blitzArticle?: boolean;
+  /** Show a reader dark/light toggle in the masthead (requires `colorsLight`). */
+  modeToggle?: boolean;
+  /** Serif review-journal masthead: large wordmark + italic tagline + colophon/search bar. */
+  quartoMasthead?: boolean;
+  /** Serif review-journal section/author index: header + square-thumbnail card grid. */
+  quartoLists?: boolean;
+  /** Bold tech-portal masthead: Subscribe + slash-separated nav under a heavy wordmark. */
+  fluxMasthead?: boolean;
+  /** Bold tech-portal section/author index: colored banner + stream + right rail + ads. */
+  fluxLists?: boolean;
+  /** Bold tech-portal article: kicker + heavy headline + hero + serif column + rail/ads. */
+  fluxArticle?: boolean;
+  /** Minimal mono image-archive masthead: wordmark + search over a slim section nav. */
+  starkMasthead?: boolean;
+  /** Minimal mono image-archive index: centered mono captions over a single image column. */
+  starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
   stockCovers?: boolean;
   /** ctrl.xyz-style section & author index pages (AllAboutAPIs). */
@@ -197,6 +223,12 @@ export interface Theme {
   /** Drives `color-scheme` so native controls and scrollbars match. */
   colorScheme: "light" | "dark";
   colors: ThemeColors;
+  /**
+   * Optional alternate palette for the opposite color scheme. When set, the
+   * theme can offer a reader-toggled dark/light switch (see `modeToggle`); the
+   * base `colors` is the default and this is applied when the reader flips it.
+   */
+  colorsLight?: ThemeColors;
   fonts: {
     /** Big display headlines (hero, article titles). Falls back to `heading`. */
     display?: FontSpec;

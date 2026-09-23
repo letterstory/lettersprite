@@ -20,6 +20,8 @@ import { FolioIndex } from "@/components/FolioIndex";
 import { KioskIndex } from "@/components/KioskIndex";
 import { VitrineIndex } from "@/components/VitrineIndex";
 import { CommonsIndex } from "@/components/CommonsIndex";
+import { BlitzIndex } from "@/components/BlitzIndex";
+import { FluxIndex } from "@/components/FluxIndex";
 import { WireIndex } from "@/components/WireIndex";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -75,6 +77,36 @@ export default async function AuthorPage({ params }: Params) {
   const count = posts.length;
 
   const theme = getActiveTheme();
+
+  // Bold tech-portal index (opt-in): colored banner + stream + right rail + ads.
+  if (theme.features?.fluxLists) {
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <FluxIndex
+          title={byline.name}
+          stat={`${count} ${count === 1 ? "story" : "stories"}`}
+          posts={posts}
+        />
+      </>
+    );
+  }
+
+  // Culture-news index (opt-in): bold title + tabs + dense 4-col metric grid.
+  if (theme.features?.blitzLists) {
+    const stat = `${count} ${count === 1 ? "story" : "stories"}`;
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <BlitzIndex
+          title={byline.name}
+          siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
+          stat={stat}
+          posts={posts}
+        />
+      </>
+    );
+  }
 
   // syg.ma-style index (opt-in): minimal title + tabs + mixed masonry feed.
   if (theme.features?.commonsLists) {

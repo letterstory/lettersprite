@@ -1,10 +1,14 @@
+import { Fragment } from "react";
 import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
 import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
+import { EditionDate } from "./EditionDate";
+import { FluxMenu } from "./FluxMenu";
 import { Logo } from "./Logo";
+import { ModeToggle } from "./ModeToggle";
 import { SectionNav } from "./SectionNav";
 import { SiteSearch, type SearchItem } from "./SiteSearch";
 import { StickyMasthead } from "./StickyMasthead";
@@ -259,6 +263,277 @@ export async function SiteHeader() {
 
   // grafill-style: a serif wordmark with inline serif section nav and a search
   // + subscribe on the right, in one slim bar.
+  // Culture-news: a utility bar with a wide search, a centered wordmark, then a
+  // centered uppercase category nav.
+  if (theme.features?.blitzMasthead) {
+    return (
+      <header
+        data-blitz-masthead
+        className="no-print sticky top-0 z-50 bg-background/95 backdrop-blur-md"
+      >
+        {/* Row 1 — utility bar: a wide prominent search, subscribe on the right. */}
+        <div className="border-b border-border">
+          <div data-hero-hide className="container-wide flex items-center gap-4 px-6 py-2.5">
+            <EditionDate className="hidden shrink-0 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-muted lg:inline" />
+            <SiteSearch index={searchIndex} className="min-w-0 flex-1" />
+            <div className="flex shrink-0 items-center gap-4">
+              <SubscribeButton compact />
+            </div>
+          </div>
+        </div>
+        {/* Row 2 — brand row: menu + socials left · centered wordmark · moon right. */}
+        <div className="border-b border-border">
+          <div className="container-wide grid grid-cols-[1fr_auto_1fr] items-center px-6 py-3.5">
+            <div className="flex items-center gap-4 justify-self-start text-heading">
+              <span aria-hidden className="flex flex-col gap-[3px]">
+                <span className="block h-[2px] w-5 bg-current" />
+                <span className="block h-[2px] w-5 bg-current" />
+                <span className="block h-[2px] w-5 bg-current" />
+              </span>
+              {env.twitterHandle && (
+                <a
+                  href={`https://x.com/${env.twitterHandle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                  className="hidden text-muted transition-colors hover:text-heading sm:block"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+                    <path d="M18.9 1.6h3.5l-7.6 8.7L23.7 22h-7l-5.5-7.2L4.9 22H1.4l8.1-9.3L.7 1.6h7.2l5 6.6 5.9-6.6Zm-1.2 18.3h1.9L6.9 3.6H4.8l12.9 16.3Z" />
+                  </svg>
+                </a>
+              )}
+            </div>
+            <Logo size="md" className="justify-self-center" />
+            <div className="flex items-center justify-self-end">
+              <ModeToggle />
+            </div>
+          </div>
+        </div>
+        {/* Row 3 — centered uppercase category nav. */}
+        {sections.length > 0 && (
+          <div className="border-b border-border">
+            <nav
+              aria-label="Sections"
+              className="container-wide flex justify-start gap-7 overflow-x-auto whitespace-nowrap px-6 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:justify-center [&::-webkit-scrollbar]:hidden"
+            >
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 text-[0.72rem] font-medium uppercase tracking-[0.1em] text-heading transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
+      </header>
+    );
+  }
+
+  // Bold tech-portal masthead: a Subscribe / Sign In utility row, then a heavy
+  // wordmark with a slash-separated section nav over a rule.
+  if (theme.features?.fluxMasthead) {
+    return (
+      <header data-flux-masthead className="no-print bg-background">
+        <div className="container-wide flex items-center justify-end gap-4 px-6 pb-2 pt-4">
+          <a
+            href="#newsletter"
+            className="bg-primary px-3 py-1.5 font-display text-[0.64rem] font-bold uppercase tracking-[0.1em] text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+          >
+            Subscribe
+          </a>
+          <span className="font-display text-[0.64rem] font-bold uppercase tracking-[0.1em] text-heading">
+            Sign In
+          </span>
+        </div>
+        <div className="container-wide flex items-center gap-4 border-b-2 border-foreground px-6 pb-3">
+          <Link
+            href="/"
+            className="shrink-0 font-display text-2xl font-extrabold tracking-[-0.02em] text-heading transition-colors hover:text-primary sm:text-[1.9rem]"
+          >
+            {env.siteTitle}
+          </Link>
+          {sections.length > 0 && (
+            <nav
+              aria-label="Sections"
+              className="hidden min-w-0 items-center gap-2.5 overflow-hidden lg:flex"
+            >
+              {sections.map((s) => (
+                <span key={s} className="flex shrink-0 items-center gap-2.5">
+                  <span aria-hidden className="text-muted">
+                    /
+                  </span>
+                  <Link
+                    href={sectionHref(s)}
+                    className="whitespace-nowrap font-display text-sm font-semibold text-heading transition-colors hover:text-primary"
+                  >
+                    {s}
+                  </Link>
+                </span>
+              ))}
+              <span aria-hidden className="text-muted">
+                /
+              </span>
+            </nav>
+          )}
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <SiteSearch
+              index={searchIndex}
+              placeholder="Search"
+              className="hidden w-52 md:mr-6 md:block"
+            />
+            <FluxMenu items={sections.map((s) => ({ name: s, href: sectionHref(s) }))} />
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // Minimal monospace image-archive masthead: wordmark + search on one hairline
+  // row, a slim centered mono section nav below.
+  if (theme.features?.starkMasthead) {
+    return (
+      <header data-stark-masthead className="no-print bg-background">
+        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-6">
+          <Link
+            href="/"
+            className="justify-self-start font-mono text-xl font-semibold tracking-tight text-heading transition-colors hover:text-primary sm:text-2xl"
+          >
+            {env.siteTitle}
+          </Link>
+          <SiteSearch
+            index={searchIndex}
+            bare
+            bareSize="lg"
+            placeholder="Search"
+            className="w-full max-w-xs justify-self-center"
+          />
+          <div className="flex items-center justify-self-end gap-2.5">
+            <Link
+              href="/latest"
+              className="hidden border border-border px-3 py-1.5 font-mono text-[0.64rem] uppercase tracking-[0.15em] text-heading transition-colors hover:border-primary hover:text-primary sm:inline-block"
+            >
+              Latest
+            </Link>
+            <Link
+              href="#newsletter"
+              className="border border-primary bg-primary px-3 py-1.5 font-mono text-[0.64rem] uppercase tracking-[0.15em] text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+            >
+              Subscribe
+            </Link>
+          </div>
+        </div>
+        {sections.length > 0 && (
+          <nav
+            aria-label="Sections"
+            className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-7 gap-y-1.5 px-6 pb-6 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-muted"
+          >
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="transition-colors hover:text-primary"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+        )}
+      </header>
+    );
+  }
+
+  // Classic journal masthead: a centered emblem, double rules, a big
+  // letter-spaced serif wordmark flanked by Vol./Est., and a dotted section nav.
+  if (theme.features?.quartoMasthead) {
+    const ink = "var(--secondary)"; // navy — the masthead ink
+    const initials = env.siteTitle
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase();
+    const Rule = () => (
+      <div aria-hidden style={{ borderTop: `1.5px solid ${ink}` }} />
+    );
+    return (
+      <header
+        data-quarto-masthead
+        className="no-print bg-background"
+      >
+        {/* Emblem — the deployment logo (SITE_LOGO_SVG, in lockstep with the
+            favicon) when set, else an original monogram roundel fallback. */}
+        <div className="mx-auto flex max-w-5xl justify-center px-6 pb-5 pt-8">
+          <Link href="/" aria-label={env.siteTitle} className="block h-24 w-24">
+            {env.logoSvg ? (
+              <span
+                className="block h-24 w-24 [&>svg]:h-full [&>svg]:w-full"
+                dangerouslySetInnerHTML={{ __html: env.logoSvg }}
+              />
+            ) : (
+              <span
+                className="flex h-24 w-24 items-center justify-center rounded-full font-display text-2xl font-semibold tracking-[0.02em]"
+                style={{ border: `2.5px solid ${ink}`, color: ink }}
+                aria-hidden
+              >
+                {initials}
+              </span>
+            )}
+          </Link>
+        </div>
+        <Rule />
+        {/* Big centered wordmark, flanked by Vol. / Est. */}
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="relative py-6">
+            <span className="absolute left-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
+              Vol.&nbsp;I
+            </span>
+            <Link
+              href="/"
+              className="mx-auto block max-w-3xl text-center font-display text-4xl font-semibold uppercase leading-[1.04] tracking-[0.05em] sm:text-5xl md:text-[3.4rem]"
+              style={{ color: ink }}
+            >
+              {env.siteTitle}
+            </Link>
+            <span className="absolute right-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
+              Est.&nbsp;2026
+            </span>
+          </div>
+        </div>
+        <Rule />
+        {/* Dotted section nav — spans the full width, evenly spread. */}
+        {sections.length > 0 && (
+          <nav
+            aria-label="Sections"
+            className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-6 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: ink }}
+          >
+            {sections.map((s, i) => (
+              <Fragment key={s}>
+                {i > 0 && (
+                  <span aria-hidden className="text-muted">
+                    •
+                  </span>
+                )}
+                <Link
+                  href={sectionHref(s)}
+                  className="whitespace-nowrap transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              </Fragment>
+            ))}
+          </nav>
+        )}
+        <Rule />
+      </header>
+    );
+  }
+
   // syg.ma-style: a minimal single bar — small wordmark, inline section nav,
   // search + subscribe. Understated, system type.
   if (theme.features?.commonsMasthead) {

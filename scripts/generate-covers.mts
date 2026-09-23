@@ -1024,7 +1024,11 @@ function isThemeLike(v: unknown): v is ThemeLike {
 
 async function discoverThemes(): Promise<ThemeLike[]> {
   const files = (await readdir(THEMES_DIR)).filter(
-    (name) => name.endsWith(".ts") && !SKIP.has(name),
+    (name) =>
+      name.endsWith(".ts") &&
+      !name.endsWith(".test.ts") &&
+      !name.endsWith(".d.ts") &&
+      !SKIP.has(name),
   );
   const themes: ThemeLike[] = [];
   for (const file of files.sort()) {
