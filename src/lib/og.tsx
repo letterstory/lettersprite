@@ -223,8 +223,17 @@ function renderedLength(title: string, style: LogoStyle): number {
   return title.length;
 }
 
-/** Logo size — larger than plain titles because the mark IS the composition. */
-function logoSize(title: string, style: LogoStyle): number {
+/**
+ * Logo size — larger than plain titles because the mark IS the composition.
+ * `availableWidth` defaults to the full card content width, but paired-with-
+ * icon mode passes the width left after the icon so a 14-char name at the
+ * tabular 134px doesn't run off the right edge.
+ */
+function logoSize(
+  title: string,
+  style: LogoStyle,
+  availableWidth: number = CARD_CONTENT_WIDTH,
+): number {
   const n = title.length;
   // `condensed` and `boxed` render UPPERCASE, so they occupy more width per glyph.
   const wide = style === "condensed" || style === "boxed";
@@ -247,12 +256,13 @@ function logoSize(title: string, style: LogoStyle): number {
   else if (n <= 22) size = 104;
   else if (n <= 32) size = 82;
   else size = 64;
-  // Cap so the fully-rendered wordmark fits the card width. Without this the
-  // `mono` style's `/really_long_title.` overflows the right edge for long
-  // titles, since underscoring bloats the character count. A 24px floor keeps
-  // even a pathological title readable at 1200x630 (an OG card is big); fit
-  // wins over the tabular target so nothing clips.
-  const maxByWidth = CARD_CONTENT_WIDTH / (renderedLength(title, style) * widthFactor(style));
+  // Cap so the fully-rendered wordmark fits the available width. Without this
+  // the `mono` style's `/really_long_title.` overflows the right edge for long
+  // titles (underscoring bloats the character count), and the paired-mode
+  // wordmark overflows past the icon. A 24px floor keeps even a pathological
+  // title readable at 1200x630; fit wins over the tabular target so nothing
+  // clips.
+  const maxByWidth = availableWidth / (renderedLength(title, style) * widthFactor(style));
   return Math.max(24, Math.min(size, Math.floor(maxByWidth)));
 }
 
@@ -614,7 +624,15 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   const iconMaxH = 180;
   const iconH = Math.min(iconMaxH, iconMaxW / svgAr);
   const iconW = iconH * svgAr;
-  const wordmarkSize = logoSize(brand, "sans-bold");
+  const iconGap = 28;
+  // The wordmark shares the row with the icon, so size it against the space
+  // actually left over — not the whole card. Without this a 14-char name at
+  // the tabular 134px runs off the right edge of a card with a square icon.
+  const wordmarkSize = logoSize(
+    brand,
+    "sans-bold",
+    CARD_CONTENT_WIDTH - iconW - iconGap,
+  );
 
   const headline = pairSvgWithWordmark ? (
     <div style={{ display: "flex", alignItems: "center" }}>
@@ -627,7 +645,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
       <div
         style={{
           display: "flex",
-          marginLeft: 28,
+          marginLeft: iconGap,
           fontSize: wordmarkSize,
           fontWeight: pairWeight,
           lineHeight: 1,
