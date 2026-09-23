@@ -57,16 +57,21 @@ function SvgMark({ size }: { size: Size }) {
       {...(iconOnly
         ? { role: "img", "aria-label": env.logoAlt || env.siteTitle }
         : { "aria-hidden": true })}
-      className={`inline-flex w-auto ${SVG_HEIGHT[size]} [&>svg]:h-full [&>svg]:w-auto`}
+      // `max-w-full` on the wrapper + `max-w-full max-h-full h-auto w-auto` on
+      // the inner SVG lets a wide wordmark (letterstory generates them up to
+      // ~17:1) shrink instead of overflowing the header on mobile — which was
+      // pushing whole pages into horizontal scroll on phone viewports. Height
+      // binds on desktop (usual case); width binds on narrow screens.
+      className={`inline-flex max-w-full ${SVG_HEIGHT[size]} [&>svg]:h-auto [&>svg]:w-auto [&>svg]:max-h-full [&>svg]:max-w-full`}
       dangerouslySetInnerHTML={{ __html: sanitizeSvg(env.logoSvg) }}
     />
   );
   if (iconOnly) return icon;
   return (
-    <span className="inline-flex items-center gap-2.5">
+    <span className="inline-flex min-w-0 max-w-full items-center gap-2.5">
       {icon}
       <span
-        className={`font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}
+        className={`min-w-0 truncate font-heading font-bold leading-none tracking-tight ${SIZE[size]}`}
       >
         {mastheadTitle(env.siteTitle)}
       </span>
