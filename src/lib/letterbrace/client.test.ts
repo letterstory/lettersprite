@@ -57,13 +57,13 @@ describe("getPosts — bounded cursor pagination", () => {
     const posts = await getPosts();
 
     expect(posts).toHaveLength(45);
-    expect(calls).toHaveLength(3); // 20 + 20 + 5
+    expect(calls).toHaveLength(9); // 9 pages of 5
     // Every request is a small page; never an unbounded fetch.
-    for (const c of calls) expect(new URL(c).searchParams.get("limit")).toBe("20");
-    // The cursor chains: page 2 asks after row 20, page 3 after row 40.
+    for (const c of calls) expect(new URL(c).searchParams.get("limit")).toBe("5");
+    // The cursor chains: page 2 asks after row 5, page 3 after row 10.
     expect(new URL(calls[0]).searchParams.get("cursor")).toBeNull();
-    expect(new URL(calls[1]).searchParams.get("cursor")).toBe("20");
-    expect(new URL(calls[2]).searchParams.get("cursor")).toBe("40");
+    expect(new URL(calls[1]).searchParams.get("cursor")).toBe("5");
+    expect(new URL(calls[2]).searchParams.get("cursor")).toBe("10");
   });
 
   it("stops early once it has postsLimit posts, not fetching the whole org", async () => {
@@ -72,7 +72,7 @@ describe("getPosts — bounded cursor pagination", () => {
     const posts = await getPosts();
 
     expect(posts).toHaveLength(10);
-    expect(calls).toHaveLength(1); // one page of 20 already covers a limit of 10
+    expect(calls).toHaveLength(2); // two pages of 5 reach a limit of 10
   });
 
   it("caps total pages so a misbehaving cursor can't loop forever", async () => {
@@ -80,14 +80,14 @@ describe("getPosts — bounded cursor pagination", () => {
     // Server always claims there's more but the client must stop at maxPages.
     const { calls } = fakePublished(10_000);
     await getPosts();
-    expect(calls.length).toBeLessThanOrEqual(Math.ceil(100 / 20) + 2);
+    expect(calls.length).toBeLessThanOrEqual(Math.ceil(100 / 5) + 2);
   });
 
   it("falls back to a single page when the API omits the cursor envelope", async () => {
     const { calls } = fakePublished(200, { withCursor: false });
     const posts = await getPosts();
     expect(calls).toHaveLength(1);
-    expect(posts).toHaveLength(20);
+    expect(posts).toHaveLength(5);
   });
 
   it("scopes to a collection when configured", async () => {

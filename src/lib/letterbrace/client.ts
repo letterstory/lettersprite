@@ -92,14 +92,20 @@ function publishedPath(params: Record<string, string> = {}): string {
 }
 
 /**
- * How many posts to request per page. Small on purpose: a single unbounded
- * `/published` fetch pulls the org's full frozen content in one query, which
- * times out server-side on large orgs (observed: statement-timeout 500s that
- * left those blogs rendering empty). We only ever render `postsLimit` (≤100)
- * posts, and the list is newest-first, so paging a small window and stopping
- * once we have enough keeps every request cheap.
+ * How many posts to request per page. Small on purpose, for two reasons:
+ * a single unbounded `/published` fetch pulls the org's full frozen content
+ * in one query, which times out server-side on large orgs (observed:
+ * statement-timeout 500s that left those blogs rendering empty); and each
+ * post's `content` is raw HTML that can carry inline images, so a page of
+ * posts can exceed Next.js's 2MB data-cache entry limit — a page that big
+ * silently fails to cache, forcing every rebuild to re-fetch it uncached,
+ * which is what took a fleet build's `/latest` page down after 3 retries
+ * (observed: a 20-post page hit ~7MB for a content-heavy collection). We
+ * only ever render `postsLimit` (≤100) posts, and the list is newest-first,
+ * so paging a small window and stopping once we have enough keeps every
+ * request cheap and cacheable.
  */
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 /** Read the keyset cursor envelope Letterbrace returns alongside `items`. */
 function readCursor(payload: unknown): { nextCursor: string | null; hasMore: boolean } {
