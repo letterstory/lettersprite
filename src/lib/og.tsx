@@ -6,17 +6,20 @@
  * gives the *chromeless* routes — the homepage and each section index — a
  * generated card so a shared link is never a bare, image-less preview.
  *
- * The card is drawn from the active theme so it matches the publication: the
- * hero gradient as the field, the display font for the headline, and a readable
- * text color picked from the gradient's luminance. Fonts are fetched from Google
- * Fonts at build time and the whole load is best-effort — if the network is
- * unavailable the card still renders in `next/og`'s bundled default font, so a
- * build never fails for the sake of an OG image.
+ * The card is drawn from the active theme so it matches the publication. In
+ * `logo` mode the site title is rendered in the theme's masthead treatment
+ * (serif / boxed / mono / monogram / …), or the supplied `SITE_LOGO_SVG` is
+ * embedded — giving every deployment a visually distinct card even when the
+ * palette runs dark. Fonts are fetched from Google Fonts at build time and the
+ * whole load is best-effort — if the network is unavailable the card still
+ * renders in `next/og`'s bundled default font, so a build never fails for the
+ * sake of an OG image.
  */
 import { ImageResponse } from "next/og";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
-import type { FontSpec, Theme } from "@/themes/types";
+import { mastheadTitle, sanitizeSvg } from "@/components/Logo";
+import type { FontSpec, LogoStyle, Theme } from "@/themes/types";
 
 /** OG's sweet-spot ratio (1.91:1): fills a preview card without cropping. */
 export const OG_SIZE = { width: 1200, height: 630 } as const;
@@ -63,6 +66,31 @@ function readableTones(from: string, to: string) {
   };
 }
 
+// --- title / logo helpers --------------------------------------------------
+
+/** Two-letter (or single-word two-char) initials for `monogram` themes. */
+function initials(title: string): string {
+  const words = title
+    .replace(/^(the|a|an)\s+/i, "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return title.trim().slice(0, 2).toUpperCase() || "·";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+/** The wordmark text for the `mono` logo (matches Logo.tsx's treatment). */
+function monoWordmark(title: string): string {
+  return title.replace(/\s+/g, "_").toLowerCase();
+}
+
+/** Turn a raw SVG string into a data URI suitable for Satori's `<img>` src. */
+function svgDataUri(svg: string): string {
+  const cleaned = sanitizeSvg(svg).replace(/\s+/g, " ").trim();
+  return `data:image/svg+xml;utf8,${encodeURIComponent(cleaned)}`;
+}
+
 // --- font loading (best-effort) --------------------------------------------
 
 const displaySpec = (theme: Theme): FontSpec =>
@@ -80,6 +108,26 @@ const textWeight = (spec: FontSpec, fallback: number): number => {
   const sorted = [...w].sort((a, b) => a - b);
   return sorted.find((x) => x >= 500) ?? sorted[0];
 };
+
+/** The font face (and its weight) each logo style renders in. */
+function logoFontFor(
+  theme: Theme,
+  style: LogoStyle,
+): { spec: FontSpec; weight: number } {
+  switch (style) {
+    case "serif":
+    case "underline":
+      return { spec: displaySpec(theme), weight: 800 };
+    case "mono":
+      return { spec: theme.fonts.mono, weight: 700 };
+    case "sans-bold":
+    case "condensed":
+    case "boxed":
+    case "monogram":
+    default:
+      return { spec: theme.fonts.heading, weight: 700 };
+  }
+}
 
 /**
  * Fetch one Google font face as raw ttf/otf, subset to `text`. Node's default
@@ -146,6 +194,78 @@ function titleSize(title: string): number {
   return 52;
 }
 
+/** Content width available for the headline (card width minus the 80px H padding). */
+const CARD_CONTENT_WIDTH = OG_SIZE.width - 80 * 2;
+
+/**
+ * Rough per-glyph width factor by style, given the style's font weight and case.
+ * Used to cap `logoSize` so long titles don't overflow the card horizontally —
+ * particularly the `mono` style, where `/site_name_underscored.` is much longer
+ * than the source title.
+ */
+function widthFactor(style: LogoStyle): number {
+  switch (style) {
+    case "mono":
+      return 0.62; // monospace: uniform, wide
+    case "condensed":
+      return 0.42; // condensed uppercase, tight tracking wins some back
+    case "boxed":
+      return 0.6; // uppercase + horizontal padding of ~0.56em each side
+    default:
+      return 0.55; // display / heavy sans wordmarks
+  }
+}
+
+/** How long, in characters, will the rendered wordmark actually be? */
+function renderedLength(title: string, style: LogoStyle): number {
+  if (style === "mono") return title.replace(/\s+/g, "_").length + 2; // `/…` plus cursor
+  if (style === "monogram") return 2 + title.length; // initial tile ≈ 2 chars, plus wordmark
+  return title.length;
+}
+
+/**
+ * Logo size — larger than plain titles because the mark IS the composition.
+ * `availableWidth` defaults to the full card content width, but paired-with-
+ * icon mode passes the width left after the icon so a 14-char name at the
+ * tabular 134px doesn't run off the right edge.
+ */
+function logoSize(
+  title: string,
+  style: LogoStyle,
+  availableWidth: number = CARD_CONTENT_WIDTH,
+): number {
+  const n = title.length;
+  // `condensed` and `boxed` render UPPERCASE, so they occupy more width per glyph.
+  const wide = style === "condensed" || style === "boxed";
+  // `mono` wordmark reads as `/name_underscored.` — always longer than the source.
+  const long = style === "mono";
+  let size: number;
+  if (long) {
+    if (n <= 8) size = 120;
+    else if (n <= 14) size = 100;
+    else if (n <= 22) size = 80;
+    else size = 64;
+  } else if (wide) {
+    if (n <= 8) size = 148;
+    else if (n <= 14) size = 118;
+    else if (n <= 22) size = 92;
+    else if (n <= 32) size = 72;
+    else size = 58;
+  } else if (n <= 8) size = 168;
+  else if (n <= 14) size = 134;
+  else if (n <= 22) size = 104;
+  else if (n <= 32) size = 82;
+  else size = 64;
+  // Cap so the fully-rendered wordmark fits the available width. Without this
+  // the `mono` style's `/really_long_title.` overflows the right edge for long
+  // titles (underscoring bloats the character count), and the paired-mode
+  // wordmark overflows past the icon. A 24px floor keeps even a pathological
+  // title readable at 1200x630; fit wins over the tabular target so nothing
+  // clips.
+  const maxByWidth = availableWidth / (renderedLength(title, style) * widthFactor(style));
+  return Math.max(24, Math.min(size, Math.floor(maxByWidth)));
+}
+
 /** The bare host of the site URL, e.g. "thesignal.example" — the footer mark. */
 function siteHost(): string {
   return env.siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -162,6 +282,252 @@ export interface OgCardOptions {
   footer?: string;
   /** Overrides the active theme (defaults to the deployment's theme). */
   theme?: Theme;
+  /**
+   * Render `title` in the theme's masthead logo treatment (serif/boxed/mono/…)
+   * or embed the supplied `SITE_LOGO_SVG`. Meant for the homepage card, where
+   * the title is the site name — makes every deployment's card look distinct.
+   */
+  logo?: boolean;
+}
+
+/**
+ * Render the theme's masthead treatment as the OG card's centerpiece. Same
+ * palette + typography choices as `src/components/Logo.tsx`, translated to
+ * Satori-compatible JSX (no Tailwind, no pseudo-elements, everything laid out
+ * with flex + explicit sizes).
+ */
+function LogoMark({
+  style,
+  title,
+  fg,
+  primary,
+  primaryForeground,
+  fontFamily,
+  fontWeight,
+  size,
+  radius,
+}: {
+  style: LogoStyle;
+  title: string;
+  fg: string;
+  primary: string;
+  primaryForeground: string;
+  fontFamily?: string;
+  fontWeight: number;
+  size: number;
+  radius: string;
+}): React.ReactElement {
+  const fam = fontFamily ? { fontFamily } : {};
+
+  switch (style) {
+    case "serif":
+      return (
+        <div
+          style={{
+            display: "flex",
+            fontSize: size,
+            fontWeight,
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+            color: fg,
+            ...fam,
+          }}
+        >
+          {title}
+        </div>
+      );
+
+    case "sans-bold":
+      return (
+        <div
+          style={{
+            display: "flex",
+            fontSize: size,
+            fontWeight,
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+            color: fg,
+            ...fam,
+          }}
+        >
+          {title}
+        </div>
+      );
+
+    case "condensed":
+      return (
+        <div
+          style={{
+            display: "flex",
+            fontSize: size,
+            fontWeight,
+            textTransform: "uppercase",
+            letterSpacing: "0.12em",
+            lineHeight: 1,
+            color: fg,
+            ...fam,
+          }}
+        >
+          {title}
+        </div>
+      );
+
+    case "mono": {
+      const word = monoWordmark(title);
+      const cursorW = Math.round(size * 0.42);
+      const cursorH = Math.round(size * 0.92);
+      return (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            fontSize: size,
+            fontWeight,
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+            color: fg,
+            ...fam,
+          }}
+        >
+          <span style={{ color: primary }}>/</span>
+          <span>{word}</span>
+          <span
+            style={{
+              display: "flex",
+              width: cursorW,
+              height: cursorH,
+              marginLeft: Math.round(size * 0.08),
+              backgroundColor: primary,
+            }}
+          />
+        </div>
+      );
+    }
+
+    case "boxed":
+      return (
+        <div
+          style={{
+            display: "flex",
+            backgroundColor: primary,
+            color: primaryForeground,
+            padding: `${Math.round(size * 0.16)}px ${Math.round(size * 0.28)}px`,
+            fontSize: size,
+            fontWeight,
+            textTransform: "uppercase",
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+            ...fam,
+          }}
+        >
+          {title}
+        </div>
+      );
+
+    case "underline":
+      return (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: size,
+              fontWeight,
+              letterSpacing: "-0.02em",
+              lineHeight: 1,
+              color: fg,
+              ...fam,
+            }}
+          >
+            {title}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              height: Math.max(8, Math.round(size * 0.07)),
+              width: Math.round(size * 2.4),
+              marginTop: Math.round(size * 0.14),
+              backgroundColor: primary,
+            }}
+          />
+        </div>
+      );
+
+    case "monogram": {
+      const init = initials(title);
+      const tile = Math.round(size * 1.15);
+      return (
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: tile,
+              height: tile,
+              backgroundColor: primary,
+              color: primaryForeground,
+              fontSize: Math.round(size * 0.68),
+              fontWeight,
+              borderRadius: radius,
+              ...fam,
+            }}
+          >
+            {init}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              marginLeft: Math.round(size * 0.22),
+              fontSize: size,
+              fontWeight,
+              letterSpacing: "-0.02em",
+              lineHeight: 1,
+              color: fg,
+              ...fam,
+            }}
+          >
+            {title}
+          </div>
+        </div>
+      );
+    }
+  }
+}
+
+/**
+ * Best-guess dominant fill color of an SVG. Returns the last hex `fill="…"`
+ * attribute (usually the main path's ink for a typical single-color wordmark
+ * or icon), or null when the SVG relies on CSS / `currentColor` / gradients /
+ * nothing we can eyeball from the source. Used by the plate heuristic to
+ * decide whether the ink actually contrasts with the card background.
+ */
+function svgDominantFill(svg: string): string | null {
+  const matches = svg.matchAll(/fill\s*=\s*"(#[0-9a-fA-F]{3,8})"/g);
+  let last: string | null = null;
+  for (const m of matches) last = m[1];
+  return last;
+}
+
+/** Rough px-length of an SVG intrinsic width for aspect-ratio scaling. */
+function svgAspectRatio(svg: string): number | null {
+  const vb = svg.match(/viewBox\s*=\s*["']([-\d.\s]+)["']/i);
+  if (vb) {
+    const parts = vb[1].trim().split(/\s+/).map(Number);
+    if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) return parts[2] / parts[3];
+  }
+  const w = svg.match(/\bwidth\s*=\s*["']([\d.]+)/i);
+  const h = svg.match(/\bheight\s*=\s*["']([\d.]+)/i);
+  if (w && h && Number(h[1]) > 0) return Number(w[1]) / Number(h[1]);
+  return null;
+}
+
+/** Convert a CSS length like "0.5rem" or "12px" into a Satori-friendly px value. */
+function cssLengthToPx(value: string, base = 16): number {
+  const m = value.trim().match(/^([\d.]+)(rem|px)?$/i);
+  if (!m) return base;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return base;
+  return (m[2] ?? "").toLowerCase() === "px" ? n : n * base;
 }
 
 /**
@@ -174,16 +540,69 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   const from = c.heroFrom ?? c.primary;
   const to = c.heroTo ?? c.accent ?? c.secondary ?? c.primary;
   const accent = c.accent ?? c.secondary ?? c.primaryForeground;
-  const { fg, muted } = readableTones(from, to);
   const footer = opts.footer ?? siteHost();
+  const radius = `${cssLengthToPx(theme.radius)}px`;
 
-  const dSpec = displaySpec(theme);
+  const useLogo = !!opts.logo;
+  const useSvgLogo = useLogo && !!env.logoSvg;
+  const svgAr = useSvgLogo ? svgAspectRatio(env.logoSvg) ?? 3 : 1;
+  // `SITE_LOGO_ICON_ONLY=false` (or unset) means the SVG is an icon that the
+  // masthead pairs with the site title text. Same flag `src/components/Logo.tsx`
+  // reads — an OG card should show the same brand as the site header. But when
+  // the SVG's aspect ratio is very wide (> 4:1) it's almost certainly already a
+  // wordmark, and pairing it with a plaintext title crams the icon down to a
+  // thin strip and clips the text against the card edge. Treat those as solo.
+  const svgIsLikelyWordmark = svgAr > 4;
+  const pairSvgWithWordmark =
+    useSvgLogo && !env.logoIconOnly && !svgIsLikelyWordmark;
+  const brand = useLogo ? mastheadTitle(opts.title) : opts.title;
+
+  // Logo mode paints the card on `background` — the ground the letterstory
+  // wordmark and the theme's `primary`/`accent` decorations are authored
+  // against — so an SVG in `primary` never blends into a hero gradient that
+  // also starts at `primary`. Non-logo (section) cards keep the hero gradient
+  // and derive text tones by luminance for legibility over either stop.
+  const gradientTones = readableTones(from, to);
+  const fg = useLogo ? c.foreground : gradientTones.fg;
+  const muted = useLogo ? c.muted : gradientTones.muted;
+  const primaryForeground = c.primaryForeground ?? fg;
+
   const bSpec = theme.fonts.body;
-  const dWeight = maxWeight(dSpec, 700);
   const bWeight = textWeight(bSpec, 400);
 
+  const logoStyle = theme.logo;
+  const logoFont = logoFontFor(theme, logoStyle);
+  const lWeight = maxWeight(logoFont.spec, logoFont.weight);
+
+  // The paired wordmark uses the theme's heading font at max weight — matches
+  // `SvgMark` in `src/components/Logo.tsx`, which renders "font-heading
+  // font-bold" beside the icon regardless of `theme.logo`.
+  const pairSpec = theme.fonts.heading;
+  const pairWeight = maxWeight(pairSpec, 700);
+
+  // Characters we need in the logo face. The logo may render uppercased
+  // (condensed, boxed), initials-only (monogram), or lowercased with `/_.`
+  // (mono) — subset every form we might paint so Google Fonts serves complete
+  // glyphs no matter which theme this deployment picked.
+  const logoText =
+    useLogo && !useSvgLogo
+      ? brand + brand.toUpperCase() + brand.toLowerCase() + initials(brand) + "/_."
+      : "";
+
+  // Non-logo title uses the display face; logo mode uses the style-specific one.
+  const dSpec = displaySpec(theme);
+  const dWeight = maxWeight(dSpec, 700);
+
   const fonts = await loadFonts([
-    { name: dSpec.google?.name, weight: dWeight, text: opts.title },
+    ...(useLogo && !useSvgLogo
+      ? [{ name: logoFont.spec.google?.name, weight: lWeight, text: logoText }]
+      : []),
+    ...(pairSvgWithWordmark
+      ? [{ name: pairSpec.google?.name, weight: pairWeight, text: brand }]
+      : []),
+    ...(useLogo
+      ? []
+      : [{ name: dSpec.google?.name, weight: dWeight, text: opts.title }]),
     {
       name: bSpec.google?.name,
       weight: bWeight,
@@ -196,6 +615,8 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
       : undefined;
   const displayFamily = loaded(dSpec.google?.name, dWeight);
   const bodyFamily = loaded(bSpec.google?.name, bWeight);
+  const logoFamily = loaded(logoFont.spec.google?.name, lWeight);
+  const pairFamily = loaded(pairSpec.google?.name, pairWeight);
 
   // Only set `fontFamily` when the face actually loaded. A build-time Google
   // Fonts fetch can flake, leaving these undefined — and Satori throws
@@ -203,6 +624,109 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   // `fontFamily: undefined`, which fails the whole static export. Omitting the
   // key instead lets Satori fall back to its bundled default font.
   const fam = (name?: string): { fontFamily?: string } => (name ? { fontFamily: name } : {});
+
+  // Fit the embedded logo inside the card's content area (padding 80x76 →
+  // ~1040x478). Wordmarks from letterstory can be very wide (6:1, 8:1); scale
+  // by whichever axis binds first so the mark never overflows or crops. In
+  // paired-with-wordmark mode the SVG is a small companion icon, so cap it
+  // tighter to leave room for the text next to it.
+  const soloMaxW = 900;
+  const soloMaxH = 240;
+  const soloH = Math.min(soloMaxH, soloMaxW / svgAr);
+  const soloW = soloH * svgAr;
+  const iconMaxW = 420;
+  const iconMaxH = 180;
+  const iconH = Math.min(iconMaxH, iconMaxW / svgAr);
+  const iconW = iconH * svgAr;
+  const iconGap = 28;
+  // The wordmark shares the row with the icon, so size it against the space
+  // actually left over — not the whole card. Without this a 14-char name at
+  // the tabular 134px runs off the right edge of a card with a square icon.
+  const wordmarkSize = logoSize(
+    brand,
+    "sans-bold",
+    CARD_CONTENT_WIDTH - iconW - iconGap,
+  );
+
+  // Letterstory-generated SVGs are authored against `background`, but a mark
+  // colored for one theme becomes invisible when a phantom later pairs it with
+  // a theme whose background matches the ink (dark-on-dark, or light-on-light
+  // after a theme swap). The correct place to prevent that mismatch is
+  // upstream in letterstory's picker, which knows both sides at phantom
+  // creation time. Here on the OG surface we just need to ship a legible
+  // card, so we detect the SVG's dominant fill and plate the mark against the
+  // theme's `foreground` when its luminance is too close to `background`.
+  // `foreground` is contrast-perfect for the bg by design, so the plate reads
+  // correctly on either scheme. When we can't parse a fill (currentColor,
+  // gradients), fall back to plating on dark themes — the more common break.
+  const svgFill = useSvgLogo ? svgDominantFill(env.logoSvg) : null;
+  const bgLum = luminance(c.background);
+  const svgClashesBg =
+    svgFill !== null
+      ? Math.abs(luminance(svgFill) - bgLum) < 0.3
+      : theme.colorScheme === "dark";
+  const plate = useSvgLogo && svgClashesBg;
+  const platePad = 20;
+  const plateStyle = plate
+    ? {
+        display: "flex",
+        padding: platePad,
+        backgroundColor: c.foreground,
+        borderRadius: cssLengthToPx(theme.radius) + platePad / 2,
+      }
+    : { display: "flex" };
+
+  const headline = pairSvgWithWordmark ? (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={plateStyle}>
+        <img src={svgDataUri(env.logoSvg)} width={iconW} height={iconH} alt="" />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          marginLeft: iconGap,
+          fontSize: wordmarkSize,
+          fontWeight: pairWeight,
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+          color: fg,
+          ...fam(pairFamily),
+        }}
+      >
+        {brand}
+      </div>
+    </div>
+  ) : useSvgLogo ? (
+    <div style={plateStyle}>
+      <img src={svgDataUri(env.logoSvg)} width={soloW} height={soloH} alt="" />
+    </div>
+  ) : useLogo ? (
+    <LogoMark
+      style={logoStyle}
+      title={brand}
+      fg={fg}
+      primary={c.primary}
+      primaryForeground={primaryForeground}
+      fontFamily={logoFamily}
+      fontWeight={lWeight}
+      size={logoSize(brand, logoStyle)}
+      radius={radius}
+    />
+  ) : (
+    <div
+      style={{
+        display: "flex",
+        fontSize: titleSize(opts.title),
+        fontWeight: dWeight,
+        lineHeight: 1.03,
+        letterSpacing: "-0.02em",
+        maxWidth: 1000,
+        ...fam(displayFamily),
+      }}
+    >
+      {opts.title}
+    </div>
+  );
 
   const element = (
     <div
@@ -213,7 +737,9 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
         flexDirection: "column",
         justifyContent: "space-between",
         padding: "76px 80px",
-        backgroundImage: `linear-gradient(135deg, ${from} 0%, ${to} 100%)`,
+        ...(useLogo
+          ? { backgroundColor: c.background }
+          : { backgroundImage: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` }),
         color: fg,
         ...fam(bodyFamily),
       }}
@@ -237,29 +763,19 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
       </div>
 
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <div
-          style={{
-            display: "flex",
-            width: 76,
-            height: 6,
-            borderRadius: 3,
-            marginBottom: 30,
-            backgroundColor: accent,
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            fontSize: titleSize(opts.title),
-            fontWeight: dWeight,
-            lineHeight: 1.03,
-            letterSpacing: "-0.02em",
-            maxWidth: 1000,
-            ...fam(displayFamily),
-          }}
-        >
-          {opts.title}
-        </div>
+        {useLogo ? null : (
+          <div
+            style={{
+              display: "flex",
+              width: 76,
+              height: 6,
+              borderRadius: 3,
+              marginBottom: 30,
+              backgroundColor: accent,
+            }}
+          />
+        )}
+        {headline}
         {opts.subtitle ? (
           <div
             style={{
@@ -267,7 +783,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
               fontSize: 30,
               fontWeight: bWeight,
               lineHeight: 1.3,
-              marginTop: 28,
+              marginTop: useLogo ? 40 : 28,
               maxWidth: 900,
               color: muted,
               ...fam(bodyFamily),

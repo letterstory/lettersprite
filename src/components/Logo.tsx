@@ -35,7 +35,7 @@ const SVG_HEIGHT: Record<Size, string> = {
  * value is trusted deployment config (an env var), but stripping these keeps a
  * compromised or careless payload from executing.
  */
-function sanitizeSvg(svg: string): string {
+export function sanitizeSvg(svg: string): string {
   return svg
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
@@ -87,7 +87,7 @@ function SvgMark({ size }: { size: Size }) {
  * Scaler"). The full title still carries the <title>, aria-label and sr-only
  * heading for SEO/AT. A title with no separator is left whole.
  */
-function mastheadTitle(full: string): string {
+export function mastheadTitle(full: string): string {
   // ":␣", "␣—␣/␣–␣/␣|␣", or "␣-␣" — a spaced hyphen only, so "AI-Assisted" is safe.
   const brand = full.split(/:\s|\s+[—–|]\s+|\s+-\s+/)[0]?.trim();
   return brand || full;

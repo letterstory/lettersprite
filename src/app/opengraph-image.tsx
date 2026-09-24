@@ -18,5 +18,6 @@ export default function Image() {
     title: env.siteTitle,
     eyebrow: env.siteTagline || undefined,
     subtitle: env.siteDescription || undefined,
+    logo: true,
   });
 }
