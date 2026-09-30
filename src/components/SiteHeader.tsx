@@ -10,6 +10,7 @@ import { FluxMenu } from "./FluxMenu";
 import { Logo } from "./Logo";
 import { ModeToggle } from "./ModeToggle";
 import { MastheadPills } from "./MastheadPills";
+import { RiotMenu } from "./RiotMenu";
 import { SectionNav } from "./SectionNav";
 import { SiteSearch, type SearchItem } from "./SiteSearch";
 import { StickyMasthead } from "./StickyMasthead";
@@ -394,6 +395,72 @@ export async function SiteHeader() {
         </div>
         {/* Verge-style centered pill toggle; active pill tracks the route. */}
         <MastheadPills />
+      </header>
+    );
+  }
+
+  // FURFUR-style masthead: a black gridded bar with cell dividers — a working
+  // Menu + Latest on the left, a centered condensed wordmark, Subscribe + Search
+  // on the right — over a slim centered section strip on the paper ground.
+  if (theme.features?.riotMasthead) {
+    const menuItems = sections.map((s) => ({ name: s, href: sectionHref(s) }));
+    return (
+      <header data-riot-masthead className="no-print">
+        <div className="bg-[color:var(--secondary)] text-white">
+          <div className="mx-auto flex max-w-[100rem] items-stretch">
+            <div className="flex items-center border-r border-white/15 px-4 py-4 sm:px-5">
+              <RiotMenu items={menuItems} />
+            </div>
+            <Link
+              href="/latest"
+              className="hidden items-center border-r border-white/15 px-6 font-display text-sm font-semibold uppercase tracking-[0.14em] text-white/90 transition-opacity hover:opacity-70 sm:flex"
+            >
+              Latest
+            </Link>
+            <Link href="/" aria-label={env.siteTitle} className="flex flex-1 items-center justify-center px-4 py-2.5">
+              <span className="font-display text-xl font-bold uppercase leading-none tracking-[0.05em] text-white sm:text-2xl md:text-3xl">
+                {env.siteTitle}
+              </span>
+            </Link>
+            <a
+              href="#newsletter"
+              className="hidden items-center border-l border-white/15 px-6 font-display text-sm font-semibold uppercase tracking-[0.14em] text-white/90 transition-opacity hover:opacity-70 sm:flex"
+            >
+              Subscribe
+            </a>
+            {theme.features?.modeToggle && (
+              <div className="flex items-center border-l border-white/15 px-3">
+                <ModeToggle tone="onDark" />
+              </div>
+            )}
+            <Link
+              href="/search"
+              aria-label="Search"
+              className="flex items-center gap-2 border-l border-white/15 px-4 font-display text-sm font-semibold uppercase tracking-[0.14em] text-white/90 transition-opacity hover:opacity-70 sm:px-5"
+            >
+              <span className="hidden md:inline">Search</span>
+              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+        {sections.length > 0 && (
+          <nav aria-label="Sections" className="border-b border-border bg-background">
+            <div className="container-wide flex flex-wrap items-center justify-center gap-x-7 gap-y-1 px-6 py-2.5">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="font-display text-xs font-semibold uppercase tracking-[0.12em] text-muted transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
       </header>
     );
   }

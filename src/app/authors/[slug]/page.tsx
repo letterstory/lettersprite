@@ -22,6 +22,7 @@ import { VitrineIndex } from "@/components/VitrineIndex";
 import { CommonsIndex } from "@/components/CommonsIndex";
 import { BlitzIndex } from "@/components/BlitzIndex";
 import { FluxIndex } from "@/components/FluxIndex";
+import { RiotIndex } from "@/components/RiotIndex";
 import { WireIndex } from "@/components/WireIndex";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -87,6 +88,26 @@ export default async function AuthorPage({ params }: Params) {
           title={byline.name}
           stat={`${count} ${count === 1 ? "story" : "stories"}`}
           posts={posts}
+        />
+      </>
+    );
+  }
+
+  // FURFUR-style category river (opt-in): condensed title + 3-up card grid.
+  if (theme.features?.riotLists) {
+    const all = await getPosts();
+    const byAuthor = new Set(posts.map((p) => p.slug));
+    const more = all
+      .filter((p) => !byAuthor.has(p.slug))
+      .slice(0, count <= 6 ? 15 : 6);
+    return (
+      <>
+        <JsonLd data={authorLd(byline, posts, beats)} />
+        <RiotIndex
+          title={byline.name}
+          stat={`${count} ${count === 1 ? "story" : "stories"}`}
+          posts={posts}
+          more={more}
         />
       </>
     );

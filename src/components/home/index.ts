@@ -23,6 +23,7 @@ import { QuartoHome } from "./QuartoHome";
 import { StarkHome } from "./StarkHome";
 import { FluxHome } from "./FluxHome";
 import { RelayHome } from "./RelayHome";
+import { RiotHome } from "./RiotHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -51,6 +52,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   stark: StarkHome,
   flux: FluxHome,
   relay: RelayHome,
+  riot: RiotHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */

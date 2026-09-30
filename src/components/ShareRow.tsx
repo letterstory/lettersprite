@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 
 /**
  * Social share links. Static hrefs (share intents + mailto), so they work in a
@@ -67,6 +68,7 @@ export function ShareRow({
             <path d="m3 7 9 6 9-6" />
           </svg>
         </ShareLink>
+        <CopyLinkButton url={url} />
       </div>
     </div>
   );
