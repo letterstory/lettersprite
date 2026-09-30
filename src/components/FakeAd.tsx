@@ -5,6 +5,8 @@
  * ad tag or impersonating a real brand. Two shapes: `leaderboard` and `box`.
  */
 
+import type { CSSProperties } from "react";
+
 type Variant = "leaderboard" | "box";
 type Motif = "bars" | "orbit" | "dots" | "chevron";
 
@@ -28,10 +30,20 @@ const CREATIVES: Creative[] = [
 ];
 
 /** A bold abstract motif rendered as an SVG backdrop. `uid` keeps pattern ids unique. */
-function MotifBg({ motif, accent, uid }: { motif: Motif; accent: string; uid: string }) {
+function MotifBg({
+  motif,
+  accent,
+  uid,
+  style,
+}: {
+  motif: Motif;
+  accent: string;
+  uid: string;
+  style?: CSSProperties;
+}) {
   if (motif === "orbit") {
     return (
-      <svg aria-hidden className="pointer-events-none absolute -right-8 -top-10 h-56 w-56 opacity-60">
+      <svg aria-hidden style={style} className="ad-motif pointer-events-none absolute -right-8 -top-10 h-56 w-56 opacity-60">
         {[46, 36, 26, 16, 7].map((r) => (
           <circle key={r} cx="112" cy="112" r={r * 2.4} fill="none" stroke={accent} strokeWidth="4" />
         ))}
@@ -40,37 +52,37 @@ function MotifBg({ motif, accent, uid }: { motif: Motif; accent: string; uid: st
   }
   if (motif === "chevron") {
     return (
-      <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-45" preserveAspectRatio="none">
+      <svg aria-hidden style={style} className="ad-motif pointer-events-none absolute inset-0 h-full w-full opacity-45" preserveAspectRatio="none">
         <defs>
           <pattern id={`chev-${uid}`} width="34" height="34" patternUnits="userSpaceOnUse">
             <path d="M0 22 L17 8 L34 22" fill="none" stroke={accent} strokeWidth="5" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill={`url(#chev-${uid})`} />
+        <rect width="120%" height="120%" fill={`url(#chev-${uid})`} />
       </svg>
     );
   }
   if (motif === "dots") {
     return (
-      <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-55" preserveAspectRatio="none">
+      <svg aria-hidden style={style} className="ad-motif pointer-events-none absolute inset-0 h-full w-full opacity-55" preserveAspectRatio="none">
         <defs>
           <pattern id={`dot-${uid}`} width="22" height="22" patternUnits="userSpaceOnUse">
             <circle cx="6" cy="6" r="3.2" fill={accent} />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill={`url(#dot-${uid})`} />
+        <rect width="120%" height="120%" fill={`url(#dot-${uid})`} />
       </svg>
     );
   }
   // bars — bold diagonal stripes
   return (
-    <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-40" preserveAspectRatio="none">
+    <svg aria-hidden style={style} className="ad-motif pointer-events-none absolute inset-0 h-full w-full opacity-40" preserveAspectRatio="none">
       <defs>
         <pattern id={`bar-${uid}`} width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <rect width="15" height="30" fill={accent} />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill={`url(#bar-${uid})`} />
+      <rect width="120%" height="120%" fill={`url(#bar-${uid})`} />
     </svg>
   );
 }
@@ -101,6 +113,10 @@ export function FakeAd({
   const idx = ((seed % CREATIVES.length) + CREATIVES.length) % CREATIVES.length;
   const c = CREATIVES[idx];
   const uid = `${variant}-${idx}`;
+  // Stagger the motion so multiple ads on one page don't animate in lockstep.
+  const sweepDelay = { animationDelay: `${(idx % 4) * -1.3}s` };
+  const motifDelay = { animationDelay: `${(idx % 3) * -2.1}s` };
+  const ctaDelay = { animationDelay: `${(idx % 3) * -0.8}s` };
 
   return (
     <div className={`no-print ${className}`}>
@@ -111,10 +127,10 @@ export function FakeAd({
       )}
       {variant === "leaderboard" ? (
         <div
-          className="relative flex items-center gap-4 overflow-hidden px-6 py-5 sm:gap-6"
-          style={{ backgroundColor: c.bg, color: c.fg }}
+          className="ad-anim flex items-center gap-4 overflow-hidden px-6 py-5 sm:gap-6"
+          style={{ backgroundColor: c.bg, color: c.fg, ...sweepDelay }}
         >
-          <MotifBg motif={c.motif} accent={c.accent} uid={uid} />
+          <MotifBg motif={c.motif} accent={c.accent} uid={uid} style={motifDelay} />
           <div className="relative z-10 flex items-center gap-4">
             <Mark initial={c.brand[0]} fg={c.fg} />
             <div className="min-w-0">
@@ -125,18 +141,18 @@ export function FakeAd({
             </div>
           </div>
           <span
-            className="relative z-10 ml-auto hidden shrink-0 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wider sm:inline-block"
-            style={{ backgroundColor: c.fg, color: c.bg }}
+            className="ad-cta relative z-10 ml-auto hidden shrink-0 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-wider sm:inline-block"
+            style={{ backgroundColor: c.fg, color: c.bg, ...ctaDelay }}
           >
             {c.cta} →
           </span>
         </div>
       ) : (
         <div
-          className="relative flex min-h-[320px] flex-col justify-between overflow-hidden p-6"
-          style={{ backgroundColor: c.bg, color: c.fg }}
+          className="ad-anim flex min-h-[320px] flex-col justify-between overflow-hidden p-6"
+          style={{ backgroundColor: c.bg, color: c.fg, ...sweepDelay }}
         >
-          <MotifBg motif={c.motif} accent={c.accent} uid={uid} />
+          <MotifBg motif={c.motif} accent={c.accent} uid={uid} style={motifDelay} />
           <div className="relative z-10 flex items-center gap-2.5">
             <Mark initial={c.brand[0]} fg={c.fg} />
             <span className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
@@ -146,8 +162,8 @@ export function FakeAd({
           <div className="relative z-10">
             <p className="font-display text-[1.7rem] font-extrabold leading-[1.05]">{c.tag}</p>
             <span
-              className="mt-4 inline-block px-4 py-2 font-display text-xs font-bold uppercase tracking-wider"
-              style={{ backgroundColor: c.fg, color: c.bg }}
+              className="ad-cta mt-4 inline-block px-4 py-2 font-display text-xs font-bold uppercase tracking-wider"
+              style={{ backgroundColor: c.fg, color: c.bg, ...ctaDelay }}
             >
               {c.cta} →
             </span>

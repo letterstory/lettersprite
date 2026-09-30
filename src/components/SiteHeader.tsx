@@ -9,6 +9,7 @@ import { EditionDate } from "./EditionDate";
 import { FluxMenu } from "./FluxMenu";
 import { Logo } from "./Logo";
 import { ModeToggle } from "./ModeToggle";
+import { MastheadPills } from "./MastheadPills";
 import { SectionNav } from "./SectionNav";
 import { SiteSearch, type SearchItem } from "./SiteSearch";
 import { StickyMasthead } from "./StickyMasthead";
@@ -382,12 +383,17 @@ export async function SiteHeader() {
           <div className="ml-auto flex shrink-0 items-center gap-3">
             <SiteSearch
               index={searchIndex}
+              bare
+              bareSize="sm"
               placeholder="Search"
-              className="hidden w-52 md:mr-6 md:block"
+              className="hidden w-40 md:mr-6 md:block"
             />
+            {theme.features?.modeToggle && <ModeToggle />}
             <FluxMenu items={sections.map((s) => ({ name: s, href: sectionHref(s) }))} />
           </div>
         </div>
+        {/* Verge-style centered pill toggle; active pill tracks the route. */}
+        <MastheadPills />
       </header>
     );
   }

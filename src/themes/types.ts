@@ -52,7 +52,8 @@ export type HomeLayout =
   | "blitz"
   | "quarto"
   | "stark"
-  | "flux";
+  | "flux"
+  | "relay";
 
 /**
  * How the article page reads.

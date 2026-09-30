@@ -645,6 +645,64 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
   }
 }
 
+/* ── House-ad motion ─────────────────────────────────────────────────────────
+   Purely decorative animation on the fake/house ad creatives so the zones feel
+   alive like real animated display ads (a slow light sweep, a drifting motif, a
+   breathing CTA) — no network, no tracking. All disabled under reduced-motion. */
+.ad-anim {
+  position: relative;
+}
+.ad-anim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.24) 46%,
+    rgba(255, 255, 255, 0.06) 54%,
+    transparent 78%
+  );
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: ad-sweep 4.8s ease-in-out infinite;
+}
+@keyframes ad-sweep {
+  0% {
+    background-position: 185% 0;
+  }
+  55%,
+  100% {
+    background-position: -85% 0;
+  }
+}
+.ad-motif {
+  transform-origin: center;
+  animation: ad-drift 9s ease-in-out infinite alternate;
+}
+@keyframes ad-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-7px, 5px, 0) scale(1.07) rotate(4deg);
+  }
+}
+.ad-cta {
+  animation: ad-pulse 2.6s ease-in-out infinite;
+}
+@keyframes ad-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
 /* ── Motion safety ───────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -658,6 +716,11 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
   }
   .to-top {
     display: none;
+  }
+  .ad-anim::after,
+  .ad-motif,
+  .ad-cta {
+    animation: none;
   }
 }
 
