@@ -53,7 +53,8 @@ export type HomeLayout =
   | "quarto"
   | "stark"
   | "flux"
-  | "relay";
+  | "relay"
+  | "riot";
 
 /**
  * How the article page reads.
@@ -195,6 +196,15 @@ export interface ThemeFeatures {
   fluxArticle?: boolean;
   /** Minimal mono image-archive masthead: wordmark + search over a slim section nav. */
   starkMasthead?: boolean;
+  /** FURFUR-style masthead: black gridded bar with cell dividers, menu/club left,
+   * a centered condensed wordmark, and login/search right. */
+  riotMasthead?: boolean;
+  /** FURFUR-style section/author index: condensed title + 3-up card river with
+   * burned-in feature tiles, a small-story rail and house ads. */
+  riotLists?: boolean;
+  /** FURFUR-style article: headline burned into a hero image + share/byline row
+   * + serif reading column with orange links beside a sticky Most Read rail. */
+  riotArticle?: boolean;
   /** Minimal mono image-archive index: centered mono captions over a single image column. */
   starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */

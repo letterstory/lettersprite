@@ -18,6 +18,7 @@ import { quarto } from "./quarto";
 import { stark } from "./stark";
 import { flux } from "./flux";
 import { relay } from "./relay";
+import { riot } from "./riot";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -102,6 +103,7 @@ export const themes: Record<string, Theme> = {
   [stark.name]: stark, // compmrkt: minimal monospace image archive
   [flux.name]: flux, // theproductionrun: bold ad-supported tech-editorial front
   [relay.name]: relay, // agenttoproduct: dark long-scroll tech-news portal
+  [riot.name]: riot, // youragentrunning: FURFUR-style bold gridded culture magazine
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column

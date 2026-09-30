@@ -12,6 +12,31 @@ export type SearchItem = {
   tags: string[];
 };
 
+/** Shared row list — used for both live results and the empty-state browse. */
+function ResultList({ items }: { items: SearchItem[] }) {
+  return (
+    <ul className="divide-y divide-border">
+      {items.map((it) => (
+        <li key={it.slug}>
+          <Link href={`/posts/${it.slug}`} className="group block py-5">
+            <span className="block font-heading text-[0.7rem] uppercase tracking-[0.2em] text-primary">
+              {it.section}
+            </span>
+            <span className="mt-1 block text-xl font-bold leading-snug text-heading group-hover:text-primary">
+              {it.title}
+            </span>
+            {it.excerpt && (
+              <span className="mt-1.5 block text-sm text-muted excerpt-clamp-2">
+                {it.excerpt}
+              </span>
+            )}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /**
  * Full-page results view. Reads the query from the URL (`?q=`) on the client so
  * it works on the fully static deployments, and stays editable so a reader can
@@ -57,7 +82,12 @@ export function SearchResults({ index }: { index: SearchItem[] }) {
 
       <div className="mt-8">
         {!query ? (
-          <p className="text-muted">Start typing to search.</p>
+          <>
+            <p className="mb-4 font-heading text-xs uppercase tracking-[0.18em] text-muted">
+              Latest articles
+            </p>
+            <ResultList items={index.slice(0, 12)} />
+          </>
         ) : results.length === 0 ? (
           <p className="text-muted">No articles match “{query}”.</p>
         ) : (
@@ -65,25 +95,7 @@ export function SearchResults({ index }: { index: SearchItem[] }) {
             <p className="mb-4 font-heading text-xs uppercase tracking-[0.18em] text-muted">
               {results.length} result{results.length === 1 ? "" : "s"} for “{query}”
             </p>
-            <ul className="divide-y divide-border">
-              {results.map((it) => (
-                <li key={it.slug}>
-                  <Link href={`/posts/${it.slug}`} className="group block py-5">
-                    <span className="block font-heading text-[0.7rem] uppercase tracking-[0.2em] text-primary">
-                      {it.section}
-                    </span>
-                    <span className="mt-1 block text-xl font-bold leading-snug text-heading group-hover:text-primary">
-                      {it.title}
-                    </span>
-                    {it.excerpt && (
-                      <span className="mt-1.5 block text-sm text-muted excerpt-clamp-2">
-                        {it.excerpt}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <ResultList items={results} />
           </>
         )}
       </div>

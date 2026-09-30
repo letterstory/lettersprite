@@ -18,6 +18,7 @@ import { VitrineIndex } from "@/components/VitrineIndex";
 import { CommonsIndex } from "@/components/CommonsIndex";
 import { BlitzIndex } from "@/components/BlitzIndex";
 import { FluxIndex } from "@/components/FluxIndex";
+import { RiotIndex } from "@/components/RiotIndex";
 import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
 
@@ -76,6 +77,25 @@ export default async function SectionPage({ params }: Params) {
         title={section.name}
         stat={`${count} ${count === 1 ? "story" : "stories"}`}
         posts={section.posts}
+      />
+    );
+  }
+
+  // FURFUR-style category river (opt-in): condensed title + 3-up card grid with
+  // burned-in feature tiles, a small-story rail and house ads.
+  if (theme.features?.riotLists) {
+    const all = await getPosts();
+    const inSection = new Set(section.posts.map((p) => p.slug));
+    // Pad thin sections with a longer site-wide river; trim it for rich ones.
+    const more = all
+      .filter((p) => !inSection.has(p.slug))
+      .slice(0, count <= 6 ? 15 : 6);
+    return (
+      <RiotIndex
+        title={section.name}
+        stat={`${count} ${count === 1 ? "story" : "stories"}`}
+        posts={section.posts}
+        more={more}
       />
     );
   }

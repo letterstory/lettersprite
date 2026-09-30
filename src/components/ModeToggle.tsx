@@ -8,7 +8,14 @@ import { useEffect, useState } from "react";
  * button just calls it and mirrors the current mode in its icon. Rendering it
  * without the boot script (a theme without `colorsLight`) is a harmless no-op.
  */
-export function ModeToggle({ className = "" }: { className?: string }) {
+export function ModeToggle({
+  className = "",
+  tone = "default",
+}: {
+  className?: string;
+  /** "onDark" gives a white icon for placement on a dark/black masthead bar. */
+  tone?: "default" | "onDark";
+}) {
   const [mode, setMode] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
@@ -40,7 +47,9 @@ export function ModeToggle({ className = "" }: { className?: string }) {
       onClick={toggle}
       aria-label={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      className={`flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-heading ${className}`}
+      className={`flex h-8 w-8 items-center justify-center transition-colors ${
+        tone === "onDark" ? "text-white/85 hover:text-primary" : "text-muted hover:text-heading"
+      } ${className}`}
     >
       {mode === "dark" ? (
         // Moon — currently dark.

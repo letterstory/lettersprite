@@ -26,6 +26,7 @@ import { formatDate } from "@/lib/format";
 import { getActiveTheme } from "@/themes";
 import { BlitzArticle } from "@/components/article/BlitzArticle";
 import { FluxArticle } from "@/components/article/FluxArticle";
+import { RiotArticle } from "@/components/article/RiotArticle";
 import { AuthorBio } from "@/components/AuthorBio";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
@@ -142,6 +143,30 @@ export default async function PostPage({ params }: Params) {
   if (theme.features?.fluxArticle) {
     return (
       <FluxArticle
+        post={post}
+        bodyHtml={bodyHtml}
+        headings={headings}
+        section={section}
+        iso={iso}
+        byline={byline}
+        authorBeats={authorBeats}
+        authorPostsCount={authorPosts.length}
+        related={related}
+        prev={prev}
+        next={next}
+        linkableSlugs={linkableSlugs}
+        dropCap={dropCap}
+        allPosts={allPosts}
+        words={words}
+      />
+    );
+  }
+
+  // FURFUR-style article (opt-in): headline burned into the hero image, share +
+  // "Text:" byline, serif reading column with a sticky Most Read rail.
+  if (theme.features?.riotArticle) {
+    return (
+      <RiotArticle
         post={post}
         bodyHtml={bodyHtml}
         headings={headings}
