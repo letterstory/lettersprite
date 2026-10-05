@@ -8,9 +8,9 @@ import type { Post } from "./types";
  * mosaics). They vanish the moment a key is set.
  *
  * The set deliberately mixes: some posts carry an author, most don't (to
- * exercise the deterministic byline generator); some carry a cover image, most
- * don't (to exercise the generated tessellation covers); some carry a date,
- * most don't (to exercise the stable synthesized datelines).
+ * exercise the site-level editorial byline fallback); some carry a cover
+ * image, most don't (to exercise the generated tessellation covers); some
+ * carry a date, most don't (to exercise the stable synthesized datelines).
  */
 
 const P = (
@@ -31,6 +31,8 @@ const P = (
   content: body,
   status: "published",
   author: null,
+  authorSlug: null,
+  authorProfile: null,
   coverImage: null,
   coverImageAlt: null,
   coverCredit: null,

@@ -37,6 +37,25 @@ export interface CoverCredit {
 }
 
 /**
+ * The structured author record Letterbrace ships as `author_profile` for a
+ * byline drawn from the site's author bank — the recurring set of authors
+ * generated once per site and reused across its posts. Absent (null) for
+ * legacy free-form bylines and for older Letterbrace payloads.
+ */
+export interface PostAuthorProfile {
+  name: string;
+  /** Stable bank slug; keys the `/authors/[slug]` route. */
+  slug: string;
+  /** Contributor bio, verbatim from the bank. May be empty. */
+  bio: string;
+  /** Editorial role/title, or null when the bank assigned none. */
+  role: string | null;
+  expertise: string[];
+  /** ISO date the author started writing for the site, or null. */
+  startedAt: string | null;
+}
+
+/**
  * A normalized blog post. This is the stable shape the UI consumes, decoupled
  * from whatever the Letterbrace `/out` endpoint happens to return — see
  * `normalize.ts`, which tolerates missing and extra fields.
@@ -60,6 +79,10 @@ export interface Post {
   /** Lower-cased status, e.g. "published" | "draft". */
   status: string;
   author: string | null;
+  /** Bank slug for the byline (`author_slug`), or null for free-form/absent. */
+  authorSlug: string | null;
+  /** Structured bank author (`author_profile`), or null. */
+  authorProfile: PostAuthorProfile | null;
   coverImage: string | null;
   /** Alt text for the cover, shipped by Letterbrace (`cover_image_alt`). */
   coverImageAlt: string | null;

@@ -19,8 +19,11 @@ is configured entirely by environment variables. **No database, no admin panel.*
   vars there. 55 themes ship, and the set is shared: `@letterstory/design/themes.json`
   is the registry a customer picks from, and `src/themes/registry.test.ts` fails if it
   and this directory stop naming the same themes.
+- **Bylines** (`lib/author.ts`): from Letterstory's per-site author bank
+  (`author_profile`), else the free-form `author`, else one site-level
+  "<Site> Editors" byline. Never synthesize per-post people.
 - **Generated editorial metadata** (no database, all deterministic so it never
-  drifts across builds): persistent bylines (`lib/author.ts`), stable datelines +
+  drifts across builds): stable datelines +
   reading time + sections (`lib/editorial.ts`), suggested reading (`lib/related.ts`),
   seeded via `lib/rng.ts`. SEO/JSON-LD lives in `lib/seo.ts`.
 - **Config**: `src/env.ts` centralizes all env access (palette + font + newsletter
