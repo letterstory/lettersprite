@@ -110,3 +110,66 @@ describe("normalizePost — cover credit", () => {
     expect(post?.coverCredit).toBeNull();
   });
 });
+
+describe("normalizePost — author bank", () => {
+  const profile = {
+    name: "Ines Moreau",
+    slug: "ines-moreau-7",
+    bio: "  Ines writes about infrastructure.  ",
+    role: "Senior Writer",
+    expertise: ["infrastructure", "", 42, "cloud"],
+    started_at: "2021-03-15",
+  };
+
+  it("reads author_slug and author_profile", () => {
+    const post = normalizePost({
+      ...base,
+      author: "Ines Moreau",
+      author_slug: "ines-moreau-7",
+      author_profile: profile,
+    });
+    expect(post?.author).toBe("Ines Moreau");
+    expect(post?.authorSlug).toBe("ines-moreau-7");
+    expect(post?.authorProfile).toEqual({
+      name: "Ines Moreau",
+      slug: "ines-moreau-7",
+      bio: "Ines writes about infrastructure.",
+      role: "Senior Writer",
+      expertise: ["infrastructure", "42", "cloud"],
+      startedAt: "2021-03-15",
+    });
+  });
+
+  it("is null for legacy free-form bylines and older payloads", () => {
+    const legacy = normalizePost({ ...base, author: "Jane Doe", author_profile: null });
+    expect(legacy?.author).toBe("Jane Doe");
+    expect(legacy?.authorSlug).toBeNull();
+    expect(legacy?.authorProfile).toBeNull();
+    const old = normalizePost(base);
+    expect(old?.authorSlug).toBeNull();
+    expect(old?.authorProfile).toBeNull();
+  });
+
+  it("tolerates a sparse profile and fills the author name from it", () => {
+    const post = normalizePost({
+      ...base,
+      author_slug: "ines-moreau-7",
+      author_profile: { name: "Ines Moreau", role: null, started_at: "not a date" },
+    });
+    expect(post?.author).toBe("Ines Moreau");
+    expect(post?.authorProfile).toEqual({
+      name: "Ines Moreau",
+      slug: "ines-moreau-7",
+      bio: "",
+      role: null,
+      expertise: [],
+      startedAt: null,
+    });
+  });
+
+  it("drops a profile with no usable name", () => {
+    const post = normalizePost({ ...base, author_profile: { name: "undefined", slug: "x" } });
+    expect(post?.authorProfile).toBeNull();
+    expect(post?.author).toBeNull();
+  });
+});

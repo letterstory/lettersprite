@@ -70,15 +70,45 @@ export function siteGraphLd(): Json {
   return { "@context": "https://schema.org", "@graph": [org, website] };
 }
 
-/** The author node for an article: a Person matching the visible byline. */
-function authorNode(post: Post): Json {
-  const byline = bylineFor(post);
+/** Absolute URL of an author's `/authors/[slug]` page. */
+function authorUrl(byline: Byline): string {
+  return `${env.siteUrl}/authors/${byline.slug}`;
+}
+
+/** The site Organization, as the author of editorially bylined work. */
+function orgAuthorNode(): Json {
+  return {
+    "@type": "Organization",
+    "@id": ORG_ID,
+    name: env.siteTitle,
+    url: env.siteUrl,
+  };
+}
+
+/** A real author as a Person, matching the visible byline and author page. */
+function personNode(byline: Byline, description?: string): Json {
+  const url = authorUrl(byline);
+  const expertise = byline.profile?.expertise ?? [];
   return clean({
     "@type": "Person",
+    "@id": `${url}/#person`,
     name: byline.name,
     jobTitle: byline.role,
+    description,
+    knowsAbout: expertise.length ? expertise : undefined,
+    url,
     worksFor: { "@id": ORG_ID },
   });
+}
+
+/**
+ * The author node for an article: a Person matching the visible byline, or —
+ * for the site-level editorial byline — the site Organization itself, never a
+ * Person that doesn't exist.
+ */
+function authorNode(post: Post): Json {
+  const byline = bylineFor(post);
+  return byline.provided ? personNode(byline) : orgAuthorNode();
 }
 
 /** BlogPosting for a single article. */
@@ -169,12 +199,13 @@ export function breadcrumbLd(post: Post): Json {
 }
 
 /**
- * A ProfilePage for an author's `/authors/[slug]` page: the Person plus an
- * ItemList of their stories, so the byline reads as a real staff page to search
- * engines. Mirrors the visible bio and the article-level `authorNode`.
+ * A ProfilePage for an author's `/authors/[slug]` page: the Person (or, for
+ * the editorial byline, the site Organization) plus their stories, so the page
+ * reads as a real staff page to search engines. Mirrors the visible bio and
+ * the article-level `authorNode`.
  */
 export function authorLd(byline: Byline, posts: Post[], beats: string[]): Json {
-  const url = `${env.siteUrl}/authors/${byline.slug}`;
+  const url = authorUrl(byline);
   const { bio } = authorProfile(byline, beats);
   return {
     "@context": "https://schema.org",
@@ -182,15 +213,7 @@ export function authorLd(byline: Byline, posts: Post[], beats: string[]): Json {
     "@id": `${url}/#profile`,
     url,
     isPartOf: { "@id": SITE_ID },
-    mainEntity: clean({
-      "@type": "Person",
-      "@id": `${url}/#person`,
-      name: byline.name,
-      jobTitle: byline.role,
-      description: bio,
-      url,
-      worksFor: { "@id": ORG_ID },
-    }),
+    mainEntity: byline.provided ? personNode(byline, bio) : orgAuthorNode(),
     hasPart: posts.slice(0, 20).map((p) => ({
       "@type": "BlogPosting",
       "@id": `${postUrl(p)}/#article`,

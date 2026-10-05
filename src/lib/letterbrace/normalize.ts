@@ -1,5 +1,10 @@
 import { tightenPunctuationSpacing } from "@/lib/text";
-import type { CoverCredit, PaperTrailSource, Post } from "./types";
+import type {
+  CoverCredit,
+  PaperTrailSource,
+  Post,
+  PostAuthorProfile,
+} from "./types";
 
 type Raw = Record<string, unknown>;
 
@@ -138,7 +143,7 @@ const NULLISH_NAME = /^(?:undefined|null|nan|n\/?a|none|nil|unknown|-|–|—|\.
  * `"undefined undefined"`, a bare `"null"`), which must never render as a
  * byline. Strips a leading "By ", drops nullish word fragments, and returns
  * `null` when nothing usable remains — so the caller degrades to the
- * deterministic synthesized staff writer instead.
+ * site-level editorial byline instead.
  */
 export function cleanAuthorName(raw: string): string | null {
   const withoutPrefix = raw.replace(/^\s*by[:\s]+/i, "").trim();
@@ -314,6 +319,50 @@ function toAuthor(raw: Raw): string | null {
   return null;
 }
 
+/** A URL-safe author slug from the payload, or null when absent/empty. */
+function toSlug(value: unknown): string | null {
+  const s = asString(value)?.trim();
+  return s ? slugify(s) : null;
+}
+
+/** The bank slug Letterbrace ships flat as `author_slug`, or null. */
+function toAuthorSlug(raw: Raw): string | null {
+  return toSlug(raw.author_slug ?? raw.authorSlug);
+}
+
+/**
+ * The structured bank author Letterbrace ships as `author_profile`
+ * (`{ name, slug, bio, role, expertise, started_at }`). Null for legacy
+ * free-form bylines, older payloads without the field, and anything malformed
+ * — a profile without a usable name credits nobody. The slug falls back to the
+ * flat `author_slug`, then to the name, so it always keys the author page.
+ */
+function toAuthorProfile(raw: Raw): PostAuthorProfile | null {
+  const value = raw.author_profile ?? raw.authorProfile;
+  if (!value || typeof value !== "object") return null;
+  const o = value as Raw;
+  const nameRaw = asString(o.name);
+  const name = nameRaw ? cleanAuthorName(nameRaw) : null;
+  if (!name) return null;
+  const startedRaw = asString(o.started_at ?? o.startedAt)?.trim();
+  const startedAt =
+    startedRaw && !Number.isNaN(new Date(startedRaw).getTime())
+      ? startedRaw
+      : null;
+  return {
+    name,
+    slug: toSlug(o.slug) ?? toAuthorSlug(raw) ?? slugify(name),
+    bio: asString(o.bio)?.trim() ?? "",
+    role: asString(o.role)?.trim() || null,
+    expertise: Array.isArray(o.expertise)
+      ? o.expertise
+          .map((e) => asString(e)?.trim())
+          .filter((e): e is string => Boolean(e))
+      : [],
+    startedAt,
+  };
+}
+
 /**
  * Normalize one raw article object into a Post. Returns null only when there's
  * no usable id. Every other field degrades gracefully so unexpected payload
@@ -342,6 +391,7 @@ export function normalizePost(raw: Raw): Post | null {
   const suppliedSlug = pick(raw, ["slug", "permalink", "path"]);
   // A credit only belongs to a real cover — see toCoverCredit.
   const coverImage = toCoverImage(raw);
+  const authorProfile = toAuthorProfile(raw);
 
   return {
     id,
@@ -351,7 +401,9 @@ export function normalizePost(raw: Raw): Post | null {
     excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
     dek: suppliedExcerpt ? stripHtml(suppliedExcerpt) : null,
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
-    author: toAuthor(raw),
+    author: toAuthor(raw) ?? authorProfile?.name ?? null,
+    authorSlug: authorProfile?.slug ?? toAuthorSlug(raw),
+    authorProfile,
     coverImage,
     coverImageAlt: toCoverImageAlt(raw),
     coverCredit: coverImage ? toCoverCredit(raw) : null,

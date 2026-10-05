@@ -2,11 +2,10 @@ import Link from "@/components/Link";
 import { authorProfile, type Byline } from "@/lib/author";
 
 /**
- * The contributor card at the foot of an article: avatar, name, role, a
- * deterministic bio, and a link to the author's `/authors/[slug]` page. The bio
- * furniture is synthesized deterministically (see `authorProfile`) in the same
- * spirit as the rest of the generated editorial metadata — stable across builds,
- * and coverage-focused (never inventing a personal history for a real byline).
+ * The contributor card at the foot of an article: avatar, name, role, bio, and
+ * a link to the author's `/authors/[slug]` page. The bio comes from the
+ * author's bank record when there is one, otherwise it is a coverage-only line
+ * (see `authorProfile`) — it never invents a personal history.
  */
 export function AuthorBio({
   byline,

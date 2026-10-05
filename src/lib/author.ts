@@ -1,47 +1,30 @@
 /**
  * Bylines.
  *
- * A real publication has real reporters. When Letterbrace supplies an author we
- * use it; otherwise we synthesize a plausible, *persistent* staff writer from
- * the post itself. Because the name is derived by hashing stable post fields, a
- * given article always shows the same byline on every build — no database, no
- * drift — which is exactly what makes the site read as a legitimate outlet.
+ * Every byline names someone real to the site. Letterstory assigns each post
+ * an author from the site's author bank — a recurring set of authors generated
+ * once per site and reused across its posts — and ships it as `author_profile`
+ * (name, slug, bio, role, tenure). We render that record as-is: the bank slug
+ * keys the `/authors/[slug]` page, so one author collects their whole body of
+ * work. A legacy free-form `author` string is used verbatim as a staff writer.
+ *
+ * A post with no author at all gets ONE stable, site-level editorial byline
+ * ("<Site> Editors") — never a made-up per-post person. Inventing a fresh
+ * creator for every unbylined article is exactly the fabricated-profile pattern
+ * search engines treat as deception.
  */
 
 import { env } from "@/env";
-import { pick, pickInt } from "./rng";
+import { pick } from "./rng";
 import { orderedByDate } from "./editorial";
 import { cleanAuthorName, slugify } from "./letterbrace/normalize";
-import type { Post } from "./letterbrace/types";
+import type { Post, PostAuthorProfile } from "./letterbrace/types";
 
-/** Diverse first-name pool for synthesized bylines. */
-const FIRST = [
-  "Maya", "Diego", "Priya", "Elias", "Nadia", "Marcus", "Leila", "Julian",
-  "Sofia", "Omar", "Clara", "Theo", "Amara", "Felix", "Ingrid", "Rafael",
-  "Naomi", "Hassan", "Beatrice", "Kai", "Lucia", "Dmitri", "Yuki", "Cora",
-  "Andre", "Simone", "Mateo", "Ruth", "Idris", "Vera", "Jonah", "Anaya",
-  "Cyrus", "Estelle", "Malik", "Freya", "Rohan", "Camille", "Ezra", "Talia",
-  "Nico", "Selin", "Dara", "Emeka", "Rosa", "Soren", "Lena", "Kwame",
-];
+/** Role for a real author whose record carries none. */
+const DEFAULT_ROLE = "Staff Writer";
 
-/** Surname pool, intentionally varied in origin. */
-const LAST = [
-  "Chen", "Alvarez", "Nair", "Okafor", "Rahman", "Bennett", "Haddad", "Ford",
-  "Rossi", "Nakamura", "Kowalski", "Mbeki", "Petrova", "Sørensen", "Reyes",
-  "Whitfield", "Osei", "Larsen", "Delgado", "Kaur", "Voss", "Marchetti",
-  "Abara", "Sinclair", "Novak", "Fontaine", "Adeyemi", "Bauer", "Costa",
-  "Halvorsen", "Ibrahim", "Lindqvist", "Moreau", "Park", "Sabatini", "Vance",
-  "Wexler", "Yamada", "Zola", "Ashworth", "Bergström", "Contreras", "Devi",
-];
-
-/** Editorial roles, in rough order of frequency. */
-const ROLES = [
-  "Staff Writer", "Staff Writer", "Staff Writer",
-  "Senior Writer", "Senior Writer",
-  "Contributing Editor", "Contributing Editor",
-  "Correspondent", "Features Editor", "Reporter", "Columnist",
-  "Editor at Large",
-];
+/** Role shown on the site-level editorial byline. */
+const EDITORIAL_ROLE = "Editorial team";
 
 /**
  * A small set of confident, legible avatar chip colors. Deliberately
@@ -51,14 +34,6 @@ const AVATAR_COLORS = [
   "#1f6feb", "#d1467c", "#2f9e6f", "#8957e5", "#c9720b",
   "#0e8a99", "#c0392b", "#3b5bdb", "#6d5227", "#7048a8",
   "#0f766e", "#b02a5b",
-];
-
-/** Home cities for synthesized contributor bios. Deliberately global. */
-const CITIES = [
-  "New York", "London", "Berlin", "San Francisco", "Toronto", "Nairobi",
-  "Singapore", "Melbourne", "Mexico City", "Lisbon", "Chicago", "Mumbai",
-  "Cape Town", "Amsterdam", "Seoul", "Buenos Aires", "Austin", "Copenhagen",
-  "Dublin", "Tokyo", "Barcelona", "Montréal", "Bangalore", "Stockholm",
 ];
 
 export interface Byline {
@@ -72,18 +47,24 @@ export interface Byline {
   color: string;
   /** URL slug for the author's `/authors/[slug]` page. */
   slug: string;
-  /** True when Letterbrace supplied the name (vs. a synthesized staff writer). */
+  /**
+   * True for a real author (a bank author or a Letterbrace-supplied name);
+   * false only for the site-level editorial fallback byline.
+   */
   provided: boolean;
+  /** The bank record behind this byline, or null (free-form or editorial). */
+  profile: PostAuthorProfile | null;
 }
 
-/** A contributor profile: the byline plus deterministic bio furniture. */
+/** A contributor profile: the byline plus its bio furniture. */
 export interface AuthorProfile {
   byline: Byline;
-  /** Home city (synthesized, stable per name). */
-  location: string;
-  /** Year the contributor has written for the outlet "since". */
-  since: number;
-  /** One- or two-sentence contributor bio, deterministic per name. */
+  /** Home city. Never invented; absent unless a real record supplies one. */
+  location?: string;
+  /** Year the contributor has written for the outlet "since", from the bank's
+   *  `started_at`; absent when unknown. */
+  since?: number;
+  /** One- or two-sentence contributor bio. */
   bio: string;
 }
 
@@ -109,37 +90,45 @@ export function authorSlug(name: string): string {
   return slugify(name);
 }
 
+/** The site's editorial team name, e.g. "The Signal Editors". */
+function editorialName(): string {
+  return `${env.siteTitle} Editors`;
+}
+
 /**
- * Resolve the byline for a post: the real author, or a synthesized staff writer
- * that stays constant across builds. Always returns a complete `Byline`.
+ * The one site-level byline every unbylined post shares. Stable across posts
+ * and builds, and honest: it credits the publication, not an invented person.
  */
-export function bylineFor(post: Post): Byline {
-  const provided = providedAuthor(post);
-  const seed = provided ?? `${post.id}:${post.slug}`;
-  if (provided) {
-    return {
-      name: provided,
-      role: pick(ROLES, `${seed}:role`),
-      initials: initialsOf(provided),
-      color: pick(AVATAR_COLORS, `${seed}:color`),
-      slug: authorSlug(provided),
-      provided: true,
-    };
-  }
-  const first = pick(FIRST, `${seed}:first`);
-  // A distinct seed suffix already decorrelates the surname stream from the
-  // first name. (The previous `hashString(...) >> 3` used a *signed* shift on an
-  // unsigned hash, which for large hashes produced a negative index and a
-  // literal "undefined" surname — the "some authors say undefined" bug.)
-  const last = pick(LAST, `${seed}:last`);
-  const name = `${first} ${last}`;
+export function editorialByline(): Byline {
+  const name = editorialName();
   return {
     name,
-    role: pick(ROLES, `${seed}:role`),
-    initials: initialsOf(name),
-    color: pick(AVATAR_COLORS, `${seed}:color`),
+    role: EDITORIAL_ROLE,
+    initials: initialsOf(env.siteTitle),
+    color: pick(AVATAR_COLORS, `${name}:color`),
     slug: authorSlug(name),
     provided: false,
+    profile: null,
+  };
+}
+
+/**
+ * Resolve the byline for a post: the bank author from `author_profile`, else
+ * the free-form `author` string, else the site-level editorial byline. Always
+ * returns a complete `Byline`; never invents a person.
+ */
+export function bylineFor(post: Post): Byline {
+  const profile = post.authorProfile ?? null;
+  const name = profile?.name ?? providedAuthor(post);
+  if (!name) return editorialByline();
+  return {
+    name,
+    role: profile?.role?.trim() || DEFAULT_ROLE,
+    initials: initialsOf(name),
+    color: pick(AVATAR_COLORS, `${name}:color`),
+    slug: profile?.slug || post.authorSlug || authorSlug(name),
+    provided: true,
+    profile,
   };
 }
 
@@ -151,38 +140,52 @@ function humanList(items: string[]): string {
   return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 }
 
+/** "The Signal" stays "The Signal"; "Signal" becomes "The Signal". */
+function withArticle(title: string): string {
+  return /^the\s/i.test(title) ? title : `The ${title}`;
+}
+
 /**
- * A deterministic contributor profile — home city, tenure and a short bio — for
- * an author's bio card and `/authors/[slug]` page. Seeded by name so it stays
- * consistent across every post a contributor bylines and across builds.
+ * A contributor profile for an author's bio card and `/authors/[slug]` page.
  *
- * `beats` are the sections the author writes in (lower-cased for prose). Bios
- * are coverage-focused; for real (provided) names we avoid inventing a personal
- * history and keep to what they cover.
+ * A bank author's bio is used verbatim and their tenure comes from the bank's
+ * `started_at`. Anything the record doesn't say is left out rather than made
+ * up: no home city, no invented tenure, no personal history. Without a bank
+ * bio a real author gets a coverage-only line; the editorial byline describes
+ * the team.
+ *
+ * `beats` are the sections the author writes in (lower-cased for prose).
  */
 export function authorProfile(byline: Byline, beats: string[]): AuthorProfile {
-  const seed = byline.name;
-  const location = pick(CITIES, `${seed}:city`);
-  const since = pickInt(2015, 2023, `${seed}:since`);
   const beatPhrase =
     humanList([...new Set(beats.map((b) => b.toLowerCase()))].slice(0, 3)) ||
     "ideas and culture";
-  const first = byline.name.split(/\s+/)[0];
   const site = env.siteTitle;
 
-  const bio = byline.provided
-    ? `${byline.name} covers ${beatPhrase} for ${site}.`
-    : `${byline.name} is a ${byline.role.toLowerCase()} at ${site} covering ${beatPhrase}. ` +
-      `Based in ${location}, ${first} has written for ${site} since ${since}.`;
+  if (!byline.provided) {
+    return {
+      byline,
+      bio: `${withArticle(site)} editorial team covers ${beatPhrase}.`,
+    };
+  }
 
-  return { byline, location, since, bio };
+  const started = byline.profile?.startedAt
+    ? new Date(byline.profile.startedAt).getUTCFullYear()
+    : NaN;
+  return {
+    byline,
+    since: Number.isFinite(started) ? started : undefined,
+    bio:
+      byline.profile?.bio.trim() ||
+      `${byline.name} covers ${beatPhrase} for ${site}.`,
+  };
 }
 
 /**
  * Group posts by the author who bylines them, most-published first. Two posts
- * share an author only when their (cleaned) byline slug matches, so synthesized
- * one-off staff writers each get their own page and real repeat contributors
- * collect their full body of work.
+ * share an author when their byline slug matches — the bank slug for bank
+ * authors, the slugified name otherwise — so a recurring author collects their
+ * full body of work and every unbylined post lands on the one editorial page.
  */
 export function authorsFromPosts(
   posts: Post[],
@@ -191,8 +194,11 @@ export function authorsFromPosts(
   for (const post of posts) {
     const byline = bylineFor(post);
     const existing = map.get(byline.slug);
-    if (existing) existing.posts.push(post);
-    else map.set(byline.slug, { byline, posts: [post] });
+    if (existing) {
+      existing.posts.push(post);
+      // Prefer the bank record when only some of an author's posts carry it.
+      if (!existing.byline.profile && byline.profile) existing.byline = byline;
+    } else map.set(byline.slug, { byline, posts: [post] });
   }
   // Each author's posts are returned newest-first by (deterministic) publish
   // date, so every caller — the article bio card, the author page and the

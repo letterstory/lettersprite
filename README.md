@@ -139,10 +139,13 @@ A theme controls:
   rule, a centered masthead.
 - **Scheme** — `light` or `dark` (keeps native controls and scrollbars in sync).
 
-Every post also gets, deterministically and for free (no database): a persistent
-byline (author + role + avatar), a stable dateline, a reading time, a section,
-and a set of suggested "more stories". See `src/lib/` (`author.ts`,
-`editorial.ts`, `related.ts`, `rng.ts`).
+Every post also gets a byline (author + role + avatar) and, deterministically
+and for free (no database), a stable dateline, a reading time, a section, and a
+set of suggested "more stories". Bylines come from Letterstory's per-site author
+bank (`author_profile` in the payload: name, slug, bio, role, tenure); a legacy
+free-form `author` is shown as a staff writer, and a post with no author at all
+carries the one site-level "<Site> Editors" byline — no per-post names are ever
+invented. See `src/lib/` (`author.ts`, `editorial.ts`, `related.ts`, `rng.ts`).
 
 Fine-tune any theme per deployment with the palette and font overrides above —
 supply a whole palette, not just two colors.
@@ -160,7 +163,8 @@ Built for an outlet that must rank and syndicate with no human in the loop:
 
 - **Structured data** — an Organization + WebSite JSON-LD graph site-wide, and
   `BlogPosting` + `BreadcrumbList` per article (`src/lib/seo.ts`), with absolute
-  image URLs and `Person` bylines.
+  image URLs and `Person` bylines (the site `Organization` for the editorial
+  byline).
 - **Metadata** — per-article OpenGraph (`article:*`, author, section, tags) and
   Twitter cards, `max-image-preview:large` robots, self-referencing canonicals.
 - **Feeds & maps** — a static RSS feed at `/feed.xml`, an enriched
@@ -210,7 +214,7 @@ src/
   env.ts                  Central, typed environment access
   themes/                 15 themes, registry, CSS/font serializers, type system
   lib/letterbrace/        API client + defensive payload normalization
-  lib/author.ts           Deterministic persistent bylines
+  lib/author.ts           Bylines from the author bank + editorial fallback
   lib/editorial.ts        Reading time, stable datelines, sections
   lib/related.ts          Suggested-reading selection
   lib/seo.ts              JSON-LD (Organization, BlogPosting, Breadcrumb)

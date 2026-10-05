@@ -196,7 +196,7 @@ export default async function AuthorPage({ params }: Params) {
   // ctrl.xyz-style index (opt-in): rounded card grid + pill chips + ad zones.
   if (theme.features?.wireLists) {
     const stat = `${count} ${count === 1 ? "story" : "stories"}${
-      !byline.provided ? ` · ${location}` : ""
+      location ? ` · ${location}` : ""
     }`;
     return (
       <>
@@ -222,7 +222,7 @@ export default async function AuthorPage({ params }: Params) {
   // story river. Other themes keep the classic avatar header + card grid.
   if (theme.features?.slateLists) {
     const stat = `${count} ${count === 1 ? "story" : "stories"}${
-      !byline.provided ? ` · ${location}` : ""
+      location ? ` · ${location}` : ""
     }`;
     return (
       <>
@@ -270,7 +270,7 @@ export default async function AuthorPage({ params }: Params) {
           <p className="max-w-2xl text-fg-soft">{bio}</p>
           <p className="mt-1 text-xs text-muted">
             {count} {count === 1 ? "story" : "stories"}
-            {!byline.provided && <> · {location}</>}
+            {location && <> · {location}</>}
           </p>
         </div>
       </header>
