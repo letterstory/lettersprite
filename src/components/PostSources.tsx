@@ -20,7 +20,8 @@ function sourceLabel(source: PaperTrailSource): string {
  * the Letterbrace editor), but the public page keeps to the links. Styled
  * entirely from theme tokens (`.rule-label`, `.kicker`, `.ul-link`, `--link`,
  * `--border`…) so it inherits each theme's look with no per-theme variant.
- * Renders nothing when the article has no trail.
+ * Links are nofollowed, like every outbound link in the article body (see
+ * lib/sanitize.ts). Renders nothing when the article has no trail.
  */
 export function PostSources({
   sources,
@@ -48,7 +49,7 @@ export function PostSources({
             <a
               href={source.url}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="ul-link min-w-0 font-medium text-foreground break-words"
             >
               {sourceLabel(source)}
