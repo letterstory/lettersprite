@@ -54,7 +54,8 @@ export type HomeLayout =
   | "stark"
   | "flux"
   | "relay"
-  | "riot";
+  | "riot"
+  | "circuit";
 
 /**
  * How the article page reads.
@@ -205,6 +206,8 @@ export interface ThemeFeatures {
   /** FURFUR-style article: headline burned into a hero image + share/byline row
    * + serif reading column with orange links beside a sticky Most Read rail. */
   riotArticle?: boolean;
+  /** WIRED-style masthead: top-left heavy wordmark + Menu & inline nav + solid Subscribe, over a red-ruled section bar. */
+  circuitMasthead?: boolean;
   /** Minimal mono image-archive index: centered mono captions over a single image column. */
   starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */

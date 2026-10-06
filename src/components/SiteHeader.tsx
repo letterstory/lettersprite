@@ -465,6 +465,80 @@ export async function SiteHeader() {
     );
   }
 
+  // WIRED-style masthead: a thin black utility strip, then a sticky bar with a
+  // Menu button, a boxed geometric wordmark (top-left), an inline uppercase
+  // section nav, search and a blue "Subscribe". Section strip on small screens.
+  if (theme.features?.circuitMasthead) {
+    const menuItems = sections.map((s) => ({ name: s, href: sectionHref(s) }));
+    return (
+      <header data-circuit-masthead className="no-print bg-background">
+        {/* Black utility strip. */}
+        <div className="bg-[color:var(--secondary)]">
+          <div className="container-wide flex items-center justify-center px-6 py-1.5">
+            <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white/90">
+              {env.siteTagline || `The ${env.siteTitle} Newsletter — subscribe for weekly briefings`}
+            </span>
+          </div>
+        </div>
+        {/* Sticky masthead bar. */}
+        <div className="sticky top-0 z-50 border-b border-foreground bg-background/95 backdrop-blur-md">
+          <div className="container-wide flex items-center gap-5 px-6 py-3">
+            <div className="shrink-0">
+              <FluxMenu items={menuItems} />
+            </div>
+            <Link href="/" aria-label={env.siteTitle} className="shrink-0">
+              <span className="inline-block border-2 border-foreground px-2.5 py-1.5 font-heading text-sm font-bold uppercase leading-none tracking-[0.02em] text-heading transition-colors hover:text-primary sm:text-base">
+                {env.siteTitle}
+              </span>
+            </Link>
+            <nav aria-label="Primary" className="hidden min-w-0 flex-1 items-center gap-5 lg:flex">
+              {sections.slice(0, 7).map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="whitespace-nowrap text-[0.72rem] font-bold uppercase tracking-[0.08em] text-heading transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </nav>
+            <div className="ml-auto flex shrink-0 items-center gap-4">
+              <SiteSearch
+                index={searchIndex}
+                bare
+                bareSize="sm"
+                placeholder="Search"
+                className="hidden w-32 md:block"
+              />
+              <Link
+                href="#newsletter"
+                className="whitespace-nowrap text-[0.72rem] font-bold uppercase tracking-[0.1em] text-primary transition-opacity hover:opacity-70"
+              >
+                Subscribe
+              </Link>
+            </div>
+          </div>
+          {/* Section strip on small screens (inline nav hidden). */}
+          {sections.length > 0 && (
+            <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+              <div className="flex w-max gap-5 px-6 py-2">
+                {sections.map((s) => (
+                  <Link
+                    key={s}
+                    href={sectionHref(s)}
+                    className="shrink-0 whitespace-nowrap text-[0.7rem] font-bold uppercase tracking-[0.08em] text-muted transition-colors hover:text-primary"
+                  >
+                    {s}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          )}
+        </div>
+      </header>
+    );
+  }
+
   // Minimal monospace image-archive masthead: wordmark + search on one hairline
   // row, a slim centered mono section nav below.
   if (theme.features?.starkMasthead) {
