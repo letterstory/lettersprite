@@ -24,6 +24,7 @@ import { StarkHome } from "./StarkHome";
 import { FluxHome } from "./FluxHome";
 import { RelayHome } from "./RelayHome";
 import { RiotHome } from "./RiotHome";
+import { CircuitHome } from "./CircuitHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -53,6 +54,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   flux: FluxHome,
   relay: RelayHome,
   riot: RiotHome,
+  circuit: CircuitHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */
