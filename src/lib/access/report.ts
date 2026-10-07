@@ -17,6 +17,7 @@
 
 import { env, hasLetterbraceKey } from "@/env";
 import type { Requester } from "./classify";
+import { activeVersion } from "./manifest";
 
 /** A request that takes longer than this is not worth the compute. The page has
  *  already been served; we are only deciding how long to hold the invocation. */
@@ -24,23 +25,27 @@ const REPORT_TIMEOUT_MS = 2000;
 
 /** Is access reporting switched on for this deployment? */
 export function accessReportingEnabled(): boolean {
-	return Boolean(env.accessReportUrl && hasLetterbraceKey);
+  return Boolean(env.accessReportUrl && hasLetterbraceKey);
 }
 
 /** IP-DERIVED LABELS, never the IP. Computed in-process at the proxy against
  *  baked/refreshed range tables and shipped as booleans and closed-set
  *  strings; the address itself is read, matched, and discarded. */
 export interface AccessExtras {
-	/** The claimed agent's IP fell inside its vendor's published ranges. */
-	verified: boolean;
-	/** Datacenter label for browser/anonymous traffic ('aws', …), '' = none. */
-	provenance: string;
-	/** Normalized self-identification token for an UNNAMED bot ('foobot'),
-	 *  '' = nothing to discover. Feeds Letterbrace's unknown-agents ledger. */
-	botToken: string;
+  /** The claimed agent's IP fell inside its vendor's published ranges. */
+  verified: boolean;
+  /** Datacenter label for browser/anonymous traffic ('aws', …), '' = none. */
+  provenance: string;
+  /** Normalized self-identification token for an UNNAMED bot ('foobot'),
+   *  '' = nothing to discover. Feeds Letterbrace's unknown-agents ledger. */
+  botToken: string;
 }
 
-const NO_EXTRAS: AccessExtras = { verified: false, provenance: "", botToken: "" };
+const NO_EXTRAS: AccessExtras = {
+  verified: false,
+  provenance: "",
+  botToken: "",
+};
 
 /**
  * Tell Letterbrace that a page was requested. Resolves either way; never throws.
@@ -51,43 +56,54 @@ const NO_EXTRAS: AccessExtras = { verified: false, provenance: "", botToken: "" 
  * question the feature answers, and it keeps the whole system clear of
  * personal data — which is a design constraint, not an oversight.
  */
-export async function reportAccess(path: string, requester: Requester, extras: AccessExtras = NO_EXTRAS): Promise<void> {
-	if (!accessReportingEnabled()) return;
+export async function reportAccess(
+  path: string,
+  requester: Requester,
+  extras: AccessExtras = NO_EXTRAS,
+): Promise<void> {
+  if (!accessReportingEnabled()) return;
 
-	try {
-		const res = await fetch(env.accessReportUrl, {
-			method: "POST",
-			headers: {
-				"x-integrations-key": env.letterbraceApiKey,
-				"content-type": "application/json",
-			},
-			body: JSON.stringify({
-				path,
-				// The UTC day, decided here rather than at ingest. A request at
-				// 23:59 that arrives after midnight belongs to the day it happened.
-				date: new Date().toISOString().slice(0, 10),
-				requester_class: requester.class,
-				agent: requester.agent,
-				// UA-derived (from classifyRequester, same as class/agent) — unlike
-				// verified/provenance/botToken below, this isn't an IP-derived label.
-				purpose: requester.purpose,
-				verified: extras.verified,
-				provenance: extras.provenance,
-				bot_token: extras.botToken,
-			}),
-			signal: AbortSignal.timeout(REPORT_TIMEOUT_MS),
-			// This must never be served from a cache, and there is nothing to cache.
-			cache: "no-store",
-		});
+  try {
+    const res = await fetch(env.accessReportUrl, {
+      method: "POST",
+      headers: {
+        "x-integrations-key": env.letterbraceApiKey,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        path,
+        // The UTC day, decided here rather than at ingest. A request at
+        // 23:59 that arrives after midnight belongs to the day it happened.
+        date: new Date().toISOString().slice(0, 10),
+        requester_class: requester.class,
+        agent: requester.agent,
+        // UA-derived (from classifyRequester, same as class/agent) — unlike
+        // verified/provenance/botToken below, this isn't an IP-derived label.
+        purpose: requester.purpose,
+        // Classification provenance: the pattern that matched and the table
+        // version that held it, so a row can be re-derived under a newer table
+        // and two fetchers behind one label can be told apart.
+        ua_token: requester.token,
+        classifier_version: activeVersion(),
+        verified: extras.verified,
+        provenance: extras.provenance,
+        bot_token: extras.botToken,
+      }),
+      signal: AbortSignal.timeout(REPORT_TIMEOUT_MS),
+      // This must never be served from a cache, and there is nothing to cache.
+      cache: "no-store",
+    });
 
-		if (!res.ok) {
-			// Logged, not thrown. A 401 here means the key lacks the capability and
-			// every request will fail the same way — worth seeing in the function
-			// log, worth nothing to the reader waiting for the page.
-			console.warn(`[access] report rejected: ${res.status}`);
-		}
-	} catch (err) {
-		// Includes the timeout above. Deliberately swallowed.
-		console.warn(`[access] report failed: ${err instanceof Error ? err.message : String(err)}`);
-	}
+    if (!res.ok) {
+      // Logged, not thrown. A 401 here means the key lacks the capability and
+      // every request will fail the same way — worth seeing in the function
+      // log, worth nothing to the reader waiting for the page.
+      console.warn(`[access] report rejected: ${res.status}`);
+    }
+  } catch (err) {
+    // Includes the timeout above. Deliberately swallowed.
+    console.warn(
+      `[access] report failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }

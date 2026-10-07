@@ -26,22 +26,40 @@
 
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
-import { classifyRequester, extractBotToken } from "@/lib/access/classify";
-import { activeTables, provenanceOf, refreshManifestIfStale, verifyAgentIp } from "@/lib/access/manifest";
-import { accessReportingEnabled, reportAccess, type AccessExtras } from "@/lib/access/report";
+import {
+  classifyRequester,
+  extractBotToken,
+  type ClassifierTables,
+} from "@/lib/access/classify";
+import {
+  activeTables,
+  attributeAiVendorByIp,
+  provenanceOf,
+  refreshManifestIfStale,
+  verifyAgentIp,
+} from "@/lib/access/manifest";
+import {
+  accessReportingEnabled,
+  reportAccess,
+  type AccessExtras,
+} from "@/lib/access/report";
 import redirectManifest from "@/generated/redirect-manifest.json";
 
 // Valid post/section slugs for THIS build (see scripts/gen-redirect-manifest.mjs).
-const manifest = redirectManifest as { ok: boolean; postSlugs: string[]; sectionSlugs: string[] };
+const manifest = redirectManifest as {
+  ok: boolean;
+  postSlugs: string[];
+  sectionSlugs: string[];
+};
 const POST_SLUGS = new Set(manifest.postSlugs);
 const SECTION_SLUGS = new Set(manifest.sectionSlugs);
 
 function safeDecode(segment: string): string {
-	try {
-		return decodeURIComponent(segment);
-	} catch {
-		return segment;
-	}
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
 }
 
 /**
@@ -51,108 +69,154 @@ function safeDecode(segment: string): string {
  * slug is definitively absent — so a valid page can never be redirected.
  */
 function removedUrlRedirect(request: NextRequest): NextResponse | null {
-	if (!manifest.ok) return null;
-	const { pathname } = request.nextUrl;
+  if (!manifest.ok) return null;
+  const { pathname } = request.nextUrl;
 
-	const post = /^\/posts\/([^/]+)\/?$/.exec(pathname);
-	if (post && POST_SLUGS.size > 0 && !POST_SLUGS.has(safeDecode(post[1]))) {
-		return NextResponse.redirect(new URL("/", request.url), 308);
-	}
-	const section = /^\/sections\/([^/]+)\/?$/.exec(pathname);
-	if (section && SECTION_SLUGS.size > 0 && !SECTION_SLUGS.has(safeDecode(section[1]))) {
-		return NextResponse.redirect(new URL("/", request.url), 308);
-	}
-	return null;
+  const post = /^\/posts\/([^/]+)\/?$/.exec(pathname);
+  if (post && POST_SLUGS.size > 0 && !POST_SLUGS.has(safeDecode(post[1]))) {
+    return NextResponse.redirect(new URL("/", request.url), 308);
+  }
+  const section = /^\/sections\/([^/]+)\/?$/.exec(pathname);
+  if (
+    section &&
+    SECTION_SLUGS.size > 0 &&
+    !SECTION_SLUGS.has(safeDecode(section[1]))
+  ) {
+    return NextResponse.redirect(new URL("/", request.url), 308);
+  }
+  return null;
+}
+
+/** The AI-agent labels the active tables can emit — the only labels IP-first
+ *  attribution may mint. Derived from the table so a new registry row is
+ *  attributable the day the manifest refreshes. */
+function aiAgentLabels(tables: ClassifierTables): ReadonlySet<string> {
+  return new Set(tables.aiAgents.map((row) => row[1]));
 }
 
 export function proxy(request: NextRequest, event: NextFetchEvent) {
-	// Removed-URL redirect runs first, so it works even on sites where access
-	// telemetry is off (which is most of them).
-	const redirect = removedUrlRedirect(request);
-	if (redirect) return redirect;
+  // Removed-URL redirect runs first, so it works even on sites where access
+  // telemetry is off (which is most of them).
+  const redirect = removedUrlRedirect(request);
+  if (redirect) return redirect;
 
-	const enabled = accessReportingEnabled();
+  const enabled = accessReportingEnabled();
 
-	// A one-word answer to "is telemetry live on this site?", readable with a
-	// single curl against any phantom in the fleet.
-	//
-	// Without it the two failure modes are indistinguishable from outside: a
-	// build with no proxy at all and a proxy whose env was never populated both
-	// look like a perfectly normal page. Diagnosing that meant reaching into the
-	// Vercel project of whichever site was misbehaving — which needs access to
-	// the team that owns 114 of them. Three states, one request:
-	//
-	//   x-phantom-access: on    reporting
-	//   x-phantom-access: off   proxy is deployed, env is not set
-	//   (header absent)         this build has no proxy
-	//
-	// It names no key, no URL and no visitor — just whether the switch is thrown.
-	const response = NextResponse.next();
-	response.headers.set("x-phantom-access", enabled ? "on" : "off");
+  // A one-word answer to "is telemetry live on this site?", readable with a
+  // single curl against any phantom in the fleet.
+  //
+  // Without it the two failure modes are indistinguishable from outside: a
+  // build with no proxy at all and a proxy whose env was never populated both
+  // look like a perfectly normal page. Diagnosing that meant reaching into the
+  // Vercel project of whichever site was misbehaving — which needs access to
+  // the team that owns 114 of them. Three states, one request:
+  //
+  //   x-phantom-access: on    reporting
+  //   x-phantom-access: off   proxy is deployed, env is not set
+  //   (header absent)         this build has no proxy
+  //
+  // It names no key, no URL and no visitor — just whether the switch is thrown.
+  const response = NextResponse.next();
+  response.headers.set("x-phantom-access", enabled ? "on" : "off");
 
-	// Cheap exit when the deployment hasn't been configured for reporting, which
-	// is every phantom until its env says otherwise.
-	if (!enabled) return response;
+  // Cheap exit when the deployment hasn't been configured for reporting, which
+  // is every phantom until its env says otherwise.
+  if (!enabled) return response;
 
-	// Only GET is a page view. A HEAD is a liveness check and a POST isn't a
-	// read at all; counting either would quietly inflate the number.
-	if (request.method !== "GET") return response;
+  // Only GET is a page view. A HEAD is a liveness check and a POST isn't a
+  // read at all; counting either would quietly inflate the number.
+  if (request.method !== "GET") return response;
 
-	const userAgent = request.headers.get("user-agent");
-	// Manifest tables when available (baked at build / refreshed ~daily),
-	// embedded fallback otherwise — see manifest.ts for the three layers.
-	const requester = classifyRequester(userAgent, activeTables());
+  // A Next.js router PREFETCH is the page warming a link the reader might
+  // click, not a read of that page. Until 2026-08-13 every visible link
+  // prefetched and JavaScript-rendering crawlers logged ~4 "accesses" per
+  // real page view; the prefetches are gone from the renderer, and this keeps
+  // a future regression from counting again. A non-prefetch RSC navigation
+  // (the reader actually clicked) still counts.
+  if (request.headers.get("next-router-prefetch") === "1") return response;
 
-	// The client IP, read ONLY to derive labels in-process and then dropped —
-	// it never enters the report, a log line, or storage. Vercel sets
-	// x-real-ip itself (a caller can't spoof it past the edge), with the
-	// x-forwarded-for head as the fallback shape.
-	const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0] ?? null;
+  const userAgent = request.headers.get("user-agent");
+  // Manifest tables when available (baked at build / refreshed ~daily),
+  // embedded fallback otherwise — see manifest.ts for the three layers.
+  const tables = activeTables();
+  let requester = classifyRequester(userAgent, tables);
 
-	const extras: AccessExtras = {
-		// A named agent's claim, checked against its vendor's published ranges.
-		// No ranges held for the label = false: verification only under-claims.
-		verified:
-			(requester.class === "ai_agent" || requester.class === "search_crawler") &&
-			requester.agent !== "" &&
-			verifyAgentIp(ip, requester.agent),
-		// Where the packets came from, for traffic that only CLAIMS to be a
-		// browser (or is anonymous automation). Named bots skip this: their
-		// question is "verified?", and Vercel's own screenshotter egresses from
-		// AWS — the UA name must always win over the IP.
-		provenance:
-			requester.agent === "" && (requester.class === "browser" || requester.class === "other_bot")
-				? provenanceOf(ip)
-				: "",
-		// What an UNNAMED bot called itself — the discovery ledger's raw
-		// material. Only meaningful where there is automation without a name.
-		botToken: requester.class === "other_bot" && requester.agent === "" ? extractBotToken(userAgent) : "",
-	};
+  // The client IP, read ONLY to derive labels in-process and then dropped —
+  // it never enters the report, a log line, or storage. Vercel sets
+  // x-real-ip itself (a caller can't spoof it past the edge), with the
+  // x-forwarded-for head as the fallback shape.
+  const ip =
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0] ??
+    null;
 
-	// waitUntil keeps the invocation alive for the report without the reader
-	// waiting on it. This is the whole reason the response isn't delayed. The
-	// manifest refresh rides the same window (self-limits to ~1 fetch/day per
-	// instance and never throws).
-	event.waitUntil(Promise.all([reportAccess(request.nextUrl.pathname, requester, extras), refreshManifestIfStale()]));
+  // IP-first attribution for the unnamed: a requester the User-Agent tables
+  // couldn't name, arriving from inside an AI vendor's published ranges, is
+  // that vendor (see attributeAiVendorByIp). Purpose stays '' — the ranges say
+  // who, never why — and `verified` below comes out true by construction.
+  if (
+    requester.agent === "" &&
+    (requester.class === "other_bot" || requester.class === "browser")
+  ) {
+    const vendor = attributeAiVendorByIp(ip, aiAgentLabels(tables));
+    if (vendor)
+      requester = { class: "ai_agent", agent: vendor, purpose: "", token: "" };
+  }
 
-	return response;
+  const extras: AccessExtras = {
+    // A named agent's claim, checked against its vendor's published ranges.
+    // No ranges held for the label = false: verification only under-claims.
+    verified:
+      (requester.class === "ai_agent" ||
+        requester.class === "search_crawler") &&
+      requester.agent !== "" &&
+      verifyAgentIp(ip, requester.agent),
+    // Where the packets came from, for traffic that only CLAIMS to be a
+    // browser (or is anonymous automation). Named bots skip this: their
+    // question is "verified?", and Vercel's own screenshotter egresses from
+    // AWS — the UA name must always win over the IP.
+    provenance:
+      requester.agent === "" &&
+      (requester.class === "browser" || requester.class === "other_bot")
+        ? provenanceOf(ip)
+        : "",
+    // What an UNNAMED bot called itself — the discovery ledger's raw
+    // material. Only meaningful where there is automation without a name.
+    botToken:
+      requester.class === "other_bot" && requester.agent === ""
+        ? extractBotToken(userAgent)
+        : "",
+  };
+
+  // waitUntil keeps the invocation alive for the report without the reader
+  // waiting on it. This is the whole reason the response isn't delayed. The
+  // manifest refresh rides the same window (self-limits to ~1 fetch/day per
+  // instance and never throws).
+  event.waitUntil(
+    Promise.all([
+      reportAccess(request.nextUrl.pathname, requester, extras),
+      refreshManifestIfStale(),
+    ]),
+  );
+
+  return response;
 }
 
 export const config = {
-	/**
-	 * Content pages only.
-	 *
-	 * Every excluded path is excluded for a reason: `_next/static` and
-	 * `_next/image` are assets that would multiply one page view into a dozen
-	 * "accesses"; `favicon.ico`, `robots.txt`, `sitemap.xml` and `feed.xml` are
-	 * fetched by infrastructure and feed readers rather than read by anyone. The
-	 * trailing extension clause catches images and fonts in `public/`.
-	 *
-	 * This matters for cost as well as correctness — proxy is billed per
-	 * invocation, and without a matcher it runs on literally every request,
-	 * including every CSS file.
-	 */
-	matcher: [
-		"/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|feed.xml|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|woff|woff2|ttf|otf|map)$).*)",
-	],
+  /**
+   * Content pages only.
+   *
+   * Every excluded path is excluded for a reason: `_next/static` and
+   * `_next/image` are assets that would multiply one page view into a dozen
+   * "accesses"; `favicon.ico`, `robots.txt`, `sitemap.xml` and `feed.xml` are
+   * fetched by infrastructure and feed readers rather than read by anyone. The
+   * trailing extension clause catches images and fonts in `public/`.
+   *
+   * This matters for cost as well as correctness — proxy is billed per
+   * invocation, and without a matcher it runs on literally every request,
+   * including every CSS file.
+   */
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|feed.xml|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|woff|woff2|ttf|otf|map)$).*)",
+  ],
 };
