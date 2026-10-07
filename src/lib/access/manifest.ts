@@ -32,64 +32,83 @@ import bakedManifest from "@/generated/bot-manifest.json";
 /** The wire shape GET <access-url>/manifest serves (see Letterbrace's
  *  integrations/phantom-access/manifest route). */
 interface ManifestPayload {
-	ok: boolean;
-	version?: number;
-	generatedAt?: string;
-	tables?: ClassifierTables;
-	verification?: Record<string, string[]>;
-	provenance?: Record<string, string[]>;
+  ok: boolean;
+  version?: number;
+  generatedAt?: string;
+  tables?: ClassifierTables;
+  verification?: Record<string, string[]>;
+  provenance?: Record<string, string[]>;
 }
 
 /** Named providers are checked before the generic datacenter catch-all, so a
  *  request from Hetzner says "hetzner", not just "some datacenter". Labels the
  *  registry adds later simply append after the known ones. */
 const PROVENANCE_ORDER = [
-	"aws",
-	"gcp",
-	"azure",
-	"cloudflare",
-	"oracle",
-	"digitalocean",
-	"hetzner",
-	"ovh",
-	"linode",
-	"alibaba",
-	"datacenter",
+  "aws",
+  "gcp",
+  "azure",
+  "cloudflare",
+  "oracle",
+  "digitalocean",
+  "hetzner",
+  "ovh",
+  "linode",
+  "alibaba",
+  "datacenter",
 ];
 
 interface CompiledManifest {
-	tables: ClassifierTables;
-	verification: Map<string, RangeSet>;
-	provenance: [label: string, set: RangeSet][];
+  tables: ClassifierTables;
+  verification: Map<string, RangeSet>;
+  provenance: [label: string, set: RangeSet][];
+  /** The registry's classifier version this payload was generated from, when
+   *  the server said. Reported with every access so a row remembers which
+   *  table classified it. */
+  version: number | null;
 }
 
 function compile(payload: ManifestPayload): CompiledManifest | null {
-	if (!payload.ok || !payload.tables || !Array.isArray(payload.tables.aiAgents)) return null;
+  if (!payload.ok || !payload.tables || !Array.isArray(payload.tables.aiAgents))
+    return null;
 
-	const verification = new Map<string, RangeSet>();
-	for (const [label, cidrs] of Object.entries(payload.verification ?? {})) {
-		if (Array.isArray(cidrs) && cidrs.length > 0) verification.set(label, compileRanges(cidrs));
-	}
+  const verification = new Map<string, RangeSet>();
+  for (const [label, cidrs] of Object.entries(payload.verification ?? {})) {
+    if (Array.isArray(cidrs) && cidrs.length > 0)
+      verification.set(label, compileRanges(cidrs));
+  }
 
-	const provEntries = Object.entries(payload.provenance ?? {}).filter(
-		([, cidrs]) => Array.isArray(cidrs) && cidrs.length > 0
-	);
-	const provenance: [string, RangeSet][] = provEntries
-		.sort(([a], [b]) => {
-			const ia = PROVENANCE_ORDER.indexOf(a);
-			const ib = PROVENANCE_ORDER.indexOf(b);
-			return (ia === -1 ? PROVENANCE_ORDER.length : ia) - (ib === -1 ? PROVENANCE_ORDER.length : ib);
-		})
-		.map(([label, cidrs]) => [label, compileRanges(cidrs)]);
+  const provEntries = Object.entries(payload.provenance ?? {}).filter(
+    ([, cidrs]) => Array.isArray(cidrs) && cidrs.length > 0,
+  );
+  const provenance: [string, RangeSet][] = provEntries
+    .sort(([a], [b]) => {
+      const ia = PROVENANCE_ORDER.indexOf(a);
+      const ib = PROVENANCE_ORDER.indexOf(b);
+      return (
+        (ia === -1 ? PROVENANCE_ORDER.length : ia) -
+        (ib === -1 ? PROVENANCE_ORDER.length : ib)
+      );
+    })
+    .map(([label, cidrs]) => [label, compileRanges(cidrs)]);
 
-	return { tables: payload.tables, verification, provenance };
+  return {
+    tables: payload.tables,
+    verification,
+    provenance,
+    version:
+      typeof payload.version === "number" && Number.isInteger(payload.version)
+        ? payload.version
+        : null,
+  };
 }
 
 // Module scope: shared across requests on a warm instance, reset on cold start.
 // The `unknown` hop matters: this JSON is REGENERATED per build (placeholder
 // today, a real payload tomorrow), so its build-time inferred shape is not
 // something to trust — `compile()` is what actually validates it, at runtime.
-let current: CompiledManifest | null = compile(bakedManifest as unknown as ManifestPayload);
+let current: CompiledManifest | null = compile(
+  bakedManifest as unknown as ManifestPayload,
+);
 let lastAttemptAt = 0;
 
 const REFRESH_TTL_MS = 24 * 60 * 60 * 1000;
@@ -99,58 +118,110 @@ const REFRESH_TIMEOUT_MS = 8000;
 
 /** The tables the proxy should classify with right now. */
 export function activeTables(): ClassifierTables {
-	return current?.tables ?? EMBEDDED_TABLES;
+  return current?.tables ?? EMBEDDED_TABLES;
+}
+
+/** The classifier version in force, or null when only the embedded tables
+ *  (no baked or refreshed manifest) are classifying. */
+export function activeVersion(): number | null {
+  return current?.version ?? null;
+}
+
+/**
+ * Pure: which of the `allowed` agents' published ranges contains this IP, or
+ * '' for none. The IP-first read behind attributeAiVendorByIp — exported so
+ * the rule is testable with hand-built range sets.
+ */
+export function vendorForIp(
+  ip: string | null | undefined,
+  verification: ReadonlyMap<string, RangeSet>,
+  allowed: ReadonlySet<string>,
+): string {
+  if (!ip) return "";
+  for (const [label, set] of verification) {
+    if (allowed.has(label) && ipInRangeSet(ip, set)) return label;
+  }
+  return "";
+}
+
+/**
+ * A request whose User-Agent named nothing we know, but whose IP sits inside
+ * an AI vendor's published ranges, is that vendor's fetcher wearing a new or
+ * unrecognised name (a renamed bot, OpenAI's agent mode running headless
+ * Chrome, …). The ranges are the one thing a vendor can't rename, so this is
+ * how such traffic stays attributed to the vendor between the rename and the
+ * registry row that names it. `allowed` keeps the read to AI-agent labels:
+ * a search crawler's ranges never mint an AI row.
+ */
+export function attributeAiVendorByIp(
+  ip: string | null | undefined,
+  allowed: ReadonlySet<string>,
+): string {
+  if (!current) return "";
+  return vendorForIp(ip, current.verification, allowed);
 }
 
 /** Did this request's IP come from the claimed agent's published ranges?
  *  False when we hold no ranges for the label — verification only ever
  *  under-claims. */
-export function verifyAgentIp(ip: string | null | undefined, agent: string): boolean {
-	const set = current?.verification.get(agent);
-	return !!set && ipInRangeSet(ip, set);
+export function verifyAgentIp(
+  ip: string | null | undefined,
+  agent: string,
+): boolean {
+  const set = current?.verification.get(agent);
+  return !!set && ipInRangeSet(ip, set);
 }
 
 /** Which datacenter the packets came from, or '' for "no match" — the only
  *  answer that might mean a person on a home connection. */
 export function provenanceOf(ip: string | null | undefined): string {
-	if (!current) return "";
-	for (const [label, set] of current.provenance) {
-		if (ipInRangeSet(ip, set)) return label;
-	}
-	return "";
+  if (!current) return "";
+  for (const [label, set] of current.provenance) {
+    if (ipInRangeSet(ip, set)) return label;
+  }
+  return "";
 }
 
 /**
  * Refresh the manifest if the TTL has lapsed. Resolves quietly on every
  * outcome; the returned promise exists to be handed to `waitUntil`.
  */
-export async function refreshManifestIfStale(now: number = Date.now()): Promise<void> {
-	if (now - lastAttemptAt < REFRESH_TTL_MS) return;
-	if (!env.accessReportUrl || !env.letterbraceApiKey) return;
-	// Attempt-time, not success-time: a dead endpoint must not be re-hit on
-	// every request for the rest of the day.
-	lastAttemptAt = now;
+export async function refreshManifestIfStale(
+  now: number = Date.now(),
+): Promise<void> {
+  if (now - lastAttemptAt < REFRESH_TTL_MS) return;
+  if (!env.accessReportUrl || !env.letterbraceApiKey) return;
+  // Attempt-time, not success-time: a dead endpoint must not be re-hit on
+  // every request for the rest of the day.
+  lastAttemptAt = now;
 
-	try {
-		const res = await fetch(`${env.accessReportUrl}/manifest`, {
-			headers: { "x-integrations-key": env.letterbraceApiKey },
-			signal: AbortSignal.timeout(REFRESH_TIMEOUT_MS),
-			cache: "no-store",
-		});
-		if (!res.ok) {
-			console.warn(`[access] manifest refresh rejected: ${res.status}`);
-			return;
-		}
-		const compiled = compile((await res.json()) as ManifestPayload);
-		if (compiled) current = compiled;
-		else console.warn("[access] manifest refresh returned an unusable payload; keeping previous");
-	} catch (err) {
-		console.warn(`[access] manifest refresh failed: ${err instanceof Error ? err.message : String(err)}`);
-	}
+  try {
+    const res = await fetch(`${env.accessReportUrl}/manifest`, {
+      headers: { "x-integrations-key": env.letterbraceApiKey },
+      signal: AbortSignal.timeout(REFRESH_TIMEOUT_MS),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.warn(`[access] manifest refresh rejected: ${res.status}`);
+      return;
+    }
+    const compiled = compile((await res.json()) as ManifestPayload);
+    if (compiled) current = compiled;
+    else
+      console.warn(
+        "[access] manifest refresh returned an unusable payload; keeping previous",
+      );
+  } catch (err) {
+    console.warn(
+      `[access] manifest refresh failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
 
 /** Test hook: reset module state (cold-start simulation). */
 export function __resetManifestForTests(payload?: ManifestPayload): void {
-	current = payload ? compile(payload) : compile(bakedManifest as unknown as ManifestPayload);
-	lastAttemptAt = 0;
+  current = payload
+    ? compile(payload)
+    : compile(bakedManifest as unknown as ManifestPayload);
+  lastAttemptAt = 0;
 }
