@@ -19,7 +19,8 @@ export function generateMetadata(): Metadata {
   const favicon = siteFavicon();
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.
-  const indexable = hasLetterbraceKey;
+  // Demo builds (the design switch) are copies of live sites: never index.
+  const indexable = hasLetterbraceKey && !env.designCompare;
   return {
     metadataBase: new URL(env.siteUrl),
     title: { default: title, template: `%s · ${title}` },

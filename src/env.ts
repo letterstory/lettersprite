@@ -174,8 +174,16 @@ export const env = {
    * while keeping the Current/Redesign choice. Empty → no site buttons.
    */
   demoPeers: str("SITE_DEMO_PEERS"),
+  /**
+   * Serve the feed from a frozen `/published` export on disk instead of the
+   * API (path relative to the app root). For demos built away from the API;
+   * a demo build is never indexable (see robots + layout metadata).
+   */
+  fixtureFile: str("LETTERBRACE_FIXTURE"),
+  /** Which redesign layout `/new` renders: notes | journal | magazine | essay. */
+  layout: str("SITE_LAYOUT", "notes"),
   demoSelf: str("SITE_DEMO_SELF"),
 } as const;
 
 /** True when a Letterbrace key is present; otherwise content calls no-op. */
-export const hasLetterbraceKey = env.letterbraceApiKey.length > 0;
+export const hasLetterbraceKey = env.letterbraceApiKey.length > 0 || env.fixtureFile.length > 0;

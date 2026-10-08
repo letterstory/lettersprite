@@ -838,3 +838,8 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
 .design-switch-group > a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
 .design-switch-group > [aria-current] { background: #fff; color: #111; }
 .design-switch-sites > [aria-current] { background: rgba(255, 255, 255, 0.18); color: #fff; }
+.design-switch-group:first-child { flex: none; }
+@media (max-width: 760px) {
+  .design-switch { left: 12px; right: 12px; transform: none; max-width: none; }
+  .design-switch-sites { min-width: 0; }
+}

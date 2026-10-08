@@ -5,10 +5,10 @@ import { bylineFor } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { StudioCover } from "./StudioCover";
+import { studioHref } from "@/lib/studio";
 
-export function studioHref(post: Post): string {
-  return `/new/posts/${post.slug}`;
-}
+export { studioHref };
+
 
 /** One story in a grid: cover, kicker, title, dek, byline. */
 export function StoryCard({

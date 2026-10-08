@@ -67,6 +67,8 @@ export interface Brand {
     /** Button fill as the brand's own site draws it. */
     button: string;
     buttonText: string;
+    /** Text that reads on an accent-2 fill (the closing band). */
+    onAccent2: string;
   };
   fonts: { heading: string; body: string; googleHref: string | null };
   radius: string;
@@ -80,6 +82,12 @@ export interface Brand {
   footerLinks: BrandNavLink[];
   socials: { type: string; url: string }[];
   cta: { label: string; url: string; headline: string };
+  /**
+   * What the site asks of a reader. A company blog may ask for the product; an
+   * independent publication only ever asks to be followed — a product pitch on
+   * it would spend the credibility it exists to earn.
+   */
+  ask: "product" | "follow";
 }
 
 const NAV_LABELS: Record<string, string> = {
@@ -128,6 +136,28 @@ function links(raw: RawBrand, labels: Record<string, string>, skip: string[] = [
     .map(([k, v]) => ({ label: labels[k], href: v! }));
 }
 
+/** WCAG relative luminance of a #rgb/#rrggbb colour; null when unparseable. */
+function luminance(hex: string): number | null {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const h = m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1];
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Whichever of two candidates contrasts more with `bg`. */
+function readableOn(bg: string, a: string, b: string): string {
+  const L = luminance(bg);
+  const La = luminance(a);
+  const Lb = luminance(b);
+  if (L === null || La === null || Lb === null) return a;
+  const ratio = (x: number, y: number) => (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  return ratio(L, La) >= ratio(L, Lb) ? a : b;
+}
+
 function themeStack(f: FontSpec | undefined, fallback: string): string {
   return f?.family || fallback;
 }
@@ -149,6 +179,9 @@ export function getBrand(): Brand {
   const homeUrl = raw.domain ? `https://${raw.domain.replace(/^https?:\/\//, "")}` : "/new";
   const logos = raw.visual?.logos ?? [];
 
+  const paper = c.background || t.background;
+  const ink = btn?.backgroundColor || c.text || t.foreground;
+  const accent2 = c.secondary || c.primary || t.secondary || t.primary;
   cached = {
     name,
     homeUrl,
@@ -162,6 +195,7 @@ export function getBrand(): Brand {
       tint: c.accent || t.surface,
       button: btn?.backgroundColor || c.text || t.primary,
       buttonText: btn?.color || c.background || t.primaryForeground,
+      onAccent2: readableOn(accent2, paper, ink),
     },
     fonts: {
       heading: raw.visual?.headingFont
@@ -180,11 +214,12 @@ export function getBrand(): Brand {
     nav: links(raw, NAV_LABELS, ["blog"]),
     footerLinks: links(raw, FOOTER_LABELS),
     socials: raw.socials ?? [],
+    ask: own ? "follow" : "product",
     cta: own
       ? {
-          label: "About us",
-          url: "/about",
-          headline: env.siteTagline || env.siteDescription || name,
+          label: "Follow",
+          url: "/feed.xml",
+          headline: env.siteTagline || `Every new piece from ${name}, as it's published.`,
         }
       : {
           label: raw.cta?.label || `Visit ${name}`,
@@ -205,6 +240,7 @@ export function brandCssVars(b: Brand): Record<string, string> {
     "--b-tint": b.colors.tint,
     "--b-button": b.colors.button,
     "--b-button-text": b.colors.buttonText,
+    "--b-on-accent-2": b.colors.onAccent2,
     "--b-font-heading": b.fonts.heading,
     "--b-font-body": b.fonts.body,
     "--b-radius": b.radius,

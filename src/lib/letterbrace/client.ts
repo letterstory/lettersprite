@@ -12,7 +12,28 @@ import type { Post } from "./types";
  * `article_id` + `summary`, never the published body.
  */
 
+/**
+ * Answer a `/published` request from the frozen export named by
+ * LETTERBRACE_FIXTURE, with the same envelope and keyset paging as the API.
+ */
+async function fixtureGet(path: string): Promise<unknown> {
+  const { readFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const raw = JSON.parse(await readFile(join(process.cwd(), env.fixtureFile), "utf8")) as {
+    items: Record<string, unknown>[];
+  };
+  const q = new URL(path, "http://fixture").searchParams;
+  const slug = q.get("slug");
+  if (slug) return raw.items.find((i) => i.slug === slug) ?? null;
+  const limit = Number(q.get("limit") ?? 1000);
+  const start = Number(q.get("cursor") ?? 0);
+  const items = raw.items.slice(start, start + limit);
+  const more = start + limit < raw.items.length;
+  return { items, count: items.length, has_more: more, next_cursor: more ? String(start + limit) : null };
+}
+
 async function apiGet(path: string): Promise<unknown> {
+  if (env.fixtureFile) return fixtureGet(path);
   const res = await fetch(`${env.letterbraceApiUrl}${path}`, {
     headers: {
       "x-integrations-key": env.letterbraceApiKey,
