@@ -38,13 +38,20 @@ export default async function StudioHome() {
   const river = rest.slice(3);
   const topics = topSections(river, 8);
   const leadBy = bylineFor(lead);
+  // The headline is the site's line; with none, its description steps up.
+  const headline = env.siteTagline || brand.slogan || env.siteDescription || brand.name;
+  const dek = headline === env.siteDescription ? "" : env.siteDescription;
+  // A brand's blog is "The X Blog"; an independent publication names its beats.
+  const eyebrow = /^https?:/.test(brand.homeUrl)
+    ? `${/^the\s/i.test(brand.name) ? brand.name : `The ${brand.name}`} Blog`
+    : topSections(posts, 3).join(" · ");
 
   return (
     <StudioShell>
       <section className="s-hero s-wrap">
-        <p className="s-eyebrow">The {brand.name} Blog</p>
-        <h1 className="s-hero-title">{env.siteTagline || brand.slogan}</h1>
-        {env.siteDescription && <p className="s-hero-dek">{env.siteDescription}</p>}
+        <p className="s-eyebrow">{eyebrow}</p>
+        <h1 className={`s-hero-title ${headline.length > 70 ? "s-hero-title-long" : ""}`}>{headline}</h1>
+        {dek && <p className="s-hero-dek">{dek}</p>}
       </section>
 
       <section className="s-wrap s-lead">

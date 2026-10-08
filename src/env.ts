@@ -168,6 +168,13 @@ export const env = {
    * route to its counterpart. A demo affordance: off unless set.
    */
   designCompare: bool("SITE_DESIGN_COMPARE", false),
+  /**
+   * Other demo sites to list in the switch, as JSON `[{ "label", "url" }]`, plus
+   * this site's own label. Lets one demo hop between several customers' sites
+   * while keeping the Current/Redesign choice. Empty → no site buttons.
+   */
+  demoPeers: str("SITE_DEMO_PEERS"),
+  demoSelf: str("SITE_DEMO_SELF"),
 } as const;
 
 /** True when a Letterbrace key is present; otherwise content calls no-op. */

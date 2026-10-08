@@ -1,5 +1,6 @@
 import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
+import { Logo } from "@/components/Logo";
 
 /**
  * The customer's own masthead: their mark and name, their site's links, their
@@ -13,18 +14,24 @@ export function StudioHeader({ brand }: { brand: Brand }) {
         <a href={brand.homeUrl} className="s-brand" aria-label={`${brand.name} home`}>
           {brand.logoOnLight ? (
             <img src={brand.logoOnLight} alt={brand.name} className="s-brand-logo" />
-          ) : (
+          ) : brand.icon ? (
             <>
-              {brand.icon && (
-                <img src={brand.icon} alt="" className="s-brand-icon" />
-              )}
+              <img src={brand.icon} alt="" className="s-brand-icon" />
               <span className="s-brand-name">{brand.name}</span>
             </>
+          ) : (
+            // No measured logo: the site's own masthead mark, exactly as the
+            // current design draws it.
+            <Logo linked={false} size="md" />
           )}
         </a>
-        <Link href="/new" className="s-header-section">
-          Blog
-        </Link>
+        {/* The blog as a section of an external site; an independent
+            publication's masthead already is the blog. */}
+        {/^https?:/.test(brand.homeUrl) && (
+          <Link href="/new" className="s-header-section">
+            Blog
+          </Link>
+        )}
         <nav className="s-header-nav" aria-label={`${brand.name} site`}>
           {brand.nav.map((l) => (
             <a key={l.href} href={l.href}>

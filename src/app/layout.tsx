@@ -11,7 +11,7 @@ import { modeBootScript } from "@/lib/mode";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { ClassicChrome, DesignSwitch } from "@/components/DesignSwitch";
+import { ClassicChrome, DesignSwitch, type DemoPeer } from "@/components/DesignSwitch";
 
 export function generateMetadata(): Metadata {
   const title = env.siteTitle;
@@ -58,6 +58,15 @@ export function generateMetadata(): Metadata {
       site: env.twitterHandle ? `@${env.twitterHandle}` : undefined,
     },
   };
+}
+
+function demoPeers(): DemoPeer[] {
+  if (!env.demoPeers) return [];
+  try {
+    return JSON.parse(env.demoPeers) as DemoPeer[];
+  } catch {
+    return [];
+  }
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -114,7 +123,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ClassicChrome>
           <SiteFooter />
         </ClassicChrome>
-        {env.designCompare && <DesignSwitch />}
+        {env.designCompare && <DesignSwitch peers={demoPeers()} self={env.demoSelf} />}
         {beaconEnabled() && (
           // Inline, at the end of body: it must not block first paint, and a
           // separate file would be a second request to send a payload smaller

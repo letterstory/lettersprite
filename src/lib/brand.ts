@@ -1,5 +1,6 @@
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
+import type { FontSpec } from "@/themes/types";
 
 /**
  * The customer's brand, resolved into the handful of decisions the `/new`
@@ -73,6 +74,8 @@ export interface Brand {
   icon: string | null;
   logoOnDark: string | null;
   logoOnLight: string | null;
+  /** Inline SVG mark (SITE_LOGO_SVG) when no image logo exists — a phantom's. */
+  logoSvg: string | null;
   nav: BrandNavLink[];
   footerLinks: BrandNavLink[];
   socials: { type: string; url: string }[];
@@ -125,16 +128,25 @@ function links(raw: RawBrand, labels: Record<string, string>, skip: string[] = [
     .map(([k, v]) => ({ label: labels[k], href: v! }));
 }
 
+function themeStack(f: FontSpec | undefined, fallback: string): string {
+  return f?.family || fallback;
+}
+
 let cached: Brand | null = null;
 
 export function getBrand(): Brand {
   if (cached) return cached;
   const raw = parse() ?? {};
-  const t = getActiveTheme().colors;
+  const theme = getActiveTheme();
+  const t = theme.colors;
+  // With no measured brand, the identity is the site's own (a phantom's art-
+  // directed theme): links point home within the blog, the closer invites
+  // readers to the about page, and fonts are the theme's (already loaded).
+  const own = parse() === null;
   const c = raw.visual?.colors ?? {};
   const btn = raw.visual?.components?.buttonPrimary;
   const name = raw.identity?.name || raw.name || env.siteTitle;
-  const homeUrl = raw.domain ? `https://${raw.domain.replace(/^https?:\/\//, "")}` : env.siteUrl;
+  const homeUrl = raw.domain ? `https://${raw.domain.replace(/^https?:\/\//, "")}` : "/new";
   const logos = raw.visual?.logos ?? [];
 
   cached = {
@@ -152,22 +164,33 @@ export function getBrand(): Brand {
       buttonText: btn?.color || c.background || t.primaryForeground,
     },
     fonts: {
-      heading: fontStack(raw.visual?.headingFont, "Georgia, serif"),
-      body: fontStack(raw.visual?.bodyFont, "system-ui, sans-serif"),
+      heading: raw.visual?.headingFont
+        ? fontStack(raw.visual.headingFont, "Georgia, serif")
+        : themeStack(theme.fonts.display ?? theme.fonts.heading, "Georgia, serif"),
+      body: raw.visual?.bodyFont
+        ? fontStack(raw.visual.bodyFont, "system-ui, sans-serif")
+        : themeStack(theme.fonts.body, "system-ui, sans-serif"),
       googleHref: googleHref([raw.visual?.headingFont, raw.visual?.bodyFont]),
     },
     radius: btn?.borderRadius || "8px",
     icon: logos.find((l) => l.type === "icon")?.url ?? null,
     logoOnDark: logos.find((l) => l.type === "logo" && l.mode === "dark")?.url ?? null,
     logoOnLight: logos.find((l) => l.type === "logo" && l.mode !== "dark")?.url ?? null,
+    logoSvg: env.logoSvg || null,
     nav: links(raw, NAV_LABELS, ["blog"]),
     footerLinks: links(raw, FOOTER_LABELS),
     socials: raw.socials ?? [],
-    cta: {
-      label: raw.cta?.label || `Visit ${name}`,
-      url: raw.cta?.url || homeUrl,
-      headline: raw.cta?.headline || raw.identity?.slogan || env.siteTagline || name,
-    },
+    cta: own
+      ? {
+          label: "About us",
+          url: "/about",
+          headline: env.siteTagline || env.siteDescription || name,
+        }
+      : {
+          label: raw.cta?.label || `Visit ${name}`,
+          url: raw.cta?.url || homeUrl,
+          headline: raw.cta?.headline || raw.identity?.slogan || env.siteTagline || name,
+        },
   };
   return cached;
 }
