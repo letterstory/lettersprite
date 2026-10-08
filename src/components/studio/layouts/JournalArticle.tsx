@@ -7,7 +7,7 @@ import { StudioCover } from "../StudioCover";
 import { TocSpy } from "../TocSpy";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, InlineAsk, Prose, Sources } from "../parts";
-import { studioHref } from "@/lib/studio";
+import { topicHref, studioHome, studioHref } from "@/lib/studio";
 
 /**
  * Research journal article (Ahrefs, Intercom): a left-aligned header with a
@@ -23,9 +23,9 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
       <article className="s-article">
         <header className="s-wrap j-head">
           <nav className="s-crumbs" aria-label="Breadcrumb">
-            <Link href="/new">Research</Link>
+            <Link href={studioHome()}>Research</Link>
             <span aria-hidden>/</span>
-            <a href={`/new?topic=${encodeURIComponent(sectionFor(post))}`}>{sectionFor(post)}</a>
+            <a href={topicHref(sectionFor(post))}>{sectionFor(post)}</a>
           </nav>
           <div className="j-head-grid">
             <div>

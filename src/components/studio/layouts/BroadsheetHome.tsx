@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import { bylineFor } from "@/lib/author";
 import { editionDate, readingTimeLabel, sectionFor } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
-import { studioHref } from "@/lib/studio";
+import { topicHref, studioHref } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import type { HomeProps } from "./NotesHome";
 
@@ -79,7 +79,7 @@ export function BroadsheetHome({ brand, data, headline }: HomeProps) {
       {sections.map((g) => (
         <section key={g.s} className="b-section" aria-label={g.s} data-topic={g.s}>
           <h2 className="b-section-title">
-            <a href={`/new?topic=${encodeURIComponent(g.s)}`}>{g.s}</a>
+            <a href={topicHref(g.s)}>{g.s}</a>
           </h2>
           <div className="b-section-row">
             {g.posts.slice(0, 4).map((p, i) => (

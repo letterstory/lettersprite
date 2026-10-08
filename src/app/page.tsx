@@ -1,4 +1,7 @@
+import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
+import { getLayout } from "@/lib/studio";
+import { StudioHomePage } from "@/components/studio/pages";
 import { EmptyState } from "@/components/EmptyState";
 import { HomeView } from "@/components/HomeView";
 import { pageCount, pageSlice } from "@/lib/pagination";
@@ -7,6 +10,7 @@ import { pageCount, pageSlice } from "@/lib/pagination";
 export const dynamic = "force-static";
 
 export default async function HomePage() {
+  if (env.redesign) return <StudioHomePage layout={getLayout()} />;
   const posts = await getPosts();
 
   if (posts.length === 0) {

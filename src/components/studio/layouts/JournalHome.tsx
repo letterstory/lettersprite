@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import { bylineFor } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
-import { studioHref } from "@/lib/studio";
+import { topicHref, studioHref } from "@/lib/studio";
 import { editorsPicks } from "@/lib/related";
 import { StudioCover } from "../StudioCover";
 import type { HomeProps } from "./NotesHome";
@@ -78,7 +78,7 @@ export function JournalHome({ brand, data, eyebrow, headline, dek }: HomeProps) 
         <section key={g.s} className="s-wrap j-group" aria-label={g.s} data-topic={g.s}>
           <div className="j-group-head">
             <h2 className="j-group-title">{g.s}</h2>
-            <a href={`/new?topic=${encodeURIComponent(g.s)}`} className="s-section-more">
+            <a href={topicHref(g.s)} className="s-section-more">
               View all →
             </a>
           </div>

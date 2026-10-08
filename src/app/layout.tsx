@@ -115,13 +115,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <ClassicChrome>
+        <ClassicChrome redesign={env.redesign && !env.designCompare} preview={env.designCompare}>
           <SiteHeader />
         </ClassicChrome>
         <main id="main" tabIndex={-1} aria-label="Main content" className="w-full flex-1">
           {children}
         </main>
-        <ClassicChrome>
+        <ClassicChrome redesign={env.redesign && !env.designCompare} preview={env.designCompare}>
           <SiteFooter />
         </ClassicChrome>
         {env.designCompare && <DesignSwitch peers={demoPeers()} self={env.demoSelf} />}

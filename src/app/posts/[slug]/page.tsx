@@ -24,6 +24,8 @@ import { buildToc } from "@/lib/toc";
 import { postUrl } from "@/lib/url";
 import { formatDate } from "@/lib/format";
 import { getActiveTheme } from "@/themes";
+import { getLayout } from "@/lib/studio";
+import { StudioPostPage } from "@/components/studio/pages";
 import { BlitzArticle } from "@/components/article/BlitzArticle";
 import { FluxArticle } from "@/components/article/FluxArticle";
 import { RiotArticle } from "@/components/article/RiotArticle";
@@ -101,6 +103,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function PostPage({ params }: Params) {
   const { slug } = await params;
+  if (env.redesign) {
+    const page = await StudioPostPage({ slug, layout: getLayout() });
+    if (!page) notFound();
+    return page;
+  }
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 

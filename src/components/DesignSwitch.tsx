@@ -86,9 +86,24 @@ export function DesignSwitch({ peers = [], self = "" }: { peers?: DemoPeer[]; se
   );
 }
 
+/** Routes the redesign renders when it is the site's design (SITE_REDESIGN). */
+function isRedesignedPath(path: string): boolean {
+  return path === "/" || path.startsWith("/posts/") || path.startsWith("/sections/");
+}
+
 /** Hide the classic header/footer on redesign routes, which bring their own. */
-export function ClassicChrome({ children }: { children: React.ReactNode }) {
+export function ClassicChrome({
+  children,
+  redesign = false,
+  preview = false,
+}: {
+  children: React.ReactNode;
+  /** The redesign is the site's design (SITE_REDESIGN). */
+  redesign?: boolean;
+  /** A demo build, where /new holds the redesign beside the current design. */
+  preview?: boolean;
+}) {
   const path = usePathname() ?? "/";
-  if (isNewPath(path)) return null;
+  if ((preview && isNewPath(path)) || (redesign && isRedesignedPath(path))) return null;
   return <>{children}</>;
 }

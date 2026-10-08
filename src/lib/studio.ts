@@ -3,7 +3,7 @@ import { isLayout, type StudioLayout } from "@/lib/layouts";
 
 export type { StudioLayout };
 import { authorProfile, authorsFromPosts, bylineFor, type AuthorProfile, type Byline } from "@/lib/author";
-import { readingTimeMinutes, sectionFor, topSections, wordCount } from "@/lib/editorial";
+import { postsInSection, readingTimeMinutes, sectionFor, sectionHref, topSections, wordCount } from "@/lib/editorial";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
 import type { Post } from "@/lib/letterbrace/types";
 import { relatedPosts } from "@/lib/related";
@@ -19,8 +19,26 @@ export function getLayout(): StudioLayout {
   return isLayout(env.layout) ? env.layout : "notes";
 }
 
+/**
+ * Where the redesign lives: at the site's normal URLs when it is the site's
+ * design (SITE_REDESIGN), else under /new beside the current one (demo builds).
+ */
+export function studioBase(): string {
+  return env.redesign && !env.designCompare ? "" : "/new";
+}
+
+/** The redesign's home page. */
+export function studioHome(): string {
+  return studioBase() || "/";
+}
+
 export function studioHref(post: Post): string {
-  return `/new/posts/${post.slug}`;
+  return `${studioBase()}/posts/${post.slug}`;
+}
+
+/** A topic: its real section page when live, a filtered home on /new. */
+export function topicHref(topic: string): string {
+  return studioBase() ? `/new?topic=${encodeURIComponent(topic)}` : sectionHref(topic);
 }
 
 export interface StudioHomeData {
@@ -30,8 +48,10 @@ export interface StudioHomeData {
   stats: { posts: number; sources: number; topics: number; minutes: number; authors: number };
 }
 
-export async function loadHome(): Promise<StudioHomeData> {
-  const posts = await getPosts();
+/** The home's data — or one section's, for a section page in the redesign. */
+export async function loadHome(sectionSlug?: string): Promise<StudioHomeData> {
+  const all = await getPosts();
+  const posts = sectionSlug ? postsInSection(all, sectionSlug) : all;
   const sections = topSections(posts, 8);
   return {
     posts,

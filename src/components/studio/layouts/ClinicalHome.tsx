@@ -3,7 +3,7 @@ import { bylineFor } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import type { Post } from "@/lib/letterbrace/types";
-import { studioHref } from "@/lib/studio";
+import { topicHref, studioHref } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import type { HomeProps } from "./NotesHome";
 
@@ -71,7 +71,7 @@ export function ClinicalHome({ brand, data, eyebrow, headline, dek }: HomeProps)
             <ul>
               {data.sections.map((s) => (
                 <li key={s}>
-                  <a href={`/new?topic=${encodeURIComponent(s)}#latest`}>{s}</a>
+                  <a href={topicHref(s)}>{s}</a>
                 </li>
               ))}
             </ul>

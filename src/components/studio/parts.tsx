@@ -5,7 +5,7 @@ import type { Byline as BylineData, AuthorProfile } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import type { PaperTrailSource, Post } from "@/lib/letterbrace/types";
-import { studioHref } from "@/lib/studio";
+import { studioHome, studioHref } from "@/lib/studio";
 import { StoryCard } from "./StoryCard";
 import { CopyLink } from "./CopyLink";
 
@@ -118,7 +118,7 @@ export function RelatedGrid({ posts, brand, title = "Keep reading" }: { posts: P
         <h2 id="keep-reading" className="s-section-title">
           {title}
         </h2>
-        <Link href="/new" className="s-section-more">
+        <Link href={studioHome()} className="s-section-more">
           All posts →
         </Link>
       </div>

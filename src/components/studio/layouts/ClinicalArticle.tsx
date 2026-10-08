@@ -3,7 +3,7 @@ import type { Brand } from "@/lib/brand";
 import { isUpdated, modifiedDate, readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { env } from "@/env";
-import { numberFigures, studioHref, type StudioArticleData } from "@/lib/studio";
+import { studioHome, numberFigures, studioHref, type StudioArticleData } from "@/lib/studio";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, Prose } from "../parts";
 
@@ -24,7 +24,7 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
         <header className="c-head">
           <div className="s-wrap">
             <p className="c-type">
-              <Link href="/new">{brand.name}</Link> <span aria-hidden>·</span> {sectionFor(post)}
+              <Link href={studioHome()}>{brand.name}</Link> <span aria-hidden>·</span> {sectionFor(post)}
             </p>
             <h1 className="c-title">{post.title}</h1>
             <p className="c-authors">

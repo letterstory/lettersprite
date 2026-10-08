@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
+import { env } from "@/env";
 import { getLayout } from "@/lib/studio";
 import { StudioPostPage } from "@/components/studio/pages";
 
@@ -10,6 +11,8 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
+  // /new is the side-by-side preview: demo builds only.
+  if (!env.designCompare) return [];
   const posts = await getPosts();
   return posts.map((post) => ({ slug: post.slug }));
 }

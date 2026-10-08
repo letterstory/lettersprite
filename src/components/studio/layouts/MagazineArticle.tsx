@@ -1,7 +1,7 @@
 import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
 import { readingTimeMinutes, sectionFor } from "@/lib/editorial";
-import { pullQuote, type StudioArticleData } from "@/lib/studio";
+import { topicHref, studioHome, pullQuote, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import { AuthorCard, Byline, Prose, RelatedGrid, Sources } from "../parts";
 
@@ -23,7 +23,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
         <header className="s-wrap m-head">
           <p className="m-label">
             {readingTimeMinutes(post) >= 12 ? "Long read" : "Essay"} <span aria-hidden>/</span>{" "}
-            <a href={`/new?topic=${encodeURIComponent(sectionFor(post))}`}>{sectionFor(post)}</a>
+            <a href={topicHref(sectionFor(post))}>{sectionFor(post)}</a>
           </p>
           <h1 className="m-title">{post.title}</h1>
           {post.dek && <p className="m-dek">{post.dek}</p>}
@@ -38,7 +38,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               <p className="m-rail-bio">{a.profile.bio}</p>
               <p className="m-rail-label">Filed under</p>
               <p>
-                <a href={`/new?topic=${encodeURIComponent(sectionFor(post))}`}>{sectionFor(post)}</a>
+                <a href={topicHref(sectionFor(post))}>{sectionFor(post)}</a>
               </p>
               <p className="m-rail-label">Length</p>
               <p>{a.words.toLocaleString("en-US")} words</p>
@@ -59,7 +59,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
             <Sources sources={post.paperTrail} title="Notes" />
             <AuthorCard byline={a.byline} profile={a.profile} />
             <p className="m-end">
-              <Link href="/new">← Back to {brand.name}</Link>
+              <Link href={studioHome()}>← Back to {brand.name}</Link>
             </p>
           </div>
         </div>

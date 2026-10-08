@@ -1,4 +1,5 @@
 import Link from "@/components/Link";
+import { studioHome } from "@/lib/studio";
 import type { Brand } from "@/lib/brand";
 import { sectionFor } from "@/lib/editorial";
 import type { StudioArticleData } from "@/lib/studio";
@@ -18,7 +19,7 @@ export function NotesArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
       <article className="s-article">
         <header className="s-wrap s-post-head">
           <nav className="s-crumbs" aria-label="Breadcrumb">
-            <Link href="/new">Blog</Link>
+            <Link href={studioHome()}>Blog</Link>
             <span aria-hidden>/</span>
             <span>{sectionFor(post)}</span>
           </nav>

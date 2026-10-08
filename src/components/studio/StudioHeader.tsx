@@ -1,4 +1,5 @@
 import Link from "@/components/Link";
+import { studioHome, topicHref, studioBase } from "@/lib/studio";
 import type { Brand } from "@/lib/brand";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
@@ -55,7 +56,7 @@ export async function StudioHeader({ brand }: { brand: Brand }) {
         {/* The blog as a section of an external site; an independent
             publication's masthead already is the blog. */}
         {external && (
-          <Link href="/new" className="s-header-section">
+          <Link href={studioHome()} className="s-header-section">
             Blog
           </Link>
         )}
@@ -73,14 +74,14 @@ export async function StudioHeader({ brand }: { brand: Brand }) {
       <div className="s-subnav">
         <div className="s-wrap s-subnav-row">
           <nav className="s-topics" aria-label="Topics">
-            <a href="/new#latest">All</a>
+            <a href={`${studioHome()}#latest`}>All</a>
             {sections.map((s) => (
-              <a key={s} href={`/new?topic=${encodeURIComponent(s)}#latest`}>
+              <a key={s} href={topicHref(s)}>
                 {s}
               </a>
             ))}
           </nav>
-          <SiteSearch index={index} hrefBase="/new/posts/" className="s-search" placeholder="Search" />
+          <SiteSearch index={index} hrefBase={`${studioBase()}/posts/`} className="s-search" placeholder="Search" />
         </div>
       </div>
     </header>

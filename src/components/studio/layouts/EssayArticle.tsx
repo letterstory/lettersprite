@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
-import { studioHref, type StudioArticleData } from "@/lib/studio";
+import { studioHome, studioHref, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import { AuthorCard, Byline, Prose, Sources } from "../parts";
 
@@ -18,7 +18,7 @@ export function EssayArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
       <article className="e-col e-article">
         <header className="e-head">
           <p className="e-item-meta">
-            <Link href="/new">{brand.name}</Link>
+            <Link href={studioHome()}>{brand.name}</Link>
             <span aria-hidden>·</span>
             <span>{sectionFor(post)}</span>
           </p>

@@ -1,6 +1,7 @@
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import type { FontSpec } from "@/themes/types";
+import { studioHome } from "@/lib/studio";
 
 /**
  * The customer's brand, resolved into the handful of decisions the `/new`
@@ -176,7 +177,7 @@ export function getBrand(): Brand {
   const c = raw.visual?.colors ?? {};
   const btn = raw.visual?.components?.buttonPrimary;
   const name = raw.identity?.name || raw.name || env.siteTitle;
-  const homeUrl = raw.domain ? `https://${raw.domain.replace(/^https?:\/\//, "")}` : "/new";
+  const homeUrl = raw.domain ? `https://${raw.domain.replace(/^https?:\/\//, "")}` : studioHome();
   const logos = raw.visual?.logos ?? [];
 
   const paper = c.background || t.background;

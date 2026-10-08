@@ -1,7 +1,7 @@
 import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
-import { pullQuote, studioHref, type StudioArticleData } from "@/lib/studio";
+import { topicHref, studioHome, pullQuote, studioHref, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, Prose, Sources } from "../parts";
@@ -25,7 +25,7 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
       <article className="b-article">
         <header className="b-head">
           <p className="b-flag">
-            <a href={`/new?topic=${encodeURIComponent(sectionFor(post))}`}>{sectionFor(post)}</a>
+            <a href={topicHref(sectionFor(post))}>{sectionFor(post)}</a>
           </p>
           <h1 className="b-title">{post.title}</h1>
           {post.dek && <p className="b-dek">{post.dek}</p>}
@@ -79,7 +79,7 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
             ))}
           </div>
           <p className="b-back">
-            <Link href="/new">← Front page</Link>
+            <Link href={studioHome()}>← Front page</Link>
           </p>
         </section>
       )}

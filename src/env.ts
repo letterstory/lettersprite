@@ -180,7 +180,13 @@ export const env = {
    * a demo build is never indexable (see robots + layout metadata).
    */
   fixtureFile: str("LETTERBRACE_FIXTURE"),
-  /** Which redesign layout `/new` renders: notes | journal | magazine | essay. */
+  /**
+   * Make the redesign THE design of this site: the home, posts and section
+   * pages render it at their normal URLs. Off (the default) leaves the current
+   * design untouched — the per-site rollout switch.
+   */
+  redesign: bool("SITE_REDESIGN", false),
+  /** Which redesign layout renders: notes | journal | magazine | essay | broadsheet | clinical. */
   layout: str("SITE_LAYOUT", "notes"),
   demoSelf: str("SITE_DEMO_SELF"),
 } as const;
