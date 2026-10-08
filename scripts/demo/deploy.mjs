@@ -46,7 +46,11 @@ for (const s of SITES) {
     /* already exists */
   }
   vercel(["link", "--yes", "--project", project(s)], dir);
-  const deployment = vercel(["deploy", "--prod", "--yes", ...flags], dir).trim().split("\n").pop();
+  const out = vercel(["deploy", "--prod", "--yes", ...flags], dir);
+  // The CLI's stdout format varies by version (bare URL or JSON); take the
+  // deployment's own URL either way.
+  const deployment = out.match(/https:\/\/[a-z0-9-]+-[a-z0-9]+-letterbrace\.vercel\.app/)?.[0] ?? out.match(/https:\/\/\S+\.vercel\.app/)?.[0];
+  if (!deployment) throw new Error(`no deployment URL in output:\n${out}`);
   // Pin the address the other sites' switches link to.
   vercel(["alias", "set", deployment, new URL(urlOf(s)).host], dir);
   console.log(`${s.label} (${s.layout}) → ${urlOf(s)}`);
