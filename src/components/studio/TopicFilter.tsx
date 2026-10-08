@@ -1,6 +1,29 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
+
+// The active topic lives in the URL (?topic=…), so header links can deep-link
+// into a filtered grid and the chips stay in sync with back/forward.
+const EVENT = "studio:topic";
+
+function subscribe(cb: () => void) {
+  window.addEventListener("popstate", cb);
+  window.addEventListener(EVENT, cb);
+  return () => {
+    window.removeEventListener("popstate", cb);
+    window.removeEventListener(EVENT, cb);
+  };
+}
+
+const readTopic = () => new URLSearchParams(window.location.search).get("topic");
+
+function setTopic(topic: string | null) {
+  const url = new URL(window.location.href);
+  if (topic) url.searchParams.set("topic", topic);
+  else url.searchParams.delete("topic");
+  window.history.replaceState(null, "", url);
+  window.dispatchEvent(new Event(EVENT));
+}
 
 /**
  * Topic chips over a pre-rendered grid. Every card is server-rendered with its
@@ -8,9 +31,9 @@ import { useState, type ReactNode } from "react";
  * fully static and every story is in the HTML for crawlers.
  */
 export function TopicFilter({ topics, children }: { topics: string[]; children: ReactNode }) {
-  const [topic, setTopic] = useState<string | null>(null);
+  const topic = useSyncExternalStore(subscribe, readTopic, () => null);
   return (
-    <div className="s-filter" data-topic-active={topic ?? ""}>
+    <div className="s-filter">
       <div className="s-chips" role="toolbar" aria-label="Filter by topic">
         <button type="button" className="s-chip" aria-pressed={topic === null} onClick={() => setTopic(null)}>
           All

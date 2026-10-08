@@ -1,13 +1,40 @@
 import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
+import { env } from "@/env";
+import { getPosts } from "@/lib/letterbrace/client";
+import { sectionFor, topSections } from "@/lib/editorial";
 import { Logo } from "@/components/Logo";
+import { SiteSearch, type SearchItem } from "@/components/SiteSearch";
+
+/** The site's own beats: the configured section list, else its top topics. */
+function navSections(sections: string[]): string[] {
+  if (env.sections) {
+    return env.sections
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 7);
+  }
+  return sections;
+}
 
 /**
- * The customer's own masthead: their mark and name, their site's links, their
- * primary button. The blog reads as a section of their site, not a separate
- * publication.
+ * Two rows. The first is the site's own masthead — its mark, its links, its
+ * primary button — so a company blog reads as a section of the company's
+ * site. The second is the blog's own navigation: its topics and its search.
  */
-export function StudioHeader({ brand }: { brand: Brand }) {
+export async function StudioHeader({ brand }: { brand: Brand }) {
+  const posts = await getPosts();
+  const sections = navSections(topSections(posts, 7));
+  const index: SearchItem[] = posts.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    section: sectionFor(p),
+    excerpt: p.excerpt,
+    tags: p.tags,
+  }));
+  const external = /^https?:/.test(brand.homeUrl);
+
   return (
     <header className="s-header">
       <div className="s-wrap s-header-row">
@@ -27,7 +54,7 @@ export function StudioHeader({ brand }: { brand: Brand }) {
         </a>
         {/* The blog as a section of an external site; an independent
             publication's masthead already is the blog. */}
-        {/^https?:/.test(brand.homeUrl) && (
+        {external && (
           <Link href="/new" className="s-header-section">
             Blog
           </Link>
@@ -42,6 +69,19 @@ export function StudioHeader({ brand }: { brand: Brand }) {
             {brand.cta.label}
           </a>
         </nav>
+      </div>
+      <div className="s-subnav">
+        <div className="s-wrap s-subnav-row">
+          <nav className="s-topics" aria-label="Topics">
+            <a href="/new#latest">All</a>
+            {sections.map((s) => (
+              <a key={s} href={`/new?topic=${encodeURIComponent(s)}#latest`}>
+                {s}
+              </a>
+            ))}
+          </nav>
+          <SiteSearch index={index} hrefBase="/new/posts/" className="s-search" placeholder="Search" />
+        </div>
       </div>
     </header>
   );
