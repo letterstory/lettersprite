@@ -38,9 +38,12 @@ export function SiteSearch({
   bare = false,
   bareSize = "lg",
   placeholder = "Search articles…",
+  hrefBase = "/posts/",
 }: {
   index: SearchItem[];
   className?: string;
+  /** Where results link to; the /new redesign passes "/new/posts/". */
+  hrefBase?: string;
   /**
    * When provided, focusing the empty box drops open a "Trending" shortlist so
    * there's always something to browse or arrow into before you type. Omit it
@@ -137,7 +140,7 @@ export function SiteSearch({
   function goToArticle(slug: string) {
     setOpen(false);
     setActiveIndex(-1);
-    router.push(`/posts/${slug}`);
+    router.push(`${hrefBase}${slug}`);
   }
 
   function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -288,7 +291,7 @@ export function SiteSearch({
                     role="option"
                     aria-selected={activeIndex === i}
                     tabIndex={-1}
-                    href={`/posts/${it.slug}`}
+                    href={`${hrefBase}${it.slug}`}
                     // Highlighted row uses the theme primary — a solid accent bar
                     // plus a light primary tint — so keyboard users clearly see
                     // which article is active. The 2px bar is reserved on every row

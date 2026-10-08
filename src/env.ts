@@ -155,7 +155,41 @@ export const env = {
    * a stable per-title pick. See `src/lib/covers-config.ts` for the full list.
    */
   coverSet: str("SITE_COVER_SET"),
+
+  /**
+   * The customer's measured brand (Letterbrace `org_brand_profiles` row, as
+   * JSON: `{ name, domain, identity, visual, links, socials, cta }`). Drives the
+   * `/new` redesign: real logo, palette, fonts and site links instead of an
+   * invented identity. Empty → the redesign falls back to the active theme.
+   */
+  brandJson: str("SITE_BRAND_JSON"),
+  /**
+   * Show the floating Current ⇄ Redesign switch on every page, mapping each
+   * route to its counterpart. A demo affordance: off unless set.
+   */
+  designCompare: bool("SITE_DESIGN_COMPARE", false),
+  /**
+   * Other demo sites to list in the switch, as JSON `[{ "label", "url" }]`, plus
+   * this site's own label. Lets one demo hop between several customers' sites
+   * while keeping the Current/Redesign choice. Empty → no site buttons.
+   */
+  demoPeers: str("SITE_DEMO_PEERS"),
+  /**
+   * Serve the feed from a frozen `/published` export on disk instead of the
+   * API (path relative to the app root). For demos built away from the API;
+   * a demo build is never indexable (see robots + layout metadata).
+   */
+  fixtureFile: str("LETTERBRACE_FIXTURE"),
+  /**
+   * Make the redesign THE design of this site: the home, posts and section
+   * pages render it at their normal URLs. Off (the default) leaves the current
+   * design untouched — the per-site rollout switch.
+   */
+  redesign: bool("SITE_REDESIGN", false),
+  /** Which redesign layout renders: notes | journal | magazine | essay | broadsheet | clinical. */
+  layout: str("SITE_LAYOUT", "notes"),
+  demoSelf: str("SITE_DEMO_SELF"),
 } as const;
 
 /** True when a Letterbrace key is present; otherwise content calls no-op. */
-export const hasLetterbraceKey = env.letterbraceApiKey.length > 0;
+export const hasLetterbraceKey = env.letterbraceApiKey.length > 0 || env.fixtureFile.length > 0;

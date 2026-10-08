@@ -61,8 +61,11 @@ function SvgMark({ size }: { size: Size }) {
       // the inner SVG lets a wide wordmark (letterstory generates them up to
       // ~17:1) shrink instead of overflowing the header on mobile — which was
       // pushing whole pages into horizontal scroll on phone viewports. Height
-      // binds on desktop (usual case); width binds on narrow screens.
-      className={`inline-flex max-w-full ${SVG_HEIGHT[size]} [&>svg]:h-auto [&>svg]:w-auto [&>svg]:max-h-full [&>svg]:max-w-full`}
+      // binds on desktop (usual case); width binds on narrow screens. The SVG's
+      // height is the wrapper's (h-full), never `auto`: an auto-sized inline SVG
+      // in this shrink-to-fit box collapses to zero width in Safari, which hid
+      // every wide wordmark on iPhone.
+      className={`inline-flex max-w-full ${SVG_HEIGHT[size]} [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full`}
       dangerouslySetInnerHTML={{ __html: sanitizeSvg(env.logoSvg) }}
     />
   );

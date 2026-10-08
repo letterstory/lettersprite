@@ -11,6 +11,7 @@ import { modeBootScript } from "@/lib/mode";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ClassicChrome, DesignSwitch, type DemoPeer } from "@/components/DesignSwitch";
 
 export function generateMetadata(): Metadata {
   const title = env.siteTitle;
@@ -18,7 +19,8 @@ export function generateMetadata(): Metadata {
   const favicon = siteFavicon();
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.
-  const indexable = hasLetterbraceKey;
+  // Demo builds (the design switch) are copies of live sites: never index.
+  const indexable = hasLetterbraceKey && !env.designCompare;
   return {
     metadataBase: new URL(env.siteUrl),
     title: { default: title, template: `%s · ${title}` },
@@ -57,6 +59,15 @@ export function generateMetadata(): Metadata {
       site: env.twitterHandle ? `@${env.twitterHandle}` : undefined,
     },
   };
+}
+
+function demoPeers(): DemoPeer[] {
+  if (!env.demoPeers) return [];
+  try {
+    return JSON.parse(env.demoPeers) as DemoPeer[];
+  } catch {
+    return [];
+  }
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -104,11 +115,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <SiteHeader />
+        <ClassicChrome redesign={env.redesign && !env.designCompare} preview={env.designCompare}>
+          <SiteHeader />
+        </ClassicChrome>
         <main id="main" tabIndex={-1} aria-label="Main content" className="w-full flex-1">
           {children}
         </main>
-        <SiteFooter />
+        <ClassicChrome redesign={env.redesign && !env.designCompare} preview={env.designCompare}>
+          <SiteFooter />
+        </ClassicChrome>
+        {env.designCompare && <DesignSwitch peers={demoPeers()} self={env.demoSelf} />}
         {beaconEnabled() && (
           // Inline, at the end of body: it must not block first paint, and a
           // separate file would be a second request to send a payload smaller

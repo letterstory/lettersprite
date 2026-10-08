@@ -21,6 +21,8 @@ import { FluxIndex } from "@/components/FluxIndex";
 import { RiotIndex } from "@/components/RiotIndex";
 import { WireIndex } from "@/components/WireIndex";
 import { Logo } from "@/components/Logo";
+import { getLayout } from "@/lib/studio";
+import { StudioHomePage } from "@/components/studio/pages";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -63,6 +65,7 @@ export default async function SectionPage({ params }: Params) {
   const { slug } = await params;
   const section = await resolveSection(slug);
   if (!section) notFound();
+  if (env.redesign) return <StudioHomePage layout={getLayout()} section={{ slug, name: section.name }} />;
 
   // Slate treatment (opt-in per theme): oversized title + byline-first lead +
   // story river. Other themes keep the classic card grid below.
