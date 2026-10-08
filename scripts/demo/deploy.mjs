@@ -22,6 +22,9 @@ for (const s of SITES) {
   mkdirSync(join(dir, ".demo-data"));
   cpSync(join(app, ".demo-data", `published-${s.name}.json`), join(dir, ".demo-data", `published-${s.name}.json`));
   writeFileSync(join(dir, ".vercelignore"), "node_modules\n.next*\n");
+  // A project created from the CLI starts as "Other" and serves the build as
+  // static files (every route 404s); pin the framework.
+  writeFileSync(join(dir, "vercel.json"), JSON.stringify({ framework: "nextjs" }));
 
   const env = JSON.parse(readFileSync(join(app, ".demo-data", `env-${s.name}.json`), "utf8"));
   delete env.LETTERBRACE_API_KEY;
@@ -43,6 +46,8 @@ for (const s of SITES) {
     /* already exists */
   }
   vercel(["link", "--yes", "--project", project(s)], dir);
-  const out = vercel(["deploy", "--prod", "--yes", ...flags], dir);
-  console.log(`${s.label} (${s.layout}) → ${urlOf(s)}  [${out.trim().split("\n").pop()}]`);
+  const deployment = vercel(["deploy", "--prod", "--yes", ...flags], dir).trim().split("\n").pop();
+  // Pin the address the other sites' switches link to.
+  vercel(["alias", "set", deployment, new URL(urlOf(s)).host], dir);
+  console.log(`${s.label} (${s.layout}) → ${urlOf(s)}`);
 }

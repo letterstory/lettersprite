@@ -93,6 +93,12 @@
 .s-brand { display: inline-flex; align-items: center; gap: 10px; }
 .s-brand-icon { width: 28px; height: 28px; border-radius: 6px; }
 .s-brand-logo { height: 26px; width: auto; }
+/* An inline SVG mark sized "auto" inside a shrink-to-fit box collapses to zero
+   width in Safari. A definite height lets every engine derive the width from
+   the viewBox. */
+.s-brand > span,
+.s-brand > span > span { max-width: none !important; }
+.s-brand svg { display: block; height: 32px !important; width: auto !important; max-width: none !important; max-height: none !important; }
 .s-brand-name { font-family: var(--b-font-heading); font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
 .s-header-section {
   padding-left: 20px;
