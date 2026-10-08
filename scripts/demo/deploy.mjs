@@ -1,7 +1,7 @@
 // Deploy the multi-site demo to Vercel: one project per site, each built from
 // HEAD plus its frozen feed (.demo-data/published-<name>.json), so no API key
 // is involved and every build is noindex (SITE_DESIGN_COMPARE).
-//   node scripts/demo/deploy.mjs [--scope letterbrace]
+//   node scripts/demo/deploy.mjs [--scope letterbrace] [--only name,name]
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -16,7 +16,22 @@ const urlOf = (s) => `https://${project(s)}.vercel.app`;
 const peers = JSON.stringify(SITES.map((s) => ({ label: s.label, url: urlOf(s) })));
 const vercel = (args, cwd) => execFileSync("vercel", [...args, "--scope", scope], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] });
 
-for (const s of SITES) {
+// --only a,b redeploys just those sites (by name).
+const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1].split(",") : null;
+
+/** The CLI's upload occasionally dies on a transient "fetch failed"; retry. */
+function withRetry(fn, tries = 3) {
+  for (let i = 1; ; i++) {
+    try {
+      return fn();
+    } catch (e) {
+      if (i >= tries) throw e;
+      console.error(`retrying (${i}/${tries - 1}) after: ${String(e.message).split("\n")[0].slice(0, 120)}`);
+    }
+  }
+}
+
+for (const s of SITES.filter((x) => !only || only.includes(x.name))) {
   const dir = mkdtempSync(join(tmpdir(), `demo-${s.name}-`));
   execFileSync("sh", ["-c", `git -C "${app}" archive HEAD | tar -x -C "${dir}"`]);
   mkdirSync(join(dir, ".demo-data"));
@@ -46,7 +61,7 @@ for (const s of SITES) {
     /* already exists */
   }
   vercel(["link", "--yes", "--project", project(s)], dir);
-  const out = vercel(["deploy", "--prod", "--yes", ...flags], dir);
+  const out = withRetry(() => vercel(["deploy", "--prod", "--yes", ...flags], dir));
   // The CLI's stdout format varies by version (bare URL or JSON); take the
   // deployment's own URL either way.
   const deployment = out.match(/https:\/\/[a-z0-9-]+-[a-z0-9]+-letterbrace\.vercel\.app/)?.[0] ?? out.match(/https:\/\/\S+\.vercel\.app/)?.[0];
