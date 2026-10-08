@@ -11,6 +11,7 @@ import { modeBootScript } from "@/lib/mode";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ClassicChrome, DesignSwitch } from "@/components/DesignSwitch";
 
 export function generateMetadata(): Metadata {
   const title = env.siteTitle;
@@ -104,11 +105,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <SiteHeader />
+        <ClassicChrome>
+          <SiteHeader />
+        </ClassicChrome>
         <main id="main" tabIndex={-1} aria-label="Main content" className="w-full flex-1">
           {children}
         </main>
-        <SiteFooter />
+        <ClassicChrome>
+          <SiteFooter />
+        </ClassicChrome>
+        {env.designCompare && <DesignSwitch />}
         {beaconEnabled() && (
           // Inline, at the end of body: it must not block first paint, and a
           // separate file would be a second request to send a payload smaller

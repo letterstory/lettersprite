@@ -155,6 +155,19 @@ export const env = {
    * a stable per-title pick. See `src/lib/covers-config.ts` for the full list.
    */
   coverSet: str("SITE_COVER_SET"),
+
+  /**
+   * The customer's measured brand (Letterbrace `org_brand_profiles` row, as
+   * JSON: `{ name, domain, identity, visual, links, socials, cta }`). Drives the
+   * `/new` redesign: real logo, palette, fonts and site links instead of an
+   * invented identity. Empty → the redesign falls back to the active theme.
+   */
+  brandJson: str("SITE_BRAND_JSON"),
+  /**
+   * Show the floating Current ⇄ Redesign switch on every page, mapping each
+   * route to its counterpart. A demo affordance: off unless set.
+   */
+  designCompare: bool("SITE_DESIGN_COMPARE", false),
 } as const;
 
 /** True when a Letterbrace key is present; otherwise content calls no-op. */

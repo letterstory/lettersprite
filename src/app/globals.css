@@ -801,3 +801,29 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
 .swipe-x::-webkit-scrollbar {
   display: none;
 }
+
+/* Current ⇄ Redesign demo switch (SITE_DESIGN_COMPARE). Deliberately neutral so
+   it reads as a tool over the page, never as part of either design. */
+.design-switch {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.88);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  font: 500 13px/1 system-ui, -apple-system, sans-serif;
+}
+.design-switch > * {
+  padding: 9px 16px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+}
+.design-switch > a:hover { color: #fff; }
+.design-switch > [aria-current] { background: #fff; color: #111; }
