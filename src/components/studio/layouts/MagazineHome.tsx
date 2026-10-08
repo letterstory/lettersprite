@@ -86,7 +86,7 @@ export function MagazineHome({ brand, data, eyebrow, headline }: HomeProps) {
           </h2>
           <ol>
             {archive.map((p, i) => (
-              <li key={p.id}>
+              <li key={p.id} data-topic={sectionFor(p)}>
                 <Link href={studioHref(p)}>
                   <span className="m-num">{String(i + 1).padStart(2, "0")}</span>
                   <span>
@@ -110,7 +110,7 @@ export function MagazineHome({ brand, data, eyebrow, headline }: HomeProps) {
 
 function MagazineCard({ post, brand }: { post: Post; brand: HomeProps["brand"] }) {
   return (
-    <Link href={studioHref(post)} className="m-card">
+    <Link href={studioHref(post)} className="m-card" data-topic={sectionFor(post)}>
       <div className="m-card-media">
         <StudioCover post={post} brand={brand} />
       </div>

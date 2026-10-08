@@ -44,6 +44,8 @@ import {
   type AccessExtras,
 } from "@/lib/access/report";
 import redirectManifest from "@/generated/redirect-manifest.json";
+import { env } from "@/env";
+import { STYLE_COOKIE, isLayout } from "@/lib/layouts";
 
 // Valid post/section slugs for THIS build (see scripts/gen-redirect-manifest.mjs).
 const manifest = redirectManifest as {
@@ -94,11 +96,29 @@ function aiAgentLabels(tables: ClassifierTables): ReadonlySet<string> {
   return new Set(tables.aiAgents.map((row) => row[1]));
 }
 
+/**
+ * Demo builds only: serve `/new/…` in the layout the reader picked in the
+ * design switch (a cookie), from that layout's prebuilt `/new/style/<layout>/…`
+ * pages. Links keep their plain `/new/…` form; null when there is nothing to do.
+ */
+function styleRewrite(request: NextRequest): NextResponse | null {
+  if (!env.designCompare) return null;
+  const style = request.cookies.get(STYLE_COOKIE)?.value;
+  if (!isLayout(style)) return null;
+  const { pathname } = request.nextUrl;
+  if (!(pathname === "/new" || pathname.startsWith("/new/")) || pathname.startsWith("/new/style/")) return null;
+  const url = request.nextUrl.clone();
+  url.pathname = `/new/style/${style}${pathname.slice(4)}`;
+  return NextResponse.rewrite(url);
+}
+
 export function proxy(request: NextRequest, event: NextFetchEvent) {
   // Removed-URL redirect runs first, so it works even on sites where access
   // telemetry is off (which is most of them).
   const redirect = removedUrlRedirect(request);
   if (redirect) return redirect;
+  const styled = styleRewrite(request);
+  if (styled) return styled;
 
   const enabled = accessReportingEnabled();
 

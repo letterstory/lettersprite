@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getBrand } from "@/lib/brand";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
-import { getLayout, loadArticle } from "@/lib/studio";
-import { StudioShell } from "@/components/studio/StudioShell";
-import { NotesArticle } from "@/components/studio/layouts/NotesArticle";
-import { JournalArticle } from "@/components/studio/layouts/JournalArticle";
-import { MagazineArticle } from "@/components/studio/layouts/MagazineArticle";
-import { EssayArticle } from "@/components/studio/layouts/EssayArticle";
+import { getLayout } from "@/lib/studio";
+import { StudioPostPage } from "@/components/studio/pages";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -32,16 +27,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-const ARTICLES = { notes: NotesArticle, journal: JournalArticle, magazine: MagazineArticle, essay: EssayArticle };
-
 export default async function StudioPost({ params }: Params) {
   const { slug } = await params;
-  const a = await loadArticle(slug);
-  if (!a) notFound();
-  const Article = ARTICLES[getLayout()];
-  return (
-    <StudioShell>
-      <Article brand={getBrand()} a={a} />
-    </StudioShell>
-  );
+  const page = await StudioPostPage({ slug, layout: getLayout() });
+  if (!page) notFound();
+  return page;
 }

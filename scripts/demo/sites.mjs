@@ -4,5 +4,5 @@ export const SITES = [
   { name: "letterstory", label: "Letterstory", port: 9000, layout: "notes" },
   { name: "crmconfessions", label: "CRM Confessions · Quill", port: 9001, layout: "journal" },
   { name: "warehousewire", label: "Warehouse Wire · Prequel", port: 9002, layout: "essay" },
-  { name: "bedsidestandard", label: "Bedside Standard · Ascenix", port: 9003, layout: "magazine" },
+  { name: "bedsidestandard", label: "Bedside Standard · Ascenix", port: 9003, layout: "clinical" },
 ];

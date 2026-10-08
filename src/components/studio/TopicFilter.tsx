@@ -17,7 +17,11 @@ function subscribe(cb: () => void) {
 
 const readTopic = () => new URLSearchParams(window.location.search).get("topic");
 
-function setTopic(topic: string | null) {
+export function useTopic(): string | null {
+  return useSyncExternalStore(subscribe, readTopic, () => null);
+}
+
+export function setTopic(topic: string | null) {
   const url = new URL(window.location.href);
   if (topic) url.searchParams.set("topic", topic);
   else url.searchParams.delete("topic");
@@ -26,12 +30,11 @@ function setTopic(topic: string | null) {
 }
 
 /**
- * Topic chips over a pre-rendered grid. Every card is server-rendered with its
- * topic in `data-topic`; filtering only toggles visibility, so the page stays
- * fully static and every story is in the HTML for crawlers.
+ * Topic chips over a pre-rendered grid. The filtering itself is TopicScope's,
+ * page-wide; these chips only set the topic.
  */
 export function TopicFilter({ topics, children }: { topics: string[]; children: ReactNode }) {
-  const topic = useSyncExternalStore(subscribe, readTopic, () => null);
+  const topic = useTopic();
   return (
     <div className="s-filter">
       <div className="s-chips" role="toolbar" aria-label="Filter by topic">
@@ -50,8 +53,32 @@ export function TopicFilter({ topics, children }: { topics: string[]; children: 
           </button>
         ))}
       </div>
-      <style>{topic ? `.s-filter [data-topic]:not([data-topic="${CSS.escape(topic)}"]){display:none}` : ""}</style>
       {children}
     </div>
+  );
+}
+
+/**
+ * Page-wide topic filter for every layout: any element carrying `data-topic`
+ * hides unless it matches, and a bar says what is showing. Every story stays in
+ * the static HTML; filtering only toggles visibility.
+ */
+export function TopicScope() {
+  const topic = useTopic();
+  if (!topic) return null;
+  return (
+    <>
+      <style>{`.studio [data-topic]:not([data-topic="${CSS.escape(topic)}"]){display:none!important}`}</style>
+      <div className="s-topicbar" role="status">
+        <div className="s-wrap s-topicbar-row">
+          <span>
+            Showing <strong>{topic}</strong>
+          </span>
+          <button type="button" className="s-chip" onClick={() => setTopic(null)}>
+            Clear ✕
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

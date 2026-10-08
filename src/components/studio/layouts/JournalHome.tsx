@@ -3,6 +3,7 @@ import { bylineFor } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { studioHref } from "@/lib/studio";
+import { editorsPicks } from "@/lib/related";
 import { StudioCover } from "../StudioCover";
 import type { HomeProps } from "./NotesHome";
 
@@ -13,12 +14,8 @@ import type { HomeProps } from "./NotesHome";
 export function JournalHome({ brand, data, eyebrow, headline, dek }: HomeProps) {
   const [lead, ...rest] = data.posts;
   const latest = rest.slice(0, 4);
-  const stats = [
-    { n: data.stats.posts, label: "Articles published" },
-    { n: data.stats.sources, label: "Sources cited" },
-    { n: data.stats.authors, label: "Contributors" },
-    { n: (data.stats.sources / Math.max(1, data.stats.posts)).toFixed(1), label: "Sources per article" },
-  ];
+  // An editor's shortlist for a first visit — chosen pieces, not counters.
+  const startHere = editorsPicks(data.posts, [lead, ...latest], 3);
   const groups = data.sections
     .map((s) => ({ s, posts: data.posts.filter((p) => sectionFor(p) === s) }))
     .filter((g) => g.posts.length > 0)
@@ -32,14 +29,23 @@ export function JournalHome({ brand, data, eyebrow, headline, dek }: HomeProps) 
           <h1 className={`j-title ${headline.length > 70 ? "j-title-long" : ""}`}>{headline}</h1>
           {dek && <p className="s-hero-dek">{dek}</p>}
         </div>
-        <dl className="j-stats">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <dt>{s.label}</dt>
-              <dd>{typeof s.n === "number" ? s.n.toLocaleString("en-US") : s.n}</dd>
-            </div>
-          ))}
-        </dl>
+        {startHere.length > 0 && (
+          <aside className="j-start" aria-labelledby="start-here">
+            <h2 id="start-here" className="j-label">
+              Start here
+            </h2>
+            <ol>
+              {startHere.map((p) => (
+                <li key={p.id}>
+                  <Link href={studioHref(p)}>
+                    <span className="s-kicker">{sectionFor(p)}</span>
+                    <span className="j-start-title">{p.title}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </aside>
+        )}
       </section>
 
       <section className="s-wrap j-latest" aria-labelledby="latest">
@@ -69,10 +75,9 @@ export function JournalHome({ brand, data, eyebrow, headline, dek }: HomeProps) 
       </section>
 
       {groups.map((g) => (
-        <section key={g.s} className="s-wrap j-group" aria-label={g.s}>
+        <section key={g.s} className="s-wrap j-group" aria-label={g.s} data-topic={g.s}>
           <div className="j-group-head">
             <h2 className="j-group-title">{g.s}</h2>
-            <span className="s-meta">{g.posts.length} articles</span>
             <a href={`/new?topic=${encodeURIComponent(g.s)}`} className="s-section-more">
               View all →
             </a>
@@ -91,7 +96,7 @@ export function JournalHome({ brand, data, eyebrow, headline, dek }: HomeProps) 
 function JournalRow({ post }: { post: Parameters<typeof studioHref>[0] }) {
   const by = bylineFor(post);
   return (
-    <li>
+    <li data-topic={sectionFor(post)}>
       <Link href={studioHref(post)} className="j-row">
         <span className="j-row-title">{post.title}</span>
         {post.dek && <span className="j-row-dek">{post.dek}</span>}
@@ -101,12 +106,6 @@ function JournalRow({ post }: { post: Parameters<typeof studioHref>[0] }) {
           <span>{formatDate(post.createdAt)}</span>
           <span aria-hidden>·</span>
           <span>{readingTimeLabel(post)}</span>
-          {post.paperTrail.length > 0 && (
-            <>
-              <span aria-hidden>·</span>
-              <span>{post.paperTrail.length} sources</span>
-            </>
-          )}
         </span>
       </Link>
     </li>

@@ -19,9 +19,6 @@ export function EssayHome({ brand, data, headline, dek }: HomeProps) {
           <a href={brand.cta.url} className="s-button">
             {brand.cta.label}
           </a>
-          <span className="s-meta">
-            {data.stats.posts} pieces · {data.stats.topics} topics
-          </span>
         </p>
       </section>
       <ol className="e-list">

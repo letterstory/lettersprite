@@ -1,4 +1,7 @@
 import { env } from "@/env";
+import { isLayout, type StudioLayout } from "@/lib/layouts";
+
+export type { StudioLayout };
 import { authorProfile, authorsFromPosts, bylineFor, type AuthorProfile, type Byline } from "@/lib/author";
 import { readingTimeMinutes, sectionFor, topSections, wordCount } from "@/lib/editorial";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
@@ -12,11 +15,8 @@ import { buildToc, type Heading } from "@/lib/toc";
  * decides how a page looks; it never decides what is true about the content.
  */
 
-export type StudioLayout = "notes" | "journal" | "magazine" | "essay";
-const LAYOUTS: StudioLayout[] = ["notes", "journal", "magazine", "essay"];
-
 export function getLayout(): StudioLayout {
-  return LAYOUTS.includes(env.layout as StudioLayout) ? (env.layout as StudioLayout) : "notes";
+  return isLayout(env.layout) ? env.layout : "notes";
 }
 
 export function studioHref(post: Post): string {
@@ -110,4 +110,23 @@ export function pullQuote(html: string): string | null {
     }
   }
   return null;
+}
+
+/**
+ * Wrap each body image in a numbered figure, captioned from its own alt text
+ * (first sentence, minus a leading "Diagram:"-style label). Real text only; an
+ * image without alt text is numbered but not captioned.
+ */
+export function numberFigures(html: string): string {
+  let n = 0;
+  return html.replace(/<img\b[^>]*>/gi, (img) => {
+    n += 1;
+    const alt = /\balt\s*=\s*"([^"]*)"/i.exec(img)?.[1] ?? "";
+    const text = alt
+      .replace(/^(diagram|chart|figure|image|illustration)\s*:\s*/i, "")
+      .split(/(?<=\.)\s/)[0]
+      .replace(/\.\s*$/, "");
+    const caption = text ? ` ${text}.` : "";
+    return `<figure class="c-fig">${img}<figcaption><b>Figure ${n}.</b>${caption}</figcaption></figure>`;
+  });
 }
