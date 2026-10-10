@@ -143,9 +143,11 @@ export const env = {
   /**
    * Maverick Intelligence. Set `MAVERICK_CUSTOMER_ID` to load the
    * `maverick-plus` tag on every page; leave it unset and nothing is rendered
-   * or fetched. `MAVERICK_API_KEY` is auto-provisioned by the Vercel
-   * integration and reserved for server-side Maverick API calls — it is never
-   * exposed to the browser.
+   * or fetched. The customer ID is shared across sites in one partner account.
+   * `MAVERICK_API_KEY` is retained for configuration compatibility but unused
+   * here. Management and visitor-data keys belong only in the LetterStory
+   * builder backend, not individual blog deployments. See
+   * `docs/maverick-integration.md`.
    */
   maverickCustomerId: str("MAVERICK_CUSTOMER_ID"),
   maverickApiKey: str("MAVERICK_API_KEY"),

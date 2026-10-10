@@ -31,6 +31,15 @@ Set at minimum `LETTERBRACE_API_KEY`. Without a key the site shows three sample
 posts — a live preview of the active theme — instead of real content. They
 disappear as soon as a key is set.
 
+### Optional visitor identification
+
+Set `MAVERICK_CUSTOMER_ID` to the public partner account ID returned by Maverick
+domain registration, then rebuild. All sites in that partner account use the
+same ID. Leave it unset to keep the pixel off. No Maverick API key is needed in
+this blog deployment. Customer groups, site registration, and visitor-data
+requests belong in the LetterStory builder backend; see the
+[Maverick integration guide](./docs/maverick-integration.md).
+
 ## Configuration
 
 All configuration is via environment variables. See [`.env.example`](./.env.example).
