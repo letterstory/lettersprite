@@ -140,6 +140,16 @@ export const env = {
   adsenseClient: str("SITE_ADSENSE_CLIENT"),
   adsenseSlot: str("SITE_ADSENSE_SLOT"),
 
+  /**
+   * Maverick Intelligence. Set `MAVERICK_CUSTOMER_ID` to load the
+   * `maverick-plus` tag on every page; leave it unset and nothing is rendered
+   * or fetched. `MAVERICK_API_KEY` is auto-provisioned by the Vercel
+   * integration and reserved for server-side Maverick API calls — it is never
+   * exposed to the browser.
+   */
+  maverickCustomerId: str("MAVERICK_CUSTOMER_ID"),
+  maverickApiKey: str("MAVERICK_API_KEY"),
+
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
   /**
