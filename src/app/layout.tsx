@@ -104,6 +104,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             crossOrigin="anonymous"
           />
         )}
+        {env.maverickCustomerId && (
+          <script
+            async
+            src="https://app.maverickintelligence.co/maverick-plus.min.js"
+            data-customer-id={env.maverickCustomerId}
+          />
+        )}
         <JsonLd data={siteGraphLd()} />
         {modeScript && (
           // Runs before first paint so the saved dark/light choice applies with
