@@ -13,6 +13,10 @@ import { discloses } from "@/lib/disclosure";
  * frame's corner by `--sponsor-safe` (globals.css), the crop-safe margin the
  * cover generator plans for. A layout with no cover sets it `inline`, in the
  * article header, so the disclosure never depends on there being a picture.
+ *
+ * Under `cover_baked` the label is already in the image, so no badge goes over it;
+ * a layout with no cover still sets the inline one, so the choice to disclose on
+ * the cover is kept where there is no cover to carry it.
  */
 export function SponsorBadge({
   disclosure,
@@ -21,9 +25,16 @@ export function SponsorBadge({
   disclosure: SponsorDisclosure | null;
   inline?: boolean;
 }) {
-  if (!discloses(disclosure, "cover_badge")) return null;
+  const onCover =
+    discloses(disclosure, "cover_badge") ||
+    (inline && discloses(disclosure, "cover_baked"));
+  if (!onCover) return null;
   return (
-    <span className={inline ? "cover-disclosure cover-disclosure-inline" : "cover-disclosure"}>
+    <span
+      className={
+        inline ? "cover-disclosure cover-disclosure-inline" : "cover-disclosure"
+      }
+    >
       {disclosure.label}
     </span>
   );

@@ -1,4 +1,5 @@
 import { getActiveTheme } from "@/themes";
+import { discloses } from "@/lib/disclosure";
 import { env } from "@/env";
 import { sizedCover } from "./cover-url";
 import { stockCoverFor } from "./stock-covers";
@@ -67,9 +68,13 @@ export function fallbackCover(name: string, themeName: string): string {
  */
 export function coverImageFor(post: Post, width?: number): string {
   const theme = getActiveTheme();
+  // A cover with the disclosure drawn in (`cover_baked`) is the one to show, on
+  // every theme: swapping in a stock photo would drop the disclosure with it.
+  const baked =
+    discloses(post.sponsorDisclosure, "cover_baked") && post.coverImage;
   // Themes that opt into curated stock photography (e.g. bourse / VC Letters)
   // use it for every cover, everywhere, ignoring the stored (often AI) image.
-  if (theme.features?.stockCovers) {
+  if (theme.features?.stockCovers && !baked) {
     return stockCoverFor(post, width ?? 1200);
   }
   const url = post.coverImage
@@ -84,7 +89,9 @@ export function coverImageFor(post: Post, width?: number): string {
  * purely decorative, so it correctly stays `alt=""`.
  */
 export function coverAltFor(post: Post): string {
-  if (getActiveTheme().features?.stockCovers) return "";
+  const baked =
+    discloses(post.sponsorDisclosure, "cover_baked") && post.coverImage;
+  if (getActiveTheme().features?.stockCovers && !baked) return "";
   if (!post.coverImage) return "";
   return post.coverImageAlt ?? post.title ?? "";
 }

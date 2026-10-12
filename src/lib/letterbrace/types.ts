@@ -51,6 +51,10 @@ export interface CoverCredit {
  *   descriptions (and the post's RSS item).
  * - `site_statement`: `siteText` site-wide — every page's footer, the About
  *   page, `llms.txt`, the RSS channel and the site's `funder` JSON-LD.
+ * - `cover_baked`: the label is drawn into the cover image by Letterstory, so the
+ *   served `coverImage` already carries it (into link previews and shares too).
+ *   The site sets no badge over it, and shows that cover even on themes that
+ *   normally use stock covers.
  * - `site_byline`: the byline is the site's own ("<Site> Editors"), never a
  *   persona: no author page, bio card or Person. (`ai_authorship` is read as
  *   this surface's earlier name; see `normalize.ts`.)
@@ -59,6 +63,7 @@ export const DISCLOSURE_SURFACES = [
   "article_header",
   "article_footer",
   "cover_badge",
+  "cover_baked",
   "structured_data",
   "sponsored_links",
   "meta_description",
