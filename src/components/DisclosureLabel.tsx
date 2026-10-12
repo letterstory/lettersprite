@@ -3,9 +3,8 @@ import { headerLine } from "@/lib/disclosure";
 
 /**
  * The disclosure at the top of the article, by the byline, when the post's
- * disclosure lists `article_header`: Letterstory's `label`, verbatim, joined
- * by its `aiLabel` when `ai_authorship` is listed ("Sponsored by Acme · Written
- * with AI"). The FTC's placement — with the content, hard to miss — where the
+ * disclosure lists `article_header`: Letterstory's `label`, verbatim
+ * ("Sponsored by Acme"). The FTC's placement — with the content, hard to miss — where the
  * footer line is the weakest one.
  *
  * Set beside the byline row, never inside it: Readability lifts an element

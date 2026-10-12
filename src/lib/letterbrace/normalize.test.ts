@@ -184,14 +184,12 @@ describe("normalizePost — sponsor disclosure", () => {
       "sponsored_links",
       "meta_description",
       "site_statement",
-      "ai_authorship",
+      "site_byline",
     ],
     sponsor: { name: "Acme", url: "https://www.acme.com" },
     text: "This article is sponsored by Acme.",
     label: "Sponsored by Acme",
     site_text: "This publication is sponsored by Acme.",
-    ai_label: "Written with AI",
-    ai_text: "This publication's articles are written with AI.",
   };
 
   it("reads the flat sponsor_disclosure Letterstory ships, verbatim", () => {
@@ -202,8 +200,6 @@ describe("normalizePost — sponsor disclosure", () => {
       text: "This article is sponsored by Acme.",
       label: "Sponsored by Acme",
       siteText: "This publication is sponsored by Acme.",
-      aiLabel: "Written with AI",
-      aiText: "This publication's articles are written with AI.",
     });
   });
 
@@ -241,8 +237,6 @@ describe("normalizePost — sponsor disclosure", () => {
       text: "This article is sponsored by Acme.",
       label: "Sponsored by Acme",
       siteText: "",
-      aiLabel: null,
-      aiText: null,
     });
   });
 
@@ -281,7 +275,6 @@ describe("normalizePost — sponsor disclosure", () => {
     ["label", { label: "  " }, ["article_header", "cover_badge", "meta_description"]],
     ["text", { text: "" }, ["article_footer"]],
     ["site_text", { site_text: null }, ["site_statement"]],
-    ["ai_label", { ai_label: undefined }, ["ai_authorship"]],
   ])("drops the surfaces that need %s when it is missing", (_, missing, dropped) => {
     const post = normalizePost({ ...base, sponsor_disclosure: { ...disclosure, ...missing } });
     expect(post?.sponsorDisclosure?.surfaces).toEqual(
@@ -289,19 +282,39 @@ describe("normalizePost — sponsor disclosure", () => {
     );
   });
 
-  it("sets the AI strings only alongside ai_authorship", () => {
+  // `site_byline` needs no words of its own.
+  it("keeps site_byline with nothing but a sponsor", () => {
     const post = normalizePost({
       ...base,
-      sponsor_disclosure: { ...disclosure, surfaces: ["article_header", "site_statement"] },
+      sponsor_disclosure: { surfaces: ["site_byline"], sponsor: { name: "Acme", url: null } },
     });
-    expect(post?.sponsorDisclosure).toMatchObject({ aiLabel: null, aiText: null });
-    const noAiText = normalizePost({ ...base, sponsor_disclosure: { ...disclosure, ai_text: null } });
-    expect(noAiText?.sponsorDisclosure).toMatchObject({ aiLabel: "Written with AI", aiText: null });
+    expect(post?.sponsorDisclosure?.surfaces).toEqual(["site_byline"]);
   });
 
-  // No invented persona: under ai_authorship no author field is read, even
-  // one an older app (or anything upstream) still sends.
-  it("credits no author under ai_authorship, whatever the payload carries", () => {
+  // A payload served during the switch: the surface's old name, plus AI
+  // strings the contract no longer has, which are ignored.
+  it("reads ai_authorship as site_byline and drops ai_label / ai_text", () => {
+    const post = normalizePost({
+      ...base,
+      sponsor_disclosure: {
+        ...disclosure,
+        surfaces: ["article_header", "ai_authorship", "site_byline"],
+        ai_label: "Written with AI",
+        ai_text: "This publication's articles are written with AI.",
+      },
+    });
+    expect(post?.sponsorDisclosure).toEqual({
+      surfaces: ["article_header", "site_byline"],
+      sponsor: { name: "Acme", url: "https://www.acme.com" },
+      text: "This article is sponsored by Acme.",
+      label: "Sponsored by Acme",
+      siteText: "This publication is sponsored by Acme.",
+    });
+  });
+
+  // No invented persona: under site_byline (or its old name) no author field
+  // is read, even one an older app (or anything upstream) still sends.
+  it.each([["site_byline"], ["ai_authorship"]])("credits no author under %s, whatever the payload carries", (surface) => {
     const persona = {
       ...base,
       author: "Dana Reyes",
@@ -311,8 +324,8 @@ describe("normalizePost — sponsor disclosure", () => {
       author_profile: { name: "Dana Reyes", slug: "dana-reyes", bio: "Staff writer." },
       metadata: { author: "Dana Reyes" },
     };
-    const ai = normalizePost({ ...persona, sponsor_disclosure: disclosure });
-    expect(ai).toMatchObject({ author: null, authorSlug: null, authorProfile: null });
+    const site = normalizePost({ ...persona, sponsor_disclosure: { ...disclosure, surfaces: [surface] } });
+    expect(site).toMatchObject({ author: null, authorSlug: null, authorProfile: null });
     const notAi = normalizePost({
       ...persona,
       sponsor_disclosure: { ...disclosure, surfaces: ["article_footer"] },

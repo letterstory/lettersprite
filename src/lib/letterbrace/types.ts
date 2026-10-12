@@ -37,8 +37,7 @@ export interface CoverCredit {
 }
 
 /**
- * Where a sponsored publication discloses its sponsor (and, with
- * `ai_authorship`, how its articles are written). Letterstory decides the set
+ * Where a sponsored publication discloses its sponsor. Letterstory decides the set
  * per collection; the site renders whichever are listed and branches on
  * nothing else.
  *
@@ -52,8 +51,9 @@ export interface CoverCredit {
  *   descriptions (and the post's RSS item).
  * - `site_statement`: `siteText` site-wide — every page's footer, the About
  *   page, `llms.txt`, the RSS channel and the site's `funder` JSON-LD.
- * - `ai_authorship`: the byline is the site's own, with `aiLabel` as its role,
- *   never a persona; `aiText` joins the site statement.
+ * - `site_byline`: the byline is the site's own ("<Site> Editors"), never a
+ *   persona: no author page, bio card or Person. (`ai_authorship` is read as
+ *   this surface's earlier name; see `normalize.ts`.)
  */
 export const DISCLOSURE_SURFACES = [
   "article_header",
@@ -63,7 +63,7 @@ export const DISCLOSURE_SURFACES = [
   "sponsored_links",
   "meta_description",
   "site_statement",
-  "ai_authorship",
+  "site_byline",
 ] as const;
 export type DisclosureSurface = (typeof DISCLOSURE_SURFACES)[number];
 
@@ -94,11 +94,6 @@ export interface SponsorDisclosure {
   /** The site-wide sentence — e.g. "This publication is sponsored by Acme."
    *  Empty when not served. */
   siteText: string;
-  /** E.g. "Written with AI"; null unless `ai_authorship` is listed. */
-  aiLabel: string | null;
-  /** E.g. "This publication's articles are written with AI."; null unless
-   *  `ai_authorship` is listed (and may be null even then). */
-  aiText: string | null;
 }
 
 /**

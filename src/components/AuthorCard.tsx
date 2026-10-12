@@ -5,7 +5,7 @@ import { authorHref, authorProfile, type Byline } from "@/lib/author";
  * The contributor card at the foot of an article: avatar, name, and a link to
  * the author's `/authors/[slug]` page, plus the bank's bio when the author has
  * one. By default they don't, so the card is just the name — nothing is invented.
- * A byline with no profile (an AI-written post) has no card.
+ * A byline with no profile (a `site_byline` post) has no card.
  */
 export function AuthorCard({
   byline,

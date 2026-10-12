@@ -340,8 +340,6 @@ function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
   // `badge_text` is what an app from before `label` serves for the same words.
   const label = words(d, "label", "badge_text", "badgeText");
   const siteText = words(d, "site_text", "siteText");
-  const aiLabel = words(d, "ai_label", "aiLabel");
-  const aiText = words(d, "ai_text", "aiText");
   // The string each surface sets. A surface whose words did not arrive is
   // dropped rather than worded here.
   const needs: Record<DisclosureSurface, string | true> = {
@@ -352,25 +350,21 @@ function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
     sponsored_links: true,
     meta_description: label,
     site_statement: siteText,
-    ai_authorship: aiLabel,
+    site_byline: true,
   };
-  // Known surfaces only, in canonical order, deduped.
-  const listed = new Set(Array.isArray(d.surfaces) ? d.surfaces : []);
+  // Known surfaces only, in canonical order, deduped. `ai_authorship` is
+  // `site_byline`'s earlier name, still read so a payload served during the
+  // switch keeps its byline honest; its `ai_label` / `ai_text` are ignored.
+  const listed = new Set(
+    (Array.isArray(d.surfaces) ? d.surfaces : []).map((s) =>
+      s === "ai_authorship" ? "site_byline" : s,
+    ),
+  );
   const surfaces = DISCLOSURE_SURFACES.filter(
     (s): s is DisclosureSurface => listed.has(s) && Boolean(needs[s]),
   );
   if (!surfaces.length) return null;
-  const ai = surfaces.includes("ai_authorship");
-  return {
-    surfaces,
-    sponsor: { name, url: httpUrl(sponsor.url) },
-    text,
-    label,
-    siteText,
-    // Only ever set alongside the surface that says so.
-    aiLabel: ai ? aiLabel : null,
-    aiText: ai ? aiText || null : null,
-  };
+  return { surfaces, sponsor: { name, url: httpUrl(sponsor.url) }, text, label, siteText };
 }
 
 /**
@@ -477,10 +471,10 @@ export function normalizePost(raw: Raw): Post | null {
   // A credit only belongs to a real cover — see toCoverCredit.
   const coverImage = toCoverImage(raw);
   const sponsorDisclosure = toSponsorDisclosure(raw);
-  // Under `ai_authorship` the byline is the site's own: no author field the
+  // Under `site_byline` the byline is the site's own: no author field the
   // payload (or anything upstream of it) carries may credit a person.
-  const aiAuthored = Boolean(sponsorDisclosure?.surfaces.includes("ai_authorship"));
-  const authorProfile = aiAuthored ? null : toAuthorProfile(raw);
+  const siteByline = Boolean(sponsorDisclosure?.surfaces.includes("site_byline"));
+  const authorProfile = siteByline ? null : toAuthorProfile(raw);
 
   return {
     id,
@@ -490,8 +484,8 @@ export function normalizePost(raw: Raw): Post | null {
     excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
     dek: suppliedExcerpt ? stripHtml(suppliedExcerpt) : null,
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
-    author: aiAuthored ? null : (toAuthor(raw) ?? authorProfile?.name ?? null),
-    authorSlug: aiAuthored ? null : (authorProfile?.slug ?? toAuthorSlug(raw)),
+    author: siteByline ? null : (toAuthor(raw) ?? authorProfile?.name ?? null),
+    authorSlug: siteByline ? null : (authorProfile?.slug ?? toAuthorSlug(raw)),
     authorProfile,
     coverImage,
     coverImageAlt: toCoverImageAlt(raw),

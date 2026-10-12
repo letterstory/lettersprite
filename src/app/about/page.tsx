@@ -4,7 +4,7 @@ import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
 import { topSections, sectionHref } from "@/lib/editorial";
 import { authorsFromPosts } from "@/lib/author";
-import { aiAuthored, siteDisclosure } from "@/lib/disclosure";
+import { siteByline, siteDisclosure } from "@/lib/disclosure";
 import { aboutLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Logo } from "@/components/Logo";
@@ -38,15 +38,15 @@ export function generateMetadata(): Metadata {
  * modest — it states what the site covers, not fabricated credentials.
  *
  * When the site discloses (`siteDisclosure` lists `site_statement`), it says
- * who funds it and, under `ai_authorship`, how it is written — Letterstory's
- * words, verbatim — and lists no contributors: the writing is credited to the
- * publication, not to people.
+ * who funds it — Letterstory's words, verbatim — and, under `site_byline`,
+ * lists no contributors: the writing is credited to the publication, not to
+ * people.
  */
 export default async function AboutPage() {
   const posts = await getPosts();
   const sections = topSections(posts, 24);
   const disclosure = siteDisclosure(posts);
-  const authors = aiAuthored(disclosure) ? [] : authorsFromPosts(posts).slice(0, 24);
+  const authors = siteByline(disclosure) ? [] : authorsFromPosts(posts).slice(0, 24);
 
   return (
     <div className="container-wide px-6 py-12">
@@ -83,15 +83,6 @@ export default async function AboutPage() {
               <span className="font-heading font-semibold">{disclosure.sponsor.name}</span>
             )}
           </p>
-        </section>
-      )}
-
-      {disclosure?.aiText && (
-        <section className="mb-12" aria-labelledby="how-written">
-          <h2 id="how-written" className="kicker mb-4">
-            How this is written
-          </h2>
-          <p className="publication-disclosure max-w-2xl">{disclosure.aiText}</p>
         </section>
       )}
 

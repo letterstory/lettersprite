@@ -107,8 +107,6 @@ describe("articleLd sponsor", () => {
     text: "This article is sponsored by Acme.",
     label: "Sponsored by Acme",
   siteText: "This publication is sponsored by Acme.",
-  aiLabel: null,
-  aiText: null,
   });
 
   it("names the sponsor Organization when structured_data is listed", () => {
@@ -136,8 +134,6 @@ describe("siteGraphLd funder", () => {
     text: "",
     label: "",
     siteText: "This publication is sponsored by Acme.",
-    aiLabel: null,
-    aiText: null,
   });
   const nodes = (ld: Record<string, unknown>) => ld["@graph"] as Record<string, unknown>[];
 

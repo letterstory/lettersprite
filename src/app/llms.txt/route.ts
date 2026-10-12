@@ -13,6 +13,22 @@ function oneLine(s: string): string {
 }
 
 /**
+ * Letterstory's site statement, verbatim, then the sponsor's site as a link
+ * when it has one — the sentence already names the sponsor, so the link line
+ * adds only where to find them.
+ */
+function aboutBlock(d: SponsorDisclosure | null): string[] {
+  if (!d) return [];
+  return [
+    "## About this publication",
+    "",
+    oneLine(d.siteText),
+    "",
+    ...(d.sponsor.url ? [`Sponsor: [${oneLine(d.sponsor.name)}](${d.sponsor.url})`, ""] : []),
+  ];
+}
+
+/**
  * `/llms.txt` — the llms.txt convention (https://llmstxt.org): a plain-text,
  * markdown-shaped index for AI crawlers. Title, one-line summary, then every
  * published post as a link + excerpt, all from the same build-time fetch the
@@ -20,19 +36,6 @@ function oneLine(s: string): string {
  * this publication" block follows the summary, before any post: it is the
  * first thing an agent reading the site learns.
  */
-/** Letterstory's site statement, verbatim, with the sponsor linked when it has a URL. */
-function aboutBlock(d: SponsorDisclosure | null): string[] {
-  if (!d) return [];
-  const sponsor = d.sponsor.url ? ` [${oneLine(d.sponsor.name)}](${d.sponsor.url})` : "";
-  return [
-    "## About this publication",
-    "",
-    `${oneLine(d.siteText)}${sponsor}`,
-    "",
-    ...(d.aiText ? [oneLine(d.aiText), ""] : []),
-  ];
-}
-
 export async function GET(): Promise<Response> {
   const posts = await getPosts();
 

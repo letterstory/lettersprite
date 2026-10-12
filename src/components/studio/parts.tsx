@@ -71,7 +71,7 @@ export function Sources({ sources, title = "Sources" }: { sources: PaperTrailSou
   );
 }
 
-/** The contributor card; none for a byline with no profile (an AI-written post). */
+/** The contributor card; none for a byline with no profile (a `site_byline` post). */
 export function AuthorCard({ byline }: { byline: BylineData }) {
   if (!byline.hasProfile) return null;
   const { bio } = authorProfile(byline);

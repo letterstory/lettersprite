@@ -22,8 +22,8 @@ is configured entirely by environment variables. **No database, no admin panel.*
 - **Bylines** (`lib/author.ts`): from Letterstory's per-site author bank
   (`author_profile`), else the free-form `author`, else one site-level
   "<Site> Editors" byline. Never synthesize per-post people. Under the
-  `ai_authorship` disclosure surface the byline is always that site-level one,
-  with Letterstory's `ai_label` as its role, and no author page or Person.
+  `site_byline` disclosure surface (`ai_authorship` is read as its old name) the
+  byline is always that site-level one, with no role, author page or Person.
 - **Sponsor disclosure** (`lib/disclosure.ts`): `post.sponsorDisclosure` lists the
   surfaces to render; every string is Letterstory's, verbatim. The site-wide
   statement is read off the posts (`siteDisclosure`). Disclosure classes must

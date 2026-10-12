@@ -3,8 +3,8 @@ import { siteStatement } from "@/lib/disclosure";
 
 /**
  * The site-wide statement in the footer of every page, when the site's
- * disclosure (`siteDisclosure`) lists `site_statement`: `siteText`, then
- * `aiText` when set — Letterstory's words, verbatim. Readers and crawlers get
+ * disclosure (`siteDisclosure`) lists `site_statement`: `siteText` —
+ * Letterstory's words, verbatim. Readers and crawlers get
  * the same line. `.publication-disclosure` is pinned against Readability's
  * strip patterns (disclosure-readability.test.tsx); "footer" is one of them.
  */

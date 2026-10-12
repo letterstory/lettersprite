@@ -26,14 +26,12 @@ const disclosure: Disclosure = {
     "sponsored_links",
     "meta_description",
     "site_statement",
-    "ai_authorship",
+    "site_byline",
   ],
   sponsor: { name: "Acme", url: "https://acme.com" },
   text: "This article is sponsored by Acme.",
   label: "Sponsored by Acme",
   siteText: "This publication is sponsored by Acme.",
-  aiLabel: "Written with AI",
-  aiText: "This publication's articles are written with AI.",
 };
 
 describe("disclosure markup survives reader-mode extraction", () => {

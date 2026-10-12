@@ -39,9 +39,10 @@ const { StudioPostPage } = await import("@/components/studio/pages");
 
 const FOOTER = "This article is sponsored by Acme.";
 const BADGE = "Sponsored by Acme";
-const AI_LABEL = "Written with AI";
-/** The top-of-article line: `label`, then `ai_label` under ai_authorship. */
-const HEADER = `${BADGE} · ${AI_LABEL}`;
+/** The top-of-article line: `label`, verbatim, and nothing after it. */
+const HEADER = BADGE;
+/** Retired wording that must never render, whatever an older payload sends. */
+const RETIRED = /written with ai/i;
 /** The persona an older payload (or anything upstream) might still carry. */
 const PERSONA = "Dana Reyes";
 
@@ -79,17 +80,15 @@ const FULL = {
     "sponsored_links",
     "meta_description",
     "site_statement",
-    "ai_authorship",
+    "site_byline",
   ],
   sponsor: { name: "Acme", url: "https://www.acme.com" },
   text: FOOTER,
   label: BADGE,
   site_text: "This publication is sponsored by Acme.",
-  ai_label: AI_LABEL,
-  ai_text: "This publication's articles are written with AI.",
 };
 
-// The app serves the author fields null under ai_authorship; these carry a
+// The app serves the author fields null under site_byline; these carry a
 // persona anyway, to prove none can reach the page.
 const disclosed = normalizePost(
   payload("disclosed", FULL, {
@@ -143,8 +142,10 @@ function expectHeaderLine(html: string) {
   expect(html.indexOf(HEADER)).toBeLessThan(html.indexOf("Opening paragraph"));
 }
 
-/** The byline is the site's own, credited as AI-written: no persona, no profile. */
-function expectAiByline(html: string) {
+/** The byline is the site's own: no persona, no role, no profile, no retired wording. */
+function expectSiteByline(html: string) {
+  expect(html).not.toMatch(RETIRED);
+  expect(html).not.toMatch(/Staff Writer|Editorial team/);
   expect(html).not.toContain(PERSONA);
   expect(html).toContain(`${env.siteTitle} Editors`);
   expect(html).not.toContain("View all"); // AuthorBio
@@ -156,7 +157,7 @@ function expectAiByline(html: string) {
 
 function expectDisclosed(html: string) {
   expectHeaderLine(html);
-  expectAiByline(html);
+  expectSiteByline(html);
   expect(count(html, `>${FOOTER}</p>`)).toBe(1);
   expect(count(html, `>${BADGE}</span>`)).toBe(1);
   expect(html).toContain('"sponsor":{"@type":"Organization","name":"Acme","url":"https://www.acme.com"}');
@@ -167,7 +168,6 @@ function expectDisclosed(html: string) {
 function expectUndisclosed(html: string) {
   expect(html).not.toContain(FOOTER);
   expect(html).not.toContain(BADGE);
-  expect(html).not.toContain(AI_LABEL);
   expect(html).not.toContain("disclosure-lead");
   expect(html).not.toContain("cover-disclosure");
   expect(html).not.toContain("article-disclosure");
@@ -222,6 +222,29 @@ describe("sponsor disclosure renders in every article layout", () => {
     });
   });
 
+  // A payload served during the switch: the surface's old name, with the AI
+  // strings the contract no longer has. The byline is still the site's own,
+  // and the retired words never render.
+  it("reads ai_authorship as site_byline and renders none of its retired wording", async () => {
+    const switching = normalizePost(
+      payload(
+        "switching",
+        {
+          ...FULL,
+          surfaces: ["article_header", "ai_authorship"],
+          ai_label: "Written with AI",
+          ai_text: "This publication's articles are written with AI.",
+        },
+        { author: PERSONA },
+      ),
+    )!;
+    content.posts = [switching];
+    for (const html of [await renderClassic("sleek", switching), await renderStudio("notes", switching)]) {
+      expectHeaderLine(html);
+      expectSiteByline(html);
+    }
+  });
+
   it("renders only the surfaces listed", async () => {
     const footerOnly = normalizePost(
       payload("footer-only", {
@@ -235,7 +258,6 @@ describe("sponsor disclosure renders in every article layout", () => {
     for (const html of [await renderClassic("sleek", footerOnly), await renderStudio("notes", footerOnly)]) {
       expect(count(html, FOOTER)).toBe(1);
       expect(html).not.toContain(BADGE);
-      expect(html).not.toContain(AI_LABEL);
       expect(html).not.toContain('"sponsor":');
       expect(html).not.toMatch(SPONSORED_REL);
     }

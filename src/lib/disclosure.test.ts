@@ -8,8 +8,6 @@ const disclosure = (surfaces: DisclosureSurface[], sponsor = "Acme"): SponsorDis
   text: `This article is sponsored by ${sponsor}.`,
   label: `Sponsored by ${sponsor}`,
   siteText: `This publication is sponsored by ${sponsor}.`,
-  aiLabel: surfaces.includes("ai_authorship") ? "Written with AI" : null,
-  aiText: surfaces.includes("ai_authorship") ? "This publication's articles are written with AI." : null,
 });
 
 const post = (id: string, createdAt: string | null, sponsorDisclosure: SponsorDisclosure | null): Post => ({
@@ -34,13 +32,13 @@ const post = (id: string, createdAt: string | null, sponsorDisclosure: SponsorDi
 });
 
 describe("headerLine", () => {
-  it("is the label, joined by the AI label under ai_authorship", () => {
+  it("is the label alone, whatever else is listed", () => {
     expect(headerLine(disclosure(["article_header"]))).toBe("Sponsored by Acme");
-    expect(headerLine(disclosure(["article_header", "ai_authorship"]))).toBe("Sponsored by Acme · Written with AI");
+    expect(headerLine(disclosure(["article_header", "site_byline"]))).toBe("Sponsored by Acme");
   });
 
   it("is null unless article_header is listed", () => {
-    expect(headerLine(disclosure(["article_footer", "ai_authorship"]))).toBeNull();
+    expect(headerLine(disclosure(["article_footer", "site_byline"]))).toBeNull();
     expect(headerLine(null)).toBeNull();
   });
 });
@@ -67,12 +65,10 @@ describe("siteDisclosure", () => {
       post("old", "2026-01-01T00:00:00Z", disclosure(["site_statement"], "Old Co")),
       post("undated", null, disclosure(["site_statement"], "Undated Co")),
       post("newest-no-statement", "2026-03-01T00:00:00Z", disclosure(["article_footer"], "Footer Co")),
-      post("new", "2026-02-01T00:00:00Z", disclosure(["site_statement", "ai_authorship"], "New Co")),
+      post("new", "2026-02-01T00:00:00Z", disclosure(["site_statement", "site_byline"], "New Co")),
     ];
     expect(siteDisclosure(posts)?.sponsor.name).toBe("New Co");
-    expect(siteStatement(siteDisclosure(posts))).toBe(
-      "This publication is sponsored by New Co. This publication's articles are written with AI.",
-    );
+    expect(siteStatement(siteDisclosure(posts))).toBe("This publication is sponsored by New Co.");
   });
 
   it("is null when no post lists site_statement", () => {

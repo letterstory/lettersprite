@@ -29,7 +29,6 @@ const { SiteFooter } = await import("@/components/SiteFooter");
 const { StudioFooter } = await import("@/components/studio/StudioFooter");
 
 const SITE_TEXT = "This publication is sponsored by Acme.";
-const AI_TEXT = "This publication's articles are written with AI.";
 const LABEL = "Sponsored by Acme";
 
 const disclosed = normalizePost({
@@ -40,13 +39,11 @@ const disclosed = normalizePost({
   content: "<p>Body.</p>",
   published_at: "2026-10-01T00:00:00Z",
   sponsor_disclosure: {
-    surfaces: ["article_header", "meta_description", "site_statement", "ai_authorship"],
+    surfaces: ["article_header", "meta_description", "site_statement", "site_byline"],
     sponsor: { name: "Acme", url: "https://acme.com" },
     text: "This article is sponsored by Acme.",
     label: LABEL,
     site_text: SITE_TEXT,
-    ai_label: "Written with AI",
-    ai_text: AI_TEXT,
   },
 })!;
 const plain = normalizePost({
@@ -60,8 +57,8 @@ const plain = normalizePost({
 })!;
 
 const text = async (res: Response) => res.text();
-/** As React escapes it in markup. */
-const html = (s: string) => s.replace(/'/g, "&#x27;");
+/** Retired wording that must never render, whatever an older payload sends. */
+const RETIRED = /written with ai/i;
 
 beforeEach(() => {
   content.posts = [disclosed, plain];
@@ -69,18 +66,20 @@ beforeEach(() => {
 
 describe("a disclosed site says so everywhere", () => {
   it("states it in the footer of every page, in both designs", async () => {
-    const statement = html(`${SITE_TEXT} ${AI_TEXT}`);
-    expect(renderToStaticMarkup(await SiteFooter())).toContain(`>${statement}</p>`);
-    expect(renderToStaticMarkup(await StudioFooter({ brand: getBrand() }))).toContain(`>${statement}</p>`);
+    for (const footer of [await SiteFooter(), await StudioFooter({ brand: getBrand() })]) {
+      const markup = renderToStaticMarkup(footer);
+      expect(markup).toContain(`>${SITE_TEXT}</p>`);
+      expect(markup).not.toMatch(RETIRED);
+    }
   });
 
-  it("gives the About page ownership and how-it-is-written sections, and no contributor list", async () => {
+  it("gives the About page an ownership section, and no contributor list under site_byline", async () => {
     const page = renderToStaticMarkup(await AboutPage());
     expect(page).toContain("Ownership and funding");
     expect(page).toContain(`>${SITE_TEXT}</p>`);
     expect(page).toContain('href="https://acme.com"');
-    expect(page).toContain("How this is written");
-    expect(page).toContain(`>${html(AI_TEXT)}</p>`);
+    expect(page).not.toContain("How this is written");
+    expect(page).not.toMatch(RETIRED);
     expect(page).not.toContain("Contributors");
     expect(page).not.toContain("Jane Doe");
   });
@@ -90,16 +89,19 @@ describe("a disclosed site says so everywhere", () => {
     const about = body.indexOf("## About this publication");
     expect(about).toBeGreaterThan(body.indexOf(`# ${env.siteTitle}`));
     expect(about).toBeLessThan(body.indexOf("## Posts"));
-    expect(body).toContain(`${SITE_TEXT} [Acme](https://acme.com)`);
-    expect(body).toContain(AI_TEXT);
+    // The sentence verbatim, then where to find the sponsor — named once in the sentence.
+    expect(body).toContain(`## About this publication\n\n${SITE_TEXT}\n\nSponsor: [Acme](https://acme.com)\n\n## Posts`);
+    expect(body).not.toMatch(RETIRED);
   });
 
   it("leads the RSS channel with the statement and each disclosed item with its label", async () => {
     const xml = await text(await feed());
-    expect(xml).toMatch(new RegExp(`<channel>[\\s\\S]*?<description>${SITE_TEXT} ${AI_TEXT.replace("'", "&apos;")} `));
+    const about = env.siteDescription || env.siteTitle;
+    expect(xml).toContain(`<description>${SITE_TEXT} ${about}</description>`);
+    expect(xml).not.toMatch(RETIRED);
     expect(xml).toContain(`<description>${LABEL}. How to choose tools.</description>`);
     expect(xml).toContain("<description>An older summary.</description>");
-    // The AI-written item is credited to the site, the other to its author.
+    // The site-byline item is credited to the site, the other to its author.
     expect(xml).toContain(`<dc:creator>${env.siteTitle} Editors</dc:creator>`);
     expect(xml).toContain("<dc:creator>Jane Doe</dc:creator>");
   });

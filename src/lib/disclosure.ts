@@ -16,17 +16,16 @@ export function discloses(
 
 /**
  * The line at the top of the article, by the byline, when the disclosure lists
- * `article_header`: `label`, then `aiLabel` when `ai_authorship` is listed too
- * ("Sponsored by Acme · Written with AI"). Null when there is nothing to set.
+ * `article_header`: `label`, verbatim ("Sponsored by Acme"). Null when there
+ * is nothing to set.
  */
 export function headerLine(disclosure: SponsorDisclosure | null | undefined): string | null {
-  if (!discloses(disclosure, "article_header")) return null;
-  return disclosure.aiLabel ? `${disclosure.label} · ${disclosure.aiLabel}` : disclosure.label;
+  return discloses(disclosure, "article_header") ? disclosure.label : null;
 }
 
-/** Is the post's byline the site's own, credited as `aiLabel` (`ai_authorship`)? */
-export function aiAuthored(disclosure: SponsorDisclosure | null | undefined): boolean {
-  return discloses(disclosure, "ai_authorship");
+/** Is the post's byline the site's own, never a person's (`site_byline`)? */
+export function siteByline(disclosure: SponsorDisclosure | null | undefined): boolean {
+  return discloses(disclosure, "site_byline");
 }
 
 /**
@@ -69,12 +68,11 @@ export function siteDisclosure(posts: Post[]): SponsorDisclosure | null {
 }
 
 /**
- * The site-wide statement, verbatim: `siteText`, then `aiText` when set.
- * Empty when the disclosure does not list `site_statement`.
+ * The site-wide statement, verbatim: `siteText`. Empty when the disclosure
+ * does not list `site_statement`.
  */
 export function siteStatement(disclosure: SponsorDisclosure | null | undefined): string {
-  if (!discloses(disclosure, "site_statement")) return "";
-  return disclosure.aiText ? `${disclosure.siteText} ${disclosure.aiText}` : disclosure.siteText;
+  return discloses(disclosure, "site_statement") ? disclosure.siteText : "";
 }
 
 /** A hostname without a leading `www.`, lower-cased, so `www.acme.com` and `acme.com` compare equal. */

@@ -4,7 +4,7 @@ import { authorHref, type Byline } from "@/lib/author";
 
 /**
  * A byline name, linked to the author's `/authors/[slug]` page when the byline
- * has one. A byline with no profile (an AI-written post) has no page to link
+ * has one. A byline with no profile (a `site_byline` post) has no page to link
  * to, so it is set as plain text in the same style.
  */
 export function AuthorLink({

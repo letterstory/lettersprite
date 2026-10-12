@@ -47,7 +47,7 @@ export default async function FollowingPage() {
       sectionName: sName,
       sectionSlug: sectionSlug(sName),
       authorName: b.name,
-      // Empty for a byline with no author page (an AI-written post).
+      // Empty for a byline with no author page (a `site_byline` post).
       authorSlug: authorHref(b) ? b.slug : "",
       dateLabel: formatDate(publishDate(p)),
       cover: coverImageFor(p, 400),

@@ -147,8 +147,8 @@ bank (`author_profile` in the payload; the name and slug are used, and a bio or
 role only when the bank supplies one); a legacy free-form `author` is shown
 verbatim, and a post with no author at all carries the one site-level
 "<Site> Editors" byline — no per-post names are ever
-invented. A post whose `sponsor_disclosure` lists `ai_authorship` carries that
-site-level byline too, with Letterstory's AI label as its role and no author page. See `src/lib/` (`author.ts`, `editorial.ts`, `related.ts`, `rng.ts`).
+invented. A post whose `sponsor_disclosure` lists `site_byline` carries that
+site-level byline too, with no role and no author page. See `src/lib/` (`author.ts`, `editorial.ts`, `related.ts`, `rng.ts`).
 
 Fine-tune any theme per deployment with the palette and font overrides above —
 supply a whole palette, not just two colors.

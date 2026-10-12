@@ -16,15 +16,14 @@
  * creator for every unbylined article is exactly the fabricated-profile pattern
  * search engines treat as deception.
  *
- * A post whose disclosure lists `ai_authorship` gets that same site-level
- * byline with Letterstory's `aiLabel` ("Written with AI") as its role, and no
- * contributor profile: no bio card, no author page, no Person.
+ * A post whose disclosure lists `site_byline` gets that same site-level
+ * byline, and no contributor profile: no bio card, no author page, no Person.
  */
 
 import { env } from "@/env";
 import { pick } from "./rng";
 import { orderedByDate } from "./editorial";
-import { aiAuthored } from "./disclosure";
+import { siteByline } from "./disclosure";
 import { cleanAuthorName, slugify } from "./letterbrace/normalize";
 import type { Post, PostAuthorProfile } from "./letterbrace/types";
 
@@ -59,8 +58,7 @@ export interface Byline {
   /**
    * Whether the byline has a contributor profile: a bio card under the
    * article, an `/authors/[slug]` page, a place in the contributor lists.
-   * False for an AI-written post (`ai_authorship`), which credits the site
-   * and stands for no one.
+   * False under `site_byline`, which credits the site and stands for no one.
    */
   hasProfile: boolean;
 }
@@ -133,11 +131,9 @@ export function authorHref(byline: Byline): string | null {
  * returns a complete `Byline`; never invents a person.
  */
 export function bylineFor(post: Post): Byline {
-  const d = post.sponsorDisclosure;
-  if (aiAuthored(d)) {
-    // Never the payload's author fields, whatever they carry: the site credits
-    // itself, and says how the article was written.
-    return { ...editorialByline(), role: d?.aiLabel ?? "", hasProfile: false };
+  if (siteByline(post.sponsorDisclosure)) {
+    // Never the payload's author fields, whatever they carry: the site credits itself.
+    return { ...editorialByline(), hasProfile: false };
   }
   const profile = post.authorProfile ?? null;
   const name = profile?.name ?? providedAuthor(post);
@@ -175,7 +171,7 @@ export function authorProfile(byline: Byline): AuthorProfile {
  * share an author when their byline slug matches — the bank slug for bank
  * authors, the slugified name otherwise — so a recurring author collects their
  * full body of work and every unbylined post lands on the one editorial page.
- * A post whose byline has no profile (`ai_authorship`) is in no author's list.
+ * A post whose byline has no profile (`site_byline`) is in no author's list.
  */
 export function authorsFromPosts(
   posts: Post[],
