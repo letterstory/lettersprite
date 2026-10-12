@@ -133,6 +133,8 @@ describe("normalizePost — author bank", () => {
     expect(post?.authorProfile).toEqual({
       name: "Ines Moreau",
       slug: "ines-moreau-7",
+      bio: "Ines writes about infrastructure.",
+      role: "Senior Writer",
       expertise: ["infrastructure", "42", "cloud"],
       startedAt: "2021-03-15",
     });
@@ -158,6 +160,8 @@ describe("normalizePost — author bank", () => {
     expect(post?.authorProfile).toEqual({
       name: "Ines Moreau",
       slug: "ines-moreau-7",
+      bio: "",
+      role: null,
       expertise: [],
       startedAt: null,
     });

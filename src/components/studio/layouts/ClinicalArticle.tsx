@@ -27,7 +27,10 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               <Link href={studioHome()}>{brand.name}</Link> <span aria-hidden>·</span> {sectionFor(post)}
             </p>
             <h1 className="c-title">{post.title}</h1>
-            <p className="c-authors">{a.byline.name}</p>
+            <p className="c-authors">
+              {a.byline.name}
+              {a.byline.role && <span className="c-authors-role">, {a.byline.role}</span>}
+            </p>
             <dl className="c-dates">
               <div>
                 <dt>Published</dt>

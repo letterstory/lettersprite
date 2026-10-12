@@ -4,8 +4,10 @@
  * Every byline names someone real to the site. Letterstory assigns each post
  * an author from the site's author bank — a recurring set of authors generated
  * once per site and reused across its posts — and ships it as `author_profile`
- * (name, slug, bio, role, tenure). We credit the author by name only — no
- * bio, no role. The bank slug keys the `/authors/[slug]` page, so one author
+ * (name, slug, bio, role, tenure). We render that record as-is and invent
+ * nothing around it: a bank author with no bio or role is credited by name
+ * alone (the default — Letterstory's generator writes names only unless asked
+ * for more). The bank slug keys the `/authors/[slug]` page, so one author
  * collects their whole body of work. A legacy free-form `author` string is
  * used verbatim.
  *
@@ -34,6 +36,8 @@ const AVATAR_COLORS = [
 export interface Byline {
   /** Display name. */
   name: string;
+  /** Masthead role from the bank record, or null — never defaulted. */
+  role: string | null;
   /** 1–2 letter uppercase initials for the avatar. */
   initials: string;
   /** Hex background color for the avatar chip. */
@@ -49,10 +53,7 @@ export interface Byline {
   profile: PostAuthorProfile | null;
 }
 
-/**
- * A contributor profile: the byline plus its masthead furniture. Deliberately
- * carries no bio or role — a phantom site credits its authors by name only.
- */
+/** A contributor profile: the byline plus its masthead furniture. */
 export interface AuthorProfile {
   byline: Byline;
   /** Home city. Never invented; absent unless a real record supplies one. */
@@ -60,6 +61,8 @@ export interface AuthorProfile {
   /** Year the contributor has written for the outlet "since", from the bank's
    *  `started_at`; absent when unknown. */
   since?: number;
+  /** The bank's bio, verbatim; absent when the record has none (never invented). */
+  bio?: string;
 }
 
 function initialsOf(name: string): string {
@@ -97,6 +100,7 @@ export function editorialByline(): Byline {
   const name = editorialName();
   return {
     name,
+    role: null,
     initials: initialsOf(env.siteTitle),
     color: pick(AVATAR_COLORS, `${name}:color`),
     slug: authorSlug(name),
@@ -116,6 +120,7 @@ export function bylineFor(post: Post): Byline {
   if (!name) return editorialByline();
   return {
     name,
+    role: profile?.role?.trim() || null,
     initials: initialsOf(name),
     color: pick(AVATAR_COLORS, `${name}:color`),
     slug: profile?.slug || post.authorSlug || authorSlug(name),
@@ -125,9 +130,9 @@ export function bylineFor(post: Post): Byline {
 }
 
 /**
- * A contributor profile for an author's card and `/authors/[slug]` page. Tenure
- * comes from the bank's `started_at`; anything the record doesn't say is left
- * out rather than made up: no home city, no invented tenure, no bio.
+ * A contributor profile for an author's card and `/authors/[slug]` page. The
+ * bio and tenure come from the bank record; anything it doesn't say is left out
+ * rather than made up: no home city, no invented tenure, no synthesized bio.
  */
 export function authorProfile(byline: Byline): AuthorProfile {
   const started = byline.profile?.startedAt
@@ -136,6 +141,7 @@ export function authorProfile(byline: Byline): AuthorProfile {
   return {
     byline,
     since: Number.isFinite(started) ? started : undefined,
+    bio: byline.profile?.bio.trim() || undefined,
   };
 }
 

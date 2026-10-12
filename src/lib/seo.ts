@@ -15,7 +15,7 @@
 
 import { env } from "@/env";
 import { pickFavicon } from "./favicon";
-import { bylineFor, type Byline } from "./author";
+import { authorProfile, bylineFor, type Byline } from "./author";
 import {
   modifiedDate,
   publishDate,
@@ -86,13 +86,15 @@ function orgAuthorNode(): Json {
 }
 
 /** A real author as a Person, matching the visible byline and author page. */
-function personNode(byline: Byline): Json {
+function personNode(byline: Byline, description?: string): Json {
   const url = authorUrl(byline);
   const expertise = byline.profile?.expertise ?? [];
   return clean({
     "@type": "Person",
     "@id": `${url}/#person`,
     name: byline.name,
+    jobTitle: byline.role ?? undefined,
+    description,
     knowsAbout: expertise.length ? expertise : undefined,
     url,
     worksFor: { "@id": ORG_ID },
@@ -199,8 +201,8 @@ export function breadcrumbLd(post: Post): Json {
 /**
  * A ProfilePage for an author's `/authors/[slug]` page: the Person (or, for
  * the editorial byline, the site Organization) plus their stories, so the page
- * reads as a real staff page to search engines. Matches the article-level
- * `authorNode`: the name, no bio or role.
+ * reads as a real staff page to search engines. Mirrors the visible bio (when
+ * the bank has one) and the article-level `authorNode`.
  */
 export function authorLd(byline: Byline, posts: Post[]): Json {
   const url = authorUrl(byline);
@@ -210,7 +212,7 @@ export function authorLd(byline: Byline, posts: Post[]): Json {
     "@id": `${url}/#profile`,
     url,
     isPartOf: { "@id": SITE_ID },
-    mainEntity: byline.provided ? personNode(byline) : orgAuthorNode(),
+    mainEntity: byline.provided ? personNode(byline, authorProfile(byline).bio) : orgAuthorNode(),
     hasPart: posts.slice(0, 20).map((p) => ({
       "@type": "BlogPosting",
       "@id": `${postUrl(p)}/#article`,

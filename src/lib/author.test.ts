@@ -32,27 +32,34 @@ const post = (id: string, extra: Partial<Post> = {}): Post => ({
 const bank: PostAuthorProfile = {
   name: "Ines Moreau",
   slug: "ines-moreau-7",
+  bio: "Ines writes about infrastructure.",
+  role: "Senior Writer",
   expertise: ["infrastructure", "cloud"],
   startedAt: "2021-03-15",
 };
 
 describe("bylineFor", () => {
-  it("uses the bank profile's name and slug, and carries no role", () => {
+  it("uses the bank profile's name, slug and role", () => {
     const b = bylineFor(
       post("1", { author: "Ines Moreau", authorSlug: "ines-moreau-7", authorProfile: bank }),
     );
     expect(b).toMatchObject({
       name: "Ines Moreau",
       slug: "ines-moreau-7",
+      role: "Senior Writer",
       provided: true,
     });
-    expect(b).not.toHaveProperty("role");
     expect(b.profile).toBe(bank);
+  });
+
+  it("never defaults a role: a name-only bank author has none", () => {
+    const b = bylineFor(post("1", { authorProfile: { ...bank, role: null } }));
+    expect(b.role).toBeNull();
   });
 
   it("uses a free-form author's name verbatim, with no role", () => {
     const b = bylineFor(post("1", { author: "Jane Doe" }));
-    expect(b).not.toHaveProperty("role");
+    expect(b.role).toBeNull();
     expect(b).toMatchObject({ name: "Jane Doe", slug: "jane-doe", provided: true });
   });
 
@@ -70,6 +77,7 @@ describe("bylineFor", () => {
     expect(a).toEqual(editorialByline());
     expect(a).toMatchObject({
       name: `${env.siteTitle} Editors`,
+      role: null,
       provided: false,
       profile: null,
     });
@@ -77,22 +85,31 @@ describe("bylineFor", () => {
 });
 
 describe("authorProfile", () => {
-  it("derives since from the bank's started_at and carries no bio", () => {
+  it("uses the bank bio verbatim and derives since from started_at", () => {
     const p = authorProfile(bylineFor(post("1", { authorProfile: bank })));
+    expect(p.bio).toBe(bank.bio);
     expect(p.since).toBe(2021);
     expect(p.location).toBeUndefined();
-    expect(p).not.toHaveProperty("bio");
   });
 
-  it("never invents a city or tenure for a free-form author", () => {
+  it("never synthesizes a bio when the bank has none (the name-only default)", () => {
+    const p = authorProfile(
+      bylineFor(post("1", { authorProfile: { ...bank, bio: "", startedAt: null } })),
+    );
+    expect(p.bio).toBeUndefined();
+    expect(p.since).toBeUndefined();
+  });
+
+  it("never invents a bio, city or tenure for a free-form author", () => {
     const p = authorProfile(bylineFor(post("1", { author: "Jane Doe" })));
+    expect(p.bio).toBeUndefined();
     expect(p.location).toBeUndefined();
     expect(p.since).toBeUndefined();
   });
 
   it("carries no bio, city or tenure for the editorial byline", () => {
     const p = authorProfile(editorialByline());
-    expect(p).not.toHaveProperty("bio");
+    expect(p.bio).toBeUndefined();
     expect(p.location).toBeUndefined();
     expect(p.since).toBeUndefined();
   });
@@ -122,6 +139,6 @@ describe("authorsFromPosts", () => {
     ]);
     expect(author.posts).toHaveLength(2);
     expect(author.byline.profile).toBe(bank);
-    expect(author.byline.slug).toBe("ines-moreau-7");
+    expect(author.byline.role).toBe("Senior Writer");
   });
 });

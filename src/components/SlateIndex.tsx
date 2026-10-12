@@ -44,6 +44,7 @@ export function SlateIndex({
   title,
   accentLinks = [],
   avatar,
+  bio,
   stat,
   metaKind,
   riverPrefix,
@@ -54,6 +55,7 @@ export function SlateIndex({
   title: string;
   accentLinks?: { label: string; href: string }[];
   avatar?: { initials: string; color: string };
+  bio?: string;
   stat?: string;
   metaKind: "author" | "section";
   riverPrefix: string;
@@ -91,6 +93,12 @@ export function SlateIndex({
               <span className="font-heading">{title}</span>
             </h1>
           </>
+        )}
+
+        {bio && (
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-fg-soft">
+            {bio}
+          </p>
         )}
 
         {(stat || accentLinks.length > 0) && (

@@ -43,7 +43,10 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
                 <span className="s-avatar s-avatar-sm" aria-hidden>
                   {a.byline.initials}
                 </span>
-                <span>{a.byline.name}</span>
+                <span>
+                  {a.byline.name}
+                  {a.byline.role && <span className="j-credit-sub">{a.byline.role}</span>}
+                </span>
               </dd>
             </div>
             <div>

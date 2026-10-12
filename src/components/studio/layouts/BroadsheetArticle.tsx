@@ -32,6 +32,7 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
           <div className="b-byline">
             <span>
               By <strong>{a.byline.name}</strong>
+              {a.byline.role && <span className="b-byline-role">{a.byline.role}</span>}
             </span>
             <span className="b-byline-date">
               {longDate(post.createdAt)} · {readingTimeLabel(post)}

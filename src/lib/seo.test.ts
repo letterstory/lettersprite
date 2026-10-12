@@ -28,12 +28,14 @@ const post = (extra: Partial<Post> = {}): Post => ({
 const orgId = `${env.siteUrl}/#organization`;
 
 describe("articleLd author", () => {
-  it("is a Person with the bank expertise and no job title", () => {
+  it("is a Person with the bank role and expertise", () => {
     const ld = articleLd(
       post({
         authorProfile: {
           name: "Ines Moreau",
           slug: "ines-moreau-7",
+          bio: "Bio.",
+          role: "Senior Writer",
           expertise: ["cloud"],
           startedAt: null,
         },
@@ -42,11 +44,11 @@ describe("articleLd author", () => {
     expect(ld.author).toMatchObject({
       "@type": "Person",
       name: "Ines Moreau",
+      jobTitle: "Senior Writer",
       knowsAbout: ["cloud"],
       url: `${env.siteUrl}/authors/ines-moreau-7`,
       worksFor: { "@id": orgId },
     });
-    expect(ld.author).not.toHaveProperty("jobTitle");
   });
 
   it("is the site Organization for the editorial byline, never a Person", () => {
@@ -61,7 +63,7 @@ describe("authorLd", () => {
     expect(ld.mainEntity).toMatchObject({ "@type": "Organization", "@id": orgId });
   });
 
-  it("keeps a Person, with no bio or job title, for a real author", () => {
+  it("keeps a name-only Person, with no invented bio or job title", () => {
     const byline = bylineFor(post({ author: "Jane Doe" }));
     const ld = authorLd(byline, [post()]);
     expect(ld.mainEntity).toMatchObject({
@@ -70,5 +72,26 @@ describe("authorLd", () => {
     });
     expect(ld.mainEntity).not.toHaveProperty("description");
     expect(ld.mainEntity).not.toHaveProperty("jobTitle");
+  });
+
+  it("mirrors the bank bio and role when the author has them", () => {
+    const byline = bylineFor(
+      post({
+        authorProfile: {
+          name: "Ines Moreau",
+          slug: "ines-moreau-7",
+          bio: "Ines covers cloud.",
+          role: "Senior Writer",
+          expertise: [],
+          startedAt: null,
+        },
+      }),
+    );
+    const ld = authorLd(byline, [post()]);
+    expect(ld.mainEntity).toMatchObject({
+      "@type": "Person",
+      jobTitle: "Senior Writer",
+      description: "Ines covers cloud.",
+    });
   });
 });
