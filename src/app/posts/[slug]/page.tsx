@@ -295,7 +295,7 @@ export default async function PostPage({ params }: Params) {
 
       {/* Franklin Azzi: a static full-bleed cover hero above a centered header. */}
       {vitrine && (
-        <div className="sponsor-cover w-full overflow-hidden bg-surfaceAlt">
+        <div className="disclosure-frame w-full overflow-hidden bg-surfaceAlt">
           <img
             src={coverImageFor(post, 1600)}
             alt={coverAltFor(post)}
@@ -398,7 +398,7 @@ export default async function PostPage({ params }: Params) {
         <figure
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >
-          <div className="sponsor-cover">
+          <div className="disclosure-frame">
             <img
               src={coverImageFor(post, 1600)}
               alt={coverAltFor(post)}

@@ -101,7 +101,7 @@ export function FluxArticle({
 
         {/* Full-width hero. */}
         <figure className="mx-auto mt-8 max-w-5xl">
-          <div className="sponsor-cover">
+          <div className="disclosure-frame">
             <img
               src={coverImageFor(post, 1600)}
               alt={coverAltFor(post)}

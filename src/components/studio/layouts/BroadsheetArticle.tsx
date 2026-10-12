@@ -42,7 +42,7 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
           </div>
         </header>
         <figure className="b-figure">
-          <div className="b-figure-media sponsor-cover">
+          <div className="b-figure-media disclosure-frame">
             <StudioCover post={post} brand={brand} sizes="100vw" />
             <SponsorBadge disclosure={post.sponsorDisclosure} />
           </div>

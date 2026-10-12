@@ -33,7 +33,7 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
               <h1 className="j-post-title">{post.title}</h1>
               {post.dek && <p className="j-post-dek">{post.dek}</p>}
             </div>
-            <div className="j-head-media sponsor-cover">
+            <div className="j-head-media disclosure-frame">
               <StudioCover post={post} brand={brand} />
               <SponsorBadge disclosure={post.sponsorDisclosure} />
             </div>

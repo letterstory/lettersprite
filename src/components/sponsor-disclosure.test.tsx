@@ -10,7 +10,7 @@ import type { Post } from "@/lib/letterbrace/types";
 
 /**
  * Every article layout renders the sponsor disclosure. The doc this ships
- * against (letterstory docs/architecture/sponsor-disclosure.md §5.2) names the
+ * against (letterstory docs/architecture/article-disclosure.md §5.2) names the
  * failure this guards: rendering only where `CoverCredit` appears would miss
  * most layouts, and a disclosure that shows on some themes is not a disclosure.
  *
@@ -115,8 +115,8 @@ function expectDisclosed(html: string) {
 function expectUndisclosed(html: string) {
   expect(html).not.toContain(FOOTER);
   expect(html).not.toContain(BADGE);
-  expect(html).not.toContain("sponsor-badge");
-  expect(html).not.toContain("sponsor-disclosure");
+  expect(html).not.toContain("cover-disclosure");
+  expect(html).not.toContain("article-disclosure");
   expect(html).not.toContain('"sponsor":');
   expect(html).not.toMatch(SPONSORED_REL);
 }

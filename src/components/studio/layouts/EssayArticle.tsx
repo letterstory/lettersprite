@@ -27,7 +27,7 @@ export function EssayArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
           {post.dek && <p className="e-dek">{post.dek}</p>}
           <Byline byline={a.byline} post={post} />
         </header>
-        <figure className="e-figure sponsor-cover">
+        <figure className="e-figure disclosure-frame">
           <StudioCover post={post} brand={brand} />
           <SponsorBadge disclosure={post.sponsorDisclosure} />
         </figure>

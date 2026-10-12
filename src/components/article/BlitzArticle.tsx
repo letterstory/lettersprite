@@ -185,7 +185,7 @@ export function BlitzArticle({
 
           {/* Center: hero → Summary box → body. */}
           <div className="min-w-0">
-            <figure className="sponsor-cover">
+            <figure className="disclosure-frame">
               <img
                 src={coverImageFor(post, 1600)}
                 alt={coverAltFor(post)}

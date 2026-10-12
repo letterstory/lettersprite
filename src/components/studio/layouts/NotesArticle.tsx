@@ -30,7 +30,7 @@ export function NotesArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
         </header>
 
         <figure className="s-wrap-wide s-post-cover">
-          <div className="sponsor-cover">
+          <div className="disclosure-frame">
             <StudioCover post={post} brand={brand} sizes="100vw" />
             <SponsorBadge disclosure={post.sponsorDisclosure} />
           </div>

@@ -1045,7 +1045,7 @@
 /* ---------- sponsor disclosure ----------
    The same badge and line as the current design (globals.css), set in the
    brand's tokens. Clear and conspicuous: full ink at body size. */
-.studio .sponsor-badge {
+.studio .cover-disclosure {
   border-color: var(--b-line);
   border-radius: var(--b-radius);
   background: var(--b-paper);
@@ -1053,8 +1053,8 @@
   font-family: var(--b-font-body);
   box-shadow: 0 2px 10px color-mix(in oklab, var(--b-ink) 18%, transparent);
 }
-.studio .sponsor-badge-inline { box-shadow: none; }
-.studio .sponsor-disclosure {
+.studio .cover-disclosure-inline { box-shadow: none; }
+.studio .article-disclosure {
   border-color: var(--b-line);
   border-left-color: var(--b-accent);
   border-radius: var(--b-radius);

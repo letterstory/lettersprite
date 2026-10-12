@@ -8,7 +8,7 @@ import { discloses } from "@/lib/disclosure";
  * Set by the template, never burned into the cover pixels: the image stays
  * clean for every crop and the badge goes the moment the setting does.
  *
- * Place it inside the element that frames the cover, marked `.sponsor-cover`
+ * Place it inside the element that frames the cover, marked `.disclosure-frame`
  * (which only makes it the positioning box). The badge is inset from the
  * frame's corner by `--sponsor-safe` (globals.css), the crop-safe margin the
  * cover generator plans for. A layout with no cover sets it `inline`, in the
@@ -23,7 +23,7 @@ export function SponsorBadge({
 }) {
   if (!discloses(disclosure, "cover_badge")) return null;
   return (
-    <span className={inline ? "sponsor-badge sponsor-badge-inline" : "sponsor-badge"}>
+    <span className={inline ? "cover-disclosure cover-disclosure-inline" : "cover-disclosure"}>
       {disclosure.badgeText}
     </span>
   );

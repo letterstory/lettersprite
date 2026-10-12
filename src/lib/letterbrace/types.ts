@@ -56,7 +56,7 @@ export type DisclosureSurface = (typeof DISCLOSURE_SURFACES)[number];
 
 /**
  * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` on
- * every article read (docs/architecture/sponsor-disclosure.md in letterstory).
+ * every article read (docs/architecture/article-disclosure.md in letterstory).
  * Null when the publication discloses nothing — including every payload from
  * before the field existed.
  *

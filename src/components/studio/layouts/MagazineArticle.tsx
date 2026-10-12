@@ -21,7 +21,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
       <div className="s-progress" aria-hidden />
       <article className="s-article m-article">
         <figure className="m-hero">
-          <div className="sponsor-cover">
+          <div className="disclosure-frame">
             <StudioCover post={post} brand={brand} sizes="100vw" />
             <SponsorBadge disclosure={post.sponsorDisclosure} />
           </div>
