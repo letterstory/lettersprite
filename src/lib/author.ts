@@ -4,9 +4,10 @@
  * Every byline names someone real to the site. Letterstory assigns each post
  * an author from the site's author bank — a recurring set of authors generated
  * once per site and reused across its posts — and ships it as `author_profile`
- * (name, slug, bio, role, tenure). We render that record as-is: the bank slug
- * keys the `/authors/[slug]` page, so one author collects their whole body of
- * work. A legacy free-form `author` string is used verbatim as a staff writer.
+ * (name, slug, bio, role, tenure). We credit the author by name only — no
+ * bio, no role. The bank slug keys the `/authors/[slug]` page, so one author
+ * collects their whole body of work. A legacy free-form `author` string is
+ * used verbatim.
  *
  * A post with no author at all gets ONE stable, site-level editorial byline
  * ("<Site> Editors") — never a made-up per-post person. Inventing a fresh
@@ -19,12 +20,6 @@ import { pick } from "./rng";
 import { orderedByDate } from "./editorial";
 import { cleanAuthorName, slugify } from "./letterbrace/normalize";
 import type { Post, PostAuthorProfile } from "./letterbrace/types";
-
-/** Role for a real author whose record carries none. */
-const DEFAULT_ROLE = "Staff Writer";
-
-/** Role shown on the site-level editorial byline. */
-const EDITORIAL_ROLE = "Editorial team";
 
 /**
  * A small set of confident, legible avatar chip colors. Deliberately
@@ -39,8 +34,6 @@ const AVATAR_COLORS = [
 export interface Byline {
   /** Display name. */
   name: string;
-  /** Editorial role/title. */
-  role: string;
   /** 1–2 letter uppercase initials for the avatar. */
   initials: string;
   /** Hex background color for the avatar chip. */
@@ -56,7 +49,10 @@ export interface Byline {
   profile: PostAuthorProfile | null;
 }
 
-/** A contributor profile: the byline plus its bio furniture. */
+/**
+ * A contributor profile: the byline plus its masthead furniture. Deliberately
+ * carries no bio or role — a phantom site credits its authors by name only.
+ */
 export interface AuthorProfile {
   byline: Byline;
   /** Home city. Never invented; absent unless a real record supplies one. */
@@ -64,8 +60,6 @@ export interface AuthorProfile {
   /** Year the contributor has written for the outlet "since", from the bank's
    *  `started_at`; absent when unknown. */
   since?: number;
-  /** One- or two-sentence contributor bio. */
-  bio: string;
 }
 
 function initialsOf(name: string): string {
@@ -103,7 +97,6 @@ export function editorialByline(): Byline {
   const name = editorialName();
   return {
     name,
-    role: EDITORIAL_ROLE,
     initials: initialsOf(env.siteTitle),
     color: pick(AVATAR_COLORS, `${name}:color`),
     slug: authorSlug(name),
@@ -123,7 +116,6 @@ export function bylineFor(post: Post): Byline {
   if (!name) return editorialByline();
   return {
     name,
-    role: profile?.role?.trim() || DEFAULT_ROLE,
     initials: initialsOf(name),
     color: pick(AVATAR_COLORS, `${name}:color`),
     slug: profile?.slug || post.authorSlug || authorSlug(name),
@@ -132,52 +124,18 @@ export function bylineFor(post: Post): Byline {
   };
 }
 
-/** Join a short list into an "a, b and c" phrase. */
-function humanList(items: string[]): string {
-  const parts = items.filter(Boolean);
-  if (parts.length <= 1) return parts[0] ?? "";
-  if (parts.length === 2) return `${parts[0]} and ${parts[1]}`;
-  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
-}
-
-/** "The Signal" stays "The Signal"; "Signal" becomes "The Signal". */
-function withArticle(title: string): string {
-  return /^the\s/i.test(title) ? title : `The ${title}`;
-}
-
 /**
- * A contributor profile for an author's bio card and `/authors/[slug]` page.
- *
- * A bank author's bio is used verbatim and their tenure comes from the bank's
- * `started_at`. Anything the record doesn't say is left out rather than made
- * up: no home city, no invented tenure, no personal history. Without a bank
- * bio a real author gets a coverage-only line; the editorial byline describes
- * the team.
- *
- * `beats` are the sections the author writes in (lower-cased for prose).
+ * A contributor profile for an author's card and `/authors/[slug]` page. Tenure
+ * comes from the bank's `started_at`; anything the record doesn't say is left
+ * out rather than made up: no home city, no invented tenure, no bio.
  */
-export function authorProfile(byline: Byline, beats: string[]): AuthorProfile {
-  const beatPhrase =
-    humanList([...new Set(beats.map((b) => b.toLowerCase()))].slice(0, 3)) ||
-    "ideas and culture";
-  const site = env.siteTitle;
-
-  if (!byline.provided) {
-    return {
-      byline,
-      bio: `${withArticle(site)} editorial team covers ${beatPhrase}.`,
-    };
-  }
-
+export function authorProfile(byline: Byline): AuthorProfile {
   const started = byline.profile?.startedAt
     ? new Date(byline.profile.startedAt).getUTCFullYear()
     : NaN;
   return {
     byline,
     since: Number.isFinite(started) ? started : undefined,
-    bio:
-      byline.profile?.bio.trim() ||
-      `${byline.name} covers ${beatPhrase} for ${site}.`,
   };
 }
 
@@ -201,8 +159,8 @@ export function authorsFromPosts(
     } else map.set(byline.slug, { byline, posts: [post] });
   }
   // Each author's posts are returned newest-first by (deterministic) publish
-  // date, so every caller — the article bio card, the author page and the
-  // sitemap — derives an identical, stable ordering (and identical bio beats).
+  // date, so every caller — the article author card, the author page and the
+  // sitemap — derives an identical, stable ordering.
   return [...map.entries()]
     .map(([slug, v]) => ({ slug, byline: v.byline, posts: orderedByDate(v.posts) }))
     .sort((a, b) => b.posts.length - a.posts.length || a.slug.localeCompare(b.slug));

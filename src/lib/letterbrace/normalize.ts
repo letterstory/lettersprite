@@ -332,7 +332,8 @@ function toAuthorSlug(raw: Raw): string | null {
 
 /**
  * The structured bank author Letterbrace ships as `author_profile`
- * (`{ name, slug, bio, role, expertise, started_at }`). Null for legacy
+ * (`{ name, slug, bio, role, expertise, started_at }`). The bio and role are
+ * dropped: a phantom site credits its authors by name only. Null for legacy
  * free-form bylines, older payloads without the field, and anything malformed
  * — a profile without a usable name credits nobody. The slug falls back to the
  * flat `author_slug`, then to the name, so it always keys the author page.
@@ -352,8 +353,6 @@ function toAuthorProfile(raw: Raw): PostAuthorProfile | null {
   return {
     name,
     slug: toSlug(o.slug) ?? toAuthorSlug(raw) ?? slugify(name),
-    bio: asString(o.bio)?.trim() ?? "",
-    role: asString(o.role)?.trim() || null,
     expertise: Array.isArray(o.expertise)
       ? o.expertise
           .map((e) => asString(e)?.trim())

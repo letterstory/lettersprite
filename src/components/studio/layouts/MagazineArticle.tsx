@@ -35,7 +35,6 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
             <div className="m-rail-inner">
               <p className="m-rail-label">Words by</p>
               <p className="m-rail-name">{a.byline.name}</p>
-              <p className="m-rail-bio">{a.profile.bio}</p>
               <p className="m-rail-label">Filed under</p>
               <p>
                 <a href={topicHref(sectionFor(post))}>{sectionFor(post)}</a>
@@ -57,7 +56,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               }
             />
             <Sources sources={post.paperTrail} title="Notes" />
-            <AuthorCard byline={a.byline} profile={a.profile} />
+            <AuthorCard byline={a.byline} />
             <p className="m-end">
               <Link href={studioHome()}>← Back to {brand.name}</Link>
             </p>

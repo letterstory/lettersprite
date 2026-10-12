@@ -87,9 +87,6 @@ export default async function AboutPage() {
                 >
                   {a.byline.name}
                 </Link>
-                {a.byline.role && (
-                  <span className="text-muted"> · {a.byline.role}</span>
-                )}
               </li>
             ))}
           </ul>

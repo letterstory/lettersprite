@@ -1,24 +1,20 @@
 import Link from "@/components/Link";
-import { authorProfile, type Byline } from "@/lib/author";
+import type { Byline } from "@/lib/author";
 
 /**
- * The contributor card at the foot of an article: avatar, name, role, bio, and
- * a link to the author's `/authors/[slug]` page. The bio comes from the
- * author's bank record when there is one, otherwise it is a coverage-only line
- * (see `authorProfile`) — it never invents a personal history.
+ * The contributor card at the foot of an article: avatar, name, and a link to
+ * the author's `/authors/[slug]` page. No bio — a phantom site credits its
+ * authors by name only.
  */
-export function AuthorBio({
+export function AuthorCard({
   byline,
-  beats,
   storyCount = 1,
   className = "",
 }: {
   byline: Byline;
-  beats: string[];
   storyCount?: number;
   className?: string;
 }) {
-  const { bio } = authorProfile(byline, beats);
   const href = `/authors/${byline.slug}`;
   const more =
     storyCount > 1 ? `View all ${storyCount} stories` : "View all stories";
@@ -42,7 +38,6 @@ export function AuthorBio({
             {byline.name}
           </Link>
         </h2>
-        <p className="text-sm leading-relaxed text-fg-soft">{bio}</p>
         <Link
           href={href}
           className="mt-1 w-fit font-heading text-sm font-semibold text-link ul-link"

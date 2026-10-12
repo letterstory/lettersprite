@@ -32,39 +32,27 @@ const post = (id: string, extra: Partial<Post> = {}): Post => ({
 const bank: PostAuthorProfile = {
   name: "Ines Moreau",
   slug: "ines-moreau-7",
-  bio: "Ines writes about infrastructure and the people who run it.",
-  role: "Senior Writer",
   expertise: ["infrastructure", "cloud"],
   startedAt: "2021-03-15",
 };
 
 describe("bylineFor", () => {
-  it("uses the bank profile's name, slug and role", () => {
+  it("uses the bank profile's name and slug, and carries no role", () => {
     const b = bylineFor(
       post("1", { author: "Ines Moreau", authorSlug: "ines-moreau-7", authorProfile: bank }),
     );
     expect(b).toMatchObject({
       name: "Ines Moreau",
       slug: "ines-moreau-7",
-      role: "Senior Writer",
       provided: true,
     });
+    expect(b).not.toHaveProperty("role");
     expect(b.profile).toBe(bank);
   });
 
-  it("falls back to Staff Writer when the bank assigned no role", () => {
-    const b = bylineFor(post("1", { authorProfile: { ...bank, role: null } }));
-    expect(b.role).toBe("Staff Writer");
-  });
-
-  it("gives a free-form author Staff Writer, never a random role", () => {
-    const roles = new Set(
-      ["a", "b", "c", "d", "e", "f"].map(
-        (id) => bylineFor(post(id, { author: `Writer ${id}` })).role,
-      ),
-    );
-    expect([...roles]).toEqual(["Staff Writer"]);
+  it("uses a free-form author's name verbatim, with no role", () => {
     const b = bylineFor(post("1", { author: "Jane Doe" }));
+    expect(b).not.toHaveProperty("role");
     expect(b).toMatchObject({ name: "Jane Doe", slug: "jane-doe", provided: true });
   });
 
@@ -82,7 +70,6 @@ describe("bylineFor", () => {
     expect(a).toEqual(editorialByline());
     expect(a).toMatchObject({
       name: `${env.siteTitle} Editors`,
-      role: "Editorial team",
       provided: false,
       profile: null,
     });
@@ -90,34 +77,22 @@ describe("bylineFor", () => {
 });
 
 describe("authorProfile", () => {
-  it("uses the bank bio verbatim and derives since from started_at", () => {
-    const p = authorProfile(bylineFor(post("1", { authorProfile: bank })), ["Cloud"]);
-    expect(p.bio).toBe(bank.bio);
+  it("derives since from the bank's started_at and carries no bio", () => {
+    const p = authorProfile(bylineFor(post("1", { authorProfile: bank })));
     expect(p.since).toBe(2021);
     expect(p.location).toBeUndefined();
-  });
-
-  it("falls back to a coverage-only line when the bank bio is empty", () => {
-    const p = authorProfile(
-      bylineFor(post("1", { authorProfile: { ...bank, bio: "", startedAt: null } })),
-      ["Cloud", "Security"],
-    );
-    expect(p.bio).toBe(`Ines Moreau covers cloud and security for ${env.siteTitle}.`);
-    expect(p.since).toBeUndefined();
-    expect(p.location).toBeUndefined();
+    expect(p).not.toHaveProperty("bio");
   });
 
   it("never invents a city or tenure for a free-form author", () => {
-    const p = authorProfile(bylineFor(post("1", { author: "Jane Doe" })), ["Design"]);
-    expect(p.bio).toBe(`Jane Doe covers design for ${env.siteTitle}.`);
+    const p = authorProfile(bylineFor(post("1", { author: "Jane Doe" })));
     expect(p.location).toBeUndefined();
     expect(p.since).toBeUndefined();
   });
 
-  it("describes the editorial team for the fallback byline", () => {
-    const p = authorProfile(editorialByline(), ["Technology", "Design"]);
-    expect(p.bio).toMatch(/editorial team covers technology and design\.$/);
-    expect(p.bio).toContain(env.siteTitle);
+  it("carries no bio, city or tenure for the editorial byline", () => {
+    const p = authorProfile(editorialByline());
+    expect(p).not.toHaveProperty("bio");
     expect(p.location).toBeUndefined();
     expect(p.since).toBeUndefined();
   });
@@ -147,6 +122,6 @@ describe("authorsFromPosts", () => {
     ]);
     expect(author.posts).toHaveLength(2);
     expect(author.byline.profile).toBe(bank);
-    expect(author.byline.role).toBe("Senior Writer");
+    expect(author.byline.slug).toBe("ines-moreau-7");
   });
 });

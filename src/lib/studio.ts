@@ -2,7 +2,7 @@ import { env } from "@/env";
 import { isLayout, type StudioLayout } from "@/lib/layouts";
 
 export type { StudioLayout };
-import { authorProfile, authorsFromPosts, bylineFor, type AuthorProfile, type Byline } from "@/lib/author";
+import { bylineFor, type Byline } from "@/lib/author";
 import { postsInSection, readingTimeMinutes, sectionFor, sectionHref, topSections, wordCount } from "@/lib/editorial";
 import { getPostBySlug, getPosts } from "@/lib/letterbrace/client";
 import type { Post } from "@/lib/letterbrace/types";
@@ -74,7 +74,6 @@ export interface StudioArticleData {
   before: string;
   after: string;
   byline: Byline;
-  profile: AuthorProfile;
   related: Post[];
   words: number;
 }
@@ -96,8 +95,6 @@ export async function loadArticle(slug: string): Promise<StudioArticleData | nul
   if (!post) return null;
   const all = await getPosts();
   const byline = bylineFor(post);
-  const authorPosts = authorsFromPosts(all).find((a) => a.slug === byline.slug)?.posts ?? [post];
-  const beats = [...new Set(authorPosts.map((p) => sectionFor(p).toLowerCase()))];
   const { html, headings } = buildToc(sanitizePostHtml(post.content));
   return {
     post,
@@ -105,7 +102,6 @@ export async function loadArticle(slug: string): Promise<StudioArticleData | nul
     headings,
     ...splitAtMiddleSection(html),
     byline,
-    profile: authorProfile(byline, beats),
     related: relatedPosts(post, all, 3),
     words: wordCount(post),
   };

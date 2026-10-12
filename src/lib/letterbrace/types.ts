@@ -46,10 +46,6 @@ export interface PostAuthorProfile {
   name: string;
   /** Stable bank slug; keys the `/authors/[slug]` route. */
   slug: string;
-  /** Contributor bio, verbatim from the bank. May be empty. */
-  bio: string;
-  /** Editorial role/title, or null when the bank assigned none. */
-  role: string | null;
   expertise: string[];
   /** ISO date the author started writing for the site, or null. */
   startedAt: string | null;

@@ -68,8 +68,6 @@ export function PostMeta({
             {name}
           </div>
           <div className="text-xs text-muted">
-            {byline.role}
-            {" · "}
             <time dateTime={iso}>{date}</time>
             {readingTime && <> · {read}</>}
             {updated && (

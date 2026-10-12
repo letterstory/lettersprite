@@ -28,14 +28,12 @@ const post = (extra: Partial<Post> = {}): Post => ({
 const orgId = `${env.siteUrl}/#organization`;
 
 describe("articleLd author", () => {
-  it("is a Person with the bank role and expertise", () => {
+  it("is a Person with the bank expertise and no job title", () => {
     const ld = articleLd(
       post({
         authorProfile: {
           name: "Ines Moreau",
           slug: "ines-moreau-7",
-          bio: "Bio.",
-          role: "Senior Writer",
           expertise: ["cloud"],
           startedAt: null,
         },
@@ -44,11 +42,11 @@ describe("articleLd author", () => {
     expect(ld.author).toMatchObject({
       "@type": "Person",
       name: "Ines Moreau",
-      jobTitle: "Senior Writer",
       knowsAbout: ["cloud"],
       url: `${env.siteUrl}/authors/ines-moreau-7`,
       worksFor: { "@id": orgId },
     });
+    expect(ld.author).not.toHaveProperty("jobTitle");
   });
 
   it("is the site Organization for the editorial byline, never a Person", () => {
@@ -59,18 +57,18 @@ describe("articleLd author", () => {
 
 describe("authorLd", () => {
   it("makes the editorial page's main entity the site Organization", () => {
-    const ld = authorLd(editorialByline(), [post()], ["Technology"]);
+    const ld = authorLd(editorialByline(), [post()]);
     expect(ld.mainEntity).toMatchObject({ "@type": "Organization", "@id": orgId });
   });
 
-  it("keeps a Person with the bio for a real author", () => {
+  it("keeps a Person, with no bio or job title, for a real author", () => {
     const byline = bylineFor(post({ author: "Jane Doe" }));
-    const ld = authorLd(byline, [post()], ["Design"]);
+    const ld = authorLd(byline, [post()]);
     expect(ld.mainEntity).toMatchObject({
       "@type": "Person",
       name: "Jane Doe",
-      jobTitle: "Staff Writer",
-      description: `Jane Doe covers design for ${env.siteTitle}.`,
     });
+    expect(ld.mainEntity).not.toHaveProperty("description");
+    expect(ld.mainEntity).not.toHaveProperty("jobTitle");
   });
 });

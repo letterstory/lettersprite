@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
-import type { Byline as BylineData, AuthorProfile } from "@/lib/author";
+import type { Byline as BylineData } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import type { PaperTrailSource, Post } from "@/lib/letterbrace/types";
@@ -27,10 +27,7 @@ export function Byline({
         {byline.initials}
       </span>
       <span className="s-byline-text">
-        <span className="s-byline-name">
-          {byline.name}
-          <span className="s-byline-role"> · {byline.role}</span>
-        </span>
+        <span className="s-byline-name">{byline.name}</span>
         <span className="s-meta">
           {formatDate(post.createdAt)} <span aria-hidden>·</span> {readingTimeLabel(post)}
         </span>
@@ -65,7 +62,7 @@ export function Sources({ sources, title = "Sources" }: { sources: PaperTrailSou
   );
 }
 
-export function AuthorCard({ byline, profile }: { byline: BylineData; profile: AuthorProfile }) {
+export function AuthorCard({ byline }: { byline: BylineData }) {
   return (
     <section className="s-author">
       <span className="s-avatar s-avatar-lg" aria-hidden>
@@ -73,8 +70,6 @@ export function AuthorCard({ byline, profile }: { byline: BylineData; profile: A
       </span>
       <div>
         <p className="s-author-name">{byline.name}</p>
-        <p className="s-author-role">{byline.role}</p>
-        <p className="s-author-bio">{profile.bio}</p>
       </div>
     </section>
   );

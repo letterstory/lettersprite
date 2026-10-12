@@ -29,7 +29,7 @@ import { StudioPostPage } from "@/components/studio/pages";
 import { BlitzArticle } from "@/components/article/BlitzArticle";
 import { FluxArticle } from "@/components/article/FluxArticle";
 import { RiotArticle } from "@/components/article/RiotArticle";
-import { AuthorBio } from "@/components/AuthorBio";
+import { AuthorCard } from "@/components/AuthorCard";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { JsonLd } from "@/components/JsonLd";
@@ -135,12 +135,11 @@ export default async function PostPage({ params }: Params) {
   // table of contents — all at build time.
   const { html: bodyHtml, headings } = buildToc(sanitizePostHtml(post.content));
 
-  // The author's full body of work (for the bio card + "view all") and the
-  // beats they cover, kept identical to the /authors/[slug] page.
+  // The author's full body of work (for the author card's "view all"), kept
+  // identical to the /authors/[slug] page.
   const byline = bylineFor(post);
   const authorPosts =
     authorsFromPosts(allPosts).find((a) => a.slug === byline.slug)?.posts ?? [post];
-  const authorBeats = [...new Set(authorPosts.map((p) => sectionFor(p)))];
 
   const linkableSlugs = allSections(allPosts).map((s) => sectionSlug(s));
   const words = wordCount(post);
@@ -156,7 +155,6 @@ export default async function PostPage({ params }: Params) {
         section={section}
         iso={iso}
         byline={byline}
-        authorBeats={authorBeats}
         authorPostsCount={authorPosts.length}
         related={related}
         prev={prev}
@@ -180,7 +178,6 @@ export default async function PostPage({ params }: Params) {
         section={section}
         iso={iso}
         byline={byline}
-        authorBeats={authorBeats}
         authorPostsCount={authorPosts.length}
         related={related}
         prev={prev}
@@ -204,7 +201,6 @@ export default async function PostPage({ params }: Params) {
         section={section}
         iso={iso}
         byline={byline}
-        authorBeats={authorBeats}
         authorPostsCount={authorPosts.length}
         related={related}
         prev={prev}
@@ -444,9 +440,8 @@ export default async function PostPage({ params }: Params) {
             </a>
           </div>
 
-          <AuthorBio
+          <AuthorCard
             byline={byline}
-            beats={authorBeats}
             storyCount={authorPosts.length}
             className="mt-12"
           />

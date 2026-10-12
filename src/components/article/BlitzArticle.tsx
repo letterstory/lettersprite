@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { AdSlot } from "@/components/AdSlot";
-import { AuthorBio } from "@/components/AuthorBio";
+import { AuthorCard } from "@/components/AuthorCard";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { JsonLd } from "@/components/JsonLd";
@@ -30,7 +30,6 @@ export type BlitzArticleProps = {
   section: string;
   iso: string;
   byline: Byline;
-  authorBeats: string[];
   authorPostsCount: number;
   related: Post[];
   prev: Post | null;
@@ -79,7 +78,6 @@ export function BlitzArticle({
   section,
   iso,
   byline,
-  authorBeats,
   authorPostsCount,
   related,
   prev,
@@ -227,9 +225,8 @@ export function BlitzArticle({
                 </a>
               </div>
 
-              <AuthorBio
+              <AuthorCard
                 byline={byline}
-                beats={authorBeats}
                 storyCount={authorPostsCount}
                 className="mt-12"
               />

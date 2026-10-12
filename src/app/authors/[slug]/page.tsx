@@ -54,15 +54,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const author = await resolveAuthor(slug);
   if (!author) return {};
-  const { bio } = authorProfile(author.byline, author.beats);
+  const description = `Stories by ${author.byline.name} for ${env.siteTitle}.`;
   return {
     title: author.byline.name,
-    description: bio,
+    description,
     alternates: { canonical: `/authors/${slug}` },
     openGraph: {
       type: "profile",
       title: `${author.byline.name} · ${env.siteTitle}`,
-      description: bio,
+      description,
       url: `${env.siteUrl}/authors/${slug}`,
     },
   };
@@ -74,7 +74,7 @@ export default async function AuthorPage({ params }: Params) {
   if (!author) notFound();
 
   const { byline, posts, beats } = author;
-  const { bio, location } = authorProfile(byline, beats);
+  const { location } = authorProfile(byline);
   const count = posts.length;
 
   const theme = getActiveTheme();
@@ -83,7 +83,7 @@ export default async function AuthorPage({ params }: Params) {
   if (theme.features?.fluxLists) {
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <FluxIndex
           title={byline.name}
           stat={`${count} ${count === 1 ? "story" : "stories"}`}
@@ -102,7 +102,7 @@ export default async function AuthorPage({ params }: Params) {
       .slice(0, count <= 6 ? 15 : 6);
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <RiotIndex
           title={byline.name}
           stat={`${count} ${count === 1 ? "story" : "stories"}`}
@@ -118,7 +118,7 @@ export default async function AuthorPage({ params }: Params) {
     const stat = `${count} ${count === 1 ? "story" : "stories"}`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <BlitzIndex
           title={byline.name}
           siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
@@ -134,7 +134,7 @@ export default async function AuthorPage({ params }: Params) {
     const stat = `${count} ${count === 1 ? "entry" : "entries"}`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <CommonsIndex
           title={byline.name}
           siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
@@ -150,7 +150,7 @@ export default async function AuthorPage({ params }: Params) {
     const stat = `${count} ${count === 1 ? "story" : "stories"}`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <VitrineIndex
           title={byline.name}
           siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
@@ -166,7 +166,7 @@ export default async function AuthorPage({ params }: Params) {
     const stat = `${count} ${count === 1 ? "story" : "stories"} by ${byline.name}`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <KioskIndex
           title={byline.name}
           siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
@@ -182,7 +182,7 @@ export default async function AuthorPage({ params }: Params) {
     const stat = `${count} ${count === 1 ? "story" : "stories"} by ${byline.name}`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <FolioIndex
           title={byline.name}
           siblings={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
@@ -200,9 +200,8 @@ export default async function AuthorPage({ params }: Params) {
     }`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <WireIndex
-          eyebrow={byline.role}
           title={byline.name}
           avatar={{ initials: byline.initials, color: byline.color }}
           stat={stat}
@@ -226,12 +225,10 @@ export default async function AuthorPage({ params }: Params) {
     }`;
     return (
       <>
-        <JsonLd data={authorLd(byline, posts, beats)} />
+        <JsonLd data={authorLd(byline, posts)} />
         <SlateIndex
-          eyebrow={byline.role}
           title={byline.name}
           avatar={{ initials: byline.initials, color: byline.color }}
-          bio={bio}
           stat={stat}
           accentLinks={beats.map((b) => ({ label: b, href: sectionHref(b) }))}
           metaKind="author"
@@ -252,7 +249,7 @@ export default async function AuthorPage({ params }: Params) {
 
   return (
     <div className="container-wide px-6 py-12">
-      <JsonLd data={authorLd(byline, posts, beats)} />
+      <JsonLd data={authorLd(byline, posts)} />
 
       <header className="mb-12 flex flex-col items-start gap-5 border-b-2 border-foreground pb-8 sm:flex-row sm:items-center sm:gap-6">
         <span
@@ -263,11 +260,9 @@ export default async function AuthorPage({ params }: Params) {
           {byline.initials}
         </span>
         <div className="flex flex-col gap-2">
-          <p className="kicker">{byline.role}</p>
           <h1 className="display text-4xl font-black leading-none sm:text-5xl">
             {byline.name}
           </h1>
-          <p className="max-w-2xl text-fg-soft">{bio}</p>
           <p className="mt-1 text-xs text-muted">
             {count} {count === 1 ? "story" : "stories"}
             {location && <> · {location}</>}

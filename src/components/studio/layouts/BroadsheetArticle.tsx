@@ -32,7 +32,6 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
           <div className="b-byline">
             <span>
               By <strong>{a.byline.name}</strong>
-              <span className="b-byline-role">{a.byline.role}</span>
             </span>
             <span className="b-byline-date">
               {longDate(post.createdAt)} · {readingTimeLabel(post)}
@@ -59,7 +58,7 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
             }
           />
           <Sources sources={post.paperTrail} />
-          <AuthorCard byline={a.byline} profile={a.profile} />
+          <AuthorCard byline={a.byline} />
         </div>
       </article>
       {a.related.length > 0 && (
