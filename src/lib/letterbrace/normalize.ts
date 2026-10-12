@@ -110,7 +110,10 @@ export function excerptFrom(html: string, max = 130): string {
   if (clean.length <= max) return clean;
   const cut = clean.slice(0, max);
   const lastSpace = cut.lastIndexOf(" ");
-  const body = (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).replace(TRAILING_NOISE, "");
+  const body = (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).replace(
+    TRAILING_NOISE,
+    "",
+  );
   // If the cut was all punctuation/whitespace, fall back to the raw trimmed cut.
   return `${body || cut.trimEnd()} …`;
 }
@@ -138,7 +141,8 @@ function toTags(raw: Raw): string[] {
  * `undefined`/`null`, a placeholder dash, etc. Matched whole-word so legitimate
  * names are never touched.
  */
-const NULLISH_NAME = /^(?:undefined|null|nan|n\/?a|none|nil|unknown|-|–|—|\.)$/i;
+const NULLISH_NAME =
+  /^(?:undefined|null|nan|n\/?a|none|nil|unknown|-|–|—|\.)$/i;
 
 /**
  * Clean an author string coming from the API. Upstream name concatenation can
@@ -331,7 +335,9 @@ function words(d: Raw, ...keys: string[]): string {
 function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
   if (!value || typeof value !== "object") return null;
   const d = value as Raw;
-  const sponsor = (d.sponsor && typeof d.sponsor === "object" ? d.sponsor : {}) as Raw;
+  const sponsor = (
+    d.sponsor && typeof d.sponsor === "object" ? d.sponsor : {}
+  ) as Raw;
   // The wording is Letterstory's, never ours: without the name every sentence
   // names, there is nothing honest to render.
   const name = asString(sponsor.name)?.trim();
@@ -346,6 +352,7 @@ function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
     article_header: label,
     article_footer: text,
     cover_badge: label,
+    cover_baked: true,
     structured_data: true,
     sponsored_links: true,
     meta_description: label,
@@ -360,11 +367,19 @@ function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
       s === "ai_authorship" ? "site_byline" : s,
     ),
   );
+  // One cover disclosure: a label already drawn into the image needs no badge on top.
+  if (listed.has("cover_baked")) listed.delete("cover_badge");
   const surfaces = DISCLOSURE_SURFACES.filter(
     (s): s is DisclosureSurface => listed.has(s) && Boolean(needs[s]),
   );
   if (!surfaces.length) return null;
-  return { surfaces, sponsor: { name, url: httpUrl(sponsor.url) }, text, label, siteText };
+  return {
+    surfaces,
+    sponsor: { name, url: httpUrl(sponsor.url) },
+    text,
+    label,
+    siteText,
+  };
 }
 
 /**
@@ -390,7 +405,10 @@ function toAuthor(raw: Raw): string | null {
     const o = a as Raw;
     const name =
       asString(o.name) ??
-      [asString(o.first_name ?? o.firstName), asString(o.last_name ?? o.lastName)]
+      [
+        asString(o.first_name ?? o.firstName),
+        asString(o.last_name ?? o.lastName),
+      ]
         .filter(Boolean)
         .join(" ");
     return name ? cleanAuthorName(name) : null;
@@ -473,7 +491,9 @@ export function normalizePost(raw: Raw): Post | null {
   const sponsorDisclosure = toSponsorDisclosure(raw);
   // Under `site_byline` the byline is the site's own: no author field the
   // payload (or anything upstream of it) carries may credit a person.
-  const siteByline = Boolean(sponsorDisclosure?.surfaces.includes("site_byline"));
+  const siteByline = Boolean(
+    sponsorDisclosure?.surfaces.includes("site_byline"),
+  );
   const authorProfile = siteByline ? null : toAuthorProfile(raw);
 
   return {
@@ -481,7 +501,9 @@ export function normalizePost(raw: Raw): Post | null {
     slug: slugify(suppliedSlug ?? title),
     title,
     content,
-    excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
+    excerpt: suppliedExcerpt
+      ? stripHtml(suppliedExcerpt)
+      : excerptFrom(content),
     dek: suppliedExcerpt ? stripHtml(suppliedExcerpt) : null,
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
     author: siteByline ? null : (toAuthor(raw) ?? authorProfile?.name ?? null),
