@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
 import { allSections, orderedByDate, publishDate, sectionFor, sectionSlug } from "@/lib/editorial";
-import { authorsFromPosts, bylineFor } from "@/lib/author";
+import { authorHref, authorsFromPosts, bylineFor } from "@/lib/author";
 import { formatDate } from "@/lib/format";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { FollowingFeed, type FeedPost } from "@/components/FollowingFeed";
@@ -47,7 +47,8 @@ export default async function FollowingPage() {
       sectionName: sName,
       sectionSlug: sectionSlug(sName),
       authorName: b.name,
-      authorSlug: b.slug,
+      // Empty for a byline with no author page (an AI-written post).
+      authorSlug: authorHref(b) ? b.slug : "",
       dateLabel: formatDate(publishDate(p)),
       cover: coverImageFor(p, 400),
       coverAlt: coverAltFor(p),

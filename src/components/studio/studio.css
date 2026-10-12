@@ -1063,3 +1063,17 @@
   font-family: var(--b-font-body);
   font-size: 17px;
 }
+.studio .disclosure-lead {
+  margin: 20px 0 0;
+  color: var(--b-ink);
+  font-family: var(--b-font-body);
+  font-size: 17px;
+  font-weight: 700;
+}
+.studio .s-footer .publication-disclosure {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--b-paper);
+  font-family: var(--b-font-body);
+  font-size: 15px;
+}

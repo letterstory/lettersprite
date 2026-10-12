@@ -5,6 +5,7 @@ import { readingTimeMinutes, sectionFor } from "@/lib/editorial";
 import { topicHref, studioHome, pullQuote, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { AuthorCard, Byline, Prose, RelatedGrid, Sources } from "../parts";
 
 /**
@@ -34,6 +35,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
           <h1 className="m-title">{post.title}</h1>
           {post.dek && <p className="m-dek">{post.dek}</p>}
           <Byline byline={a.byline} post={post} align="center" />
+          <DisclosureLabel disclosure={post.sponsorDisclosure} />
         </header>
 
         <div className="s-wrap m-grid">

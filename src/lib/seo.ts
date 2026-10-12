@@ -25,7 +25,7 @@ import {
 import { absoluteCover, absoluteUrl, postUrl } from "./url";
 import { coverAltFor } from "./covers";
 import { discloses } from "./disclosure";
-import type { Post } from "./letterbrace/types";
+import type { Post, SponsorDisclosure } from "./letterbrace/types";
 
 type Json = Record<string, unknown>;
 
@@ -45,12 +45,27 @@ function headline(title: string): string {
 }
 
 /**
+ * The site's funder as a schema.org Organization — the machine-readable half
+ * of the site statement — when the site's disclosure lists `site_statement`.
+ */
+function funderNode(disclosure: SponsorDisclosure | null | undefined): Json | undefined {
+  if (!discloses(disclosure, "site_statement")) return undefined;
+  return clean({
+    "@type": "Organization",
+    name: disclosure.sponsor.name,
+    url: disclosure.sponsor.url ?? undefined,
+  });
+}
+
+/**
  * The site-wide Organization + WebSite graph. Emitted once, in the root layout.
  * No SearchAction: this is a static, search-less blog, and a target that 404s
- * is worse than none.
+ * is worse than none. `disclosure` is the site's own (`siteDisclosure`): when
+ * it lists `site_statement`, both nodes name the sponsor as `funder`.
  */
-export function siteGraphLd(): Json {
+export function siteGraphLd(disclosure: SponsorDisclosure | null = null): Json {
   const favicon = pickFavicon();
+  const funder = funderNode(disclosure);
   const org: Json = clean({
     "@type": "Organization",
     "@id": ORG_ID,
@@ -58,6 +73,7 @@ export function siteGraphLd(): Json {
     url: env.siteUrl,
     description: env.siteDescription || undefined,
     logo: favicon ? absoluteUrl(favicon.url) : undefined,
+    funder,
   });
   const website: Json = clean({
     "@type": "WebSite",
@@ -67,6 +83,7 @@ export function siteGraphLd(): Json {
     description: env.siteDescription || undefined,
     inLanguage: "en",
     publisher: { "@id": ORG_ID },
+    funder,
   });
   return { "@context": "https://schema.org", "@graph": [org, website] };
 }
@@ -164,6 +181,7 @@ export function articleLd(post: Post): Json {
         creditText: creditText(post) || undefined,
       }),
     ],
+    // Omitted (by `clean`) for an undated post, never invented.
     datePublished: publishDate(post),
     dateModified: modifiedDate(post),
     author: authorNode(post),
@@ -236,7 +254,7 @@ export function authorLd(byline: Byline, posts: Post[]): Json {
       "@id": `${postUrl(p)}/#article`,
       url: postUrl(p),
       headline: headline(p.title),
-      datePublished: publishDate(p),
+      datePublished: publishDate(p) ?? undefined,
     })),
   };
 }
@@ -257,7 +275,7 @@ export function blogListingLd(posts: Post[]): Json {
       "@id": `${postUrl(p)}/#article`,
       url: postUrl(p),
       headline: headline(p.title),
-      datePublished: publishDate(p),
+      datePublished: publishDate(p) ?? undefined,
     })),
   };
 }

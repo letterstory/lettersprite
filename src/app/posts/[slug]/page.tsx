@@ -23,6 +23,7 @@ import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { buildToc } from "@/lib/toc";
 import { postUrl } from "@/lib/url";
 import { formatDate } from "@/lib/format";
+import { disclosedDescription } from "@/lib/disclosure";
 import { getActiveTheme } from "@/themes";
 import { getLayout } from "@/lib/studio";
 import { StudioPostPage } from "@/components/studio/pages";
@@ -30,6 +31,8 @@ import { BlitzArticle } from "@/components/article/BlitzArticle";
 import { FluxArticle } from "@/components/article/FluxArticle";
 import { RiotArticle } from "@/components/article/RiotArticle";
 import { AuthorCard } from "@/components/AuthorCard";
+import { AuthorLink } from "@/components/AuthorLink";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { SponsorBadge } from "@/components/SponsorBadge";
@@ -63,7 +66,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const post = await getPostBySlug(slug);
   if (!post) return {};
 
-  const description = post.excerpt || undefined;
+  // Led by the disclosure label when it lists `meta_description`; the title
+  // is left alone.
+  const description = disclosedDescription(post.sponsorDisclosure, post.excerpt);
   const url = postUrl(post);
   const byline = bylineFor(post);
   const published = publishDate(post);
@@ -85,8 +90,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       url,
       siteName: env.siteTitle,
       locale: "en_US",
-      publishedTime: published,
-      modifiedTime: modifiedDate(post),
+      publishedTime: published ?? undefined,
+      modifiedTime: modifiedDate(post) ?? undefined,
       authors: [byline.name],
       tags: post.tags,
       section: sectionFor(post),
@@ -325,15 +330,17 @@ export default async function PostPage({ params }: Params) {
               the author's other Salesly pieces, plus date and reading time. */}
           {commons && (
             <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.82rem] text-muted">
-              <Link
-                href={`/authors/${byline.slug}`}
+              <AuthorLink
+                byline={byline}
                 className="font-medium text-heading underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
-              >
-                {byline.name}
-              </Link>
+              />
               <span aria-hidden>·</span>
-              <span>{formatDate(iso)}</span>
-              <span aria-hidden>·</span>
+              {iso && (
+                <>
+                  <span>{formatDate(iso)}</span>
+                  <span aria-hidden>·</span>
+                </>
+              )}
               <span>{readingTimeLabel(post)}</span>
             </div>
           )}
@@ -366,6 +373,8 @@ export default async function PostPage({ params }: Params) {
               {post.dek}
             </p>
           )}
+
+          <DisclosureLabel disclosure={post.sponsorDisclosure} className="mt-6" />
 
           {!commons && (
             <div
@@ -410,7 +419,7 @@ export default async function PostPage({ params }: Params) {
           </div>
           <figcaption className="mt-2.5 text-xs text-muted">
             <span>
-              {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+              {section} · {iso && <>{formatDate(iso)} · </>}{readingTimeLabel(post)} ·{" "}
               {words.toLocaleString("en-US")} words
             </span>
             {/* Its own line: a photo credit is an obligation to a person, not

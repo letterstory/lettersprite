@@ -37,45 +37,68 @@ export interface CoverCredit {
 }
 
 /**
- * Where a sponsored publication discloses its sponsor. Letterstory decides the
- * set per collection; the site renders whichever are listed and branches on
+ * Where a sponsored publication discloses its sponsor (and, with
+ * `ai_authorship`, how its articles are written). Letterstory decides the set
+ * per collection; the site renders whichever are listed and branches on
  * nothing else.
  *
- * - `article_footer`: the disclosure sentence after the body.
- * - `cover_badge`: the badge set over the cover.
+ * - `article_header`: `label` at the top of the article, by the byline (the
+ *   FTC's placement: with the content, hard to miss).
+ * - `article_footer`: the disclosure sentence (`text`) after the body.
+ * - `cover_badge`: `label` set over the cover.
  * - `structured_data`: schema.org `sponsor` on the article JSON-LD.
  * - `sponsored_links`: `rel="sponsored"` on body links to the sponsor's site.
+ * - `meta_description`: `label` prefixed to the meta, Open Graph and Twitter
+ *   descriptions (and the post's RSS item).
+ * - `site_statement`: `siteText` site-wide — every page's footer, the About
+ *   page, `llms.txt`, the RSS channel and the site's `funder` JSON-LD.
+ * - `ai_authorship`: the byline is the site's own, with `aiLabel` as its role,
+ *   never a persona; `aiText` joins the site statement.
  */
 export const DISCLOSURE_SURFACES = [
+  "article_header",
   "article_footer",
   "cover_badge",
   "structured_data",
   "sponsored_links",
+  "meta_description",
+  "site_statement",
+  "ai_authorship",
 ] as const;
 export type DisclosureSurface = (typeof DISCLOSURE_SURFACES)[number];
 
 /**
  * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` on
- * every article read (docs/architecture/article-disclosure.md in letterstory).
+ * every article read (docs/architecture/sponsor-disclosure.md in letterstory).
  * Null when the publication discloses nothing — including every payload from
  * before the field existed.
  *
- * `text` and `badgeText` are rendered verbatim. The site never composes its
- * own wording: the sentence is decided once, in Letterstory, so a disclosure
- * cannot drift into something softer per theme.
+ * Every string is rendered verbatim. The site never composes its own wording:
+ * each sentence is decided once, in Letterstory, so a disclosure cannot drift
+ * into something softer per theme. A surface whose words did not arrive is
+ * dropped in `normalize.ts`, so a listed surface always has its string.
  */
 export interface SponsorDisclosure {
   /** Never empty: a disclosure with no surface to render on is null. */
   surfaces: DisclosureSurface[];
   sponsor: {
     name: string;
-    /** The sponsor's site, for JSON-LD and `sponsored_links`; null when unknown. */
+    /** The sponsor's site, for JSON-LD, links and `sponsored_links`; null when unknown. */
     url: string | null;
   };
-  /** The footer sentence, verbatim — e.g. "This article is sponsored by Acme." */
+  /** The footer sentence — e.g. "This article is sponsored by Acme." Empty when not served. */
   text: string;
-  /** The cover badge, verbatim — e.g. "Sponsored by Acme". */
-  badgeText: string;
+  /** The short label — e.g. "Sponsored by Acme" — for the header, the cover
+   *  badge and the description prefix. Empty when not served. */
+  label: string;
+  /** The site-wide sentence — e.g. "This publication is sponsored by Acme."
+   *  Empty when not served. */
+  siteText: string;
+  /** E.g. "Written with AI"; null unless `ai_authorship` is listed. */
+  aiLabel: string | null;
+  /** E.g. "This publication's articles are written with AI."; null unless
+   *  `ai_authorship` is listed (and may be null even then). */
+  aiText: string | null;
 }
 
 /**

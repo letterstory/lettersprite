@@ -4,6 +4,7 @@ import { AdSlot } from "@/components/AdSlot";
 import { sectionFor, sectionHref } from "@/lib/editorial";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { bylineFor } from "@/lib/author";
+import { AuthorLink } from "@/components/AuthorLink";
 
 /**
  * Kiosk front — a take on tastecooking.com: a warm cream newsstand with an
@@ -50,12 +51,10 @@ function Byline({ post, muted = true }: { post: Post; muted?: boolean }) {
       className={`font-mono text-[0.68rem] uppercase tracking-[0.12em] ${muted ? "text-muted" : "text-current/70"}`}
     >
       Story:{" "}
-      <Link
-        href={`/authors/${b.slug}`}
+      <AuthorLink
+        byline={b}
         className={muted ? "text-heading transition-colors hover:text-primary" : "underline underline-offset-2"}
-      >
-        {b.name}
-      </Link>
+      />
     </p>
   );
 }

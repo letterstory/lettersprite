@@ -9,7 +9,10 @@ const disclosure = (
   surfaces,
   sponsor: { name: "Acme", url },
   text: "This article is sponsored by Acme.",
-  badgeText: "Sponsored by Acme",
+  label: "Sponsored by Acme",
+  siteText: "This publication is sponsored by Acme.",
+  aiLabel: null,
+  aiText: null,
 });
 
 /** The rel of the first link in sanitized `html`. */

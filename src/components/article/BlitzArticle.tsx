@@ -10,6 +10,8 @@ import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { AdSlot } from "@/components/AdSlot";
 import { AuthorCard } from "@/components/AuthorCard";
+import { AuthorLink } from "@/components/AuthorLink";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { SponsorBadge } from "@/components/SponsorBadge";
@@ -29,7 +31,7 @@ export type BlitzArticleProps = {
   bodyHtml: string;
   headings: Heading[];
   section: string;
-  iso: string;
+  iso: string | null;
   byline: Byline;
   authorPostsCount: number;
   related: Post[];
@@ -114,6 +116,7 @@ export function BlitzArticle({
               {post.dek}
             </p>
           )}
+          <DisclosureLabel disclosure={post.sponsorDisclosure} className="mx-auto mt-6 max-w-3xl" />
         </header>
 
         {/* Three-column body: meta/share rail · reading column · ad rail. */}
@@ -124,7 +127,7 @@ export function BlitzArticle({
               <Link href={sectionHref(section)} className="kicker text-primary">
                 {section}
               </Link>
-              <div className="text-sm text-muted">{formatDate(iso)}</div>
+              {iso && <div className="text-sm text-muted">{formatDate(iso)}</div>}
               <div className="flex items-center gap-1.5 text-sm text-muted">
                 <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 text-accent" fill="currentColor" aria-hidden>
                   <path d="M2 1.5v9l8-4.5z" />
@@ -134,12 +137,10 @@ export function BlitzArticle({
 
               <div className="mt-2 border-t border-border pt-4">
                 <div className="kicker kicker-muted mb-1.5">Text by</div>
-                <Link
-                  href={`/authors/${byline.slug}`}
+                <AuthorLink
+                  byline={byline}
                   className="text-sm font-semibold text-heading transition-colors hover:text-primary"
-                >
-                  {byline.name}
-                </Link>
+                />
               </div>
 
               {post.coverCredit?.required && (

@@ -5,6 +5,7 @@ import { bylineFor } from "@/lib/author";
 import { publishDate, sectionFor, sectionHref } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
+import { AuthorLink } from "@/components/AuthorLink";
 
 /**
  * Quarto front — a classic three-column newspaper front: a left rail of stacked
@@ -28,16 +29,15 @@ function Kicker({ post, className = "" }: { post: Post; className?: string }) {
 function Byline({ post }: { post: Post }) {
   const b = bylineFor(post);
   return (
-    <Link href={`/authors/${b.slug}`} className="transition-colors hover:text-primary">
-      {b.name}
-    </Link>
+    <AuthorLink byline={b} className="transition-colors hover:text-primary" />
   );
 }
 
 function Meta({ post, className = "" }: { post: Post; className?: string }) {
   return (
     <p className={`mt-1.5 text-[0.82rem] text-muted ${className}`}>
-      <Byline post={post} /> · {formatDate(publishDate(post))}
+      <Byline post={post} />
+      {publishDate(post) && <> · {formatDate(publishDate(post))}</>}
     </p>
   );
 }

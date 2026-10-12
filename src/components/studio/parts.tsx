@@ -33,7 +33,12 @@ export function Byline({
           {byline.role && <span className="s-byline-role"> · {byline.role}</span>}
         </span>
         <span className="s-meta">
-          {formatDate(post.createdAt)} <span aria-hidden>·</span> {readingTimeLabel(post)}
+          {post.createdAt && (
+            <>
+              {formatDate(post.createdAt)} <span aria-hidden>·</span>{" "}
+            </>
+          )}
+          {readingTimeLabel(post)}
         </span>
       </span>
       {share && (
@@ -66,7 +71,9 @@ export function Sources({ sources, title = "Sources" }: { sources: PaperTrailSou
   );
 }
 
+/** The contributor card; none for a byline with no profile (an AI-written post). */
 export function AuthorCard({ byline }: { byline: BylineData }) {
+  if (!byline.hasProfile) return null;
   const { bio } = authorProfile(byline);
   return (
     <section className="s-author">

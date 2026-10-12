@@ -9,6 +9,8 @@ import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { AuthorCard } from "@/components/AuthorCard";
+import { AuthorLink } from "@/components/AuthorLink";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { SponsorBadge } from "@/components/SponsorBadge";
@@ -29,7 +31,7 @@ export type RiotArticleProps = {
   bodyHtml: string;
   headings: Heading[];
   section: string;
-  iso: string;
+  iso: string | null;
   byline: Byline;
   authorPostsCount: number;
   related: Post[];
@@ -93,8 +95,12 @@ export function RiotArticle({
               {post.title}
             </h1>
             <p className="mt-4 flex items-center gap-3 font-display text-[0.7rem] font-medium uppercase tracking-[0.12em] text-white/75">
-              <span>{formatDate(iso)}</span>
-              <span aria-hidden className="text-white/40">·</span>
+              {iso && (
+                <>
+                  <span>{formatDate(iso)}</span>
+                  <span aria-hidden className="text-white/40">·</span>
+                </>
+              )}
               <span>{readingTimeLabel(post)}</span>
               <span aria-hidden className="text-white/40">·</span>
               <span>{words.toLocaleString("en-US")} words</span>
@@ -108,11 +114,11 @@ export function RiotArticle({
           <ShareRow url={url} title={post.title} withLabel />
           <p className="font-display text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted">
             Text:{" "}
-            <Link href={`/authors/${byline.slug}`} className="text-primary transition-opacity hover:opacity-70">
-              {byline.name}
-            </Link>
+            <AuthorLink byline={byline} className="text-primary transition-opacity hover:opacity-70" />
           </p>
         </div>
+
+        <DisclosureLabel disclosure={post.sponsorDisclosure} className="mx-auto mt-6 max-w-3xl" />
 
         {post.dek && (
           <p className="mx-auto mt-6 max-w-3xl font-heading text-xl font-bold leading-snug text-heading text-pretty">

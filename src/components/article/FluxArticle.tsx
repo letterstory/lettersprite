@@ -14,6 +14,7 @@ import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { AuthorCard } from "@/components/AuthorCard";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { SponsorBadge } from "@/components/SponsorBadge";
@@ -37,7 +38,7 @@ export type FluxArticleProps = {
   bodyHtml: string;
   headings: Heading[];
   section: string;
-  iso: string;
+  iso: string | null;
   byline: Byline;
   authorPostsCount: number;
   related: Post[];
@@ -93,6 +94,7 @@ export function FluxArticle({
           {post.dek && (
             <p className="mt-4 text-xl leading-snug text-fg-soft text-pretty">{post.dek}</p>
           )}
+          <DisclosureLabel disclosure={post.sponsorDisclosure} className="mt-5" />
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-y-2 border-foreground py-3">
             <PostMeta post={post} variant="byline" readingTime linkAuthor showUpdated />
             <ShareRow url={url} title={post.title} />
@@ -113,7 +115,7 @@ export function FluxArticle({
           </div>
           <figcaption className="mt-2.5 text-xs text-muted">
             <span>
-              {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+              {section} · {iso && <>{formatDate(iso)} · </>}{readingTimeLabel(post)} ·{" "}
               {words.toLocaleString("en-US")} words
             </span>
             <CoverCredit credit={post.coverCredit} className="mt-1 block" />

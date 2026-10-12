@@ -1,3 +1,4 @@
+import { bylineFor } from "@/lib/author";
 import { Fragment, type ReactNode } from "react";
 import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
@@ -35,7 +36,8 @@ function Chip({ section, className = "" }: { section: string; className?: string
 function Meta({ post }: { post: Post }) {
   return (
     <span className="font-mono text-xs text-muted">
-      {post.author} · {formatDate(publishDate(post))} · {readingTimeLabel(post)}
+      {bylineFor(post).name} · {publishDate(post) && <>{formatDate(publishDate(post))} · </>}
+      {readingTimeLabel(post)}
     </span>
   );
 }

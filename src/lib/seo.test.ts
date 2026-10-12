@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { articleLd, authorLd } from "./seo";
+import { articleLd, authorLd, siteGraphLd } from "./seo";
 import { bylineFor, editorialByline } from "./author";
 import { env } from "@/env";
 import type { Post, SponsorDisclosure } from "./letterbrace/types";
@@ -105,7 +105,10 @@ describe("articleLd sponsor", () => {
     surfaces,
     sponsor: { name: "Acme", url },
     text: "This article is sponsored by Acme.",
-    badgeText: "Sponsored by Acme",
+    label: "Sponsored by Acme",
+  siteText: "This publication is sponsored by Acme.",
+  aiLabel: null,
+  aiText: null,
   });
 
   it("names the sponsor Organization when structured_data is listed", () => {
@@ -123,5 +126,34 @@ describe("articleLd sponsor", () => {
       "sponsor",
     );
     expect(articleLd(post())).not.toHaveProperty("sponsor");
+  });
+});
+
+describe("siteGraphLd funder", () => {
+  const site = (url: string | null, surfaces: SponsorDisclosure["surfaces"] = ["site_statement"]): SponsorDisclosure => ({
+    surfaces,
+    sponsor: { name: "Acme", url },
+    text: "",
+    label: "",
+    siteText: "This publication is sponsored by Acme.",
+    aiLabel: null,
+    aiText: null,
+  });
+  const nodes = (ld: Record<string, unknown>) => ld["@graph"] as Record<string, unknown>[];
+
+  it("names the sponsor as funder of the Organization and the WebSite under site_statement", () => {
+    for (const node of nodes(siteGraphLd(site("https://acme.com")))) {
+      expect(node.funder).toEqual({ "@type": "Organization", name: "Acme", url: "https://acme.com" });
+    }
+  });
+
+  it("omits the url when the sponsor has none", () => {
+    expect(nodes(siteGraphLd(site(null)))[0].funder).toEqual({ "@type": "Organization", name: "Acme" });
+  });
+
+  it("has no funder when site_statement isn't listed, or nothing is disclosed", () => {
+    for (const ld of [siteGraphLd(site("https://acme.com", ["article_footer"])), siteGraphLd(), siteGraphLd(null)]) {
+      for (const node of nodes(ld)) expect(node).not.toHaveProperty("funder");
+    }
   });
 });

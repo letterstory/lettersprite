@@ -7,6 +7,7 @@ import { env } from "@/env";
 import { LAYOUTS } from "@/lib/layouts";
 import { normalizePost } from "@/lib/letterbrace/normalize";
 import type { Post } from "@/lib/letterbrace/types";
+import { strippedClasses } from "./readability-patterns";
 
 /**
  * Every article layout renders the sponsor disclosure. The doc this ships
@@ -38,6 +39,11 @@ const { StudioPostPage } = await import("@/components/studio/pages");
 
 const FOOTER = "This article is sponsored by Acme.";
 const BADGE = "Sponsored by Acme";
+const AI_LABEL = "Written with AI";
+/** The top-of-article line: `label`, then `ai_label` under ai_authorship. */
+const HEADER = `${BADGE} · ${AI_LABEL}`;
+/** The persona an older payload (or anything upstream) might still carry. */
+const PERSONA = "Dana Reyes";
 
 /** A body long enough to split for a mid-article moment, linking the sponsor. */
 const BODY = [
@@ -48,7 +54,7 @@ const BODY = [
   ),
 ].join("");
 
-function payload(slug: string, sponsorDisclosure: unknown) {
+function payload(slug: string, sponsorDisclosure: unknown, extra: Record<string, unknown> = {}) {
   return {
     id: slug,
     slug,
@@ -59,15 +65,37 @@ function payload(slug: string, sponsorDisclosure: unknown) {
     tags: ["Technology"],
     published_at: "2026-10-01T00:00:00Z",
     sponsor_disclosure: sponsorDisclosure,
+    ...extra,
   };
 }
 
+/** Every surface, in the contract the app serves. */
+const FULL = {
+  surfaces: [
+    "article_header",
+    "article_footer",
+    "cover_badge",
+    "structured_data",
+    "sponsored_links",
+    "meta_description",
+    "site_statement",
+    "ai_authorship",
+  ],
+  sponsor: { name: "Acme", url: "https://www.acme.com" },
+  text: FOOTER,
+  label: BADGE,
+  site_text: "This publication is sponsored by Acme.",
+  ai_label: AI_LABEL,
+  ai_text: "This publication's articles are written with AI.",
+};
+
+// The app serves the author fields null under ai_authorship; these carry a
+// persona anyway, to prove none can reach the page.
 const disclosed = normalizePost(
-  payload("disclosed", {
-    surfaces: ["article_footer", "cover_badge", "structured_data", "sponsored_links"],
-    sponsor: { name: "Acme", url: "https://www.acme.com" },
-    text: FOOTER,
-    badge_text: BADGE,
+  payload("disclosed", FULL, {
+    author: PERSONA,
+    author_slug: "dana-reyes",
+    author_profile: { name: PERSONA, slug: "dana-reyes", bio: "Dana covers tools.", role: "Staff Writer" },
   }),
 )!;
 const undisclosed = normalizePost(payload("undisclosed", null))!;
@@ -104,7 +132,29 @@ async function renderStudio(layout: (typeof LAYOUTS)[number], post: Post): Promi
   return renderToStaticMarkup(page);
 }
 
+/** The top-of-article line, once, in classes Readability keeps. */
+function expectHeaderLine(html: string) {
+  const lines = [...html.matchAll(new RegExp(`<p class="([^"]*)" role="note">${HEADER}</p>`, "g"))];
+  expect(lines).toHaveLength(1);
+  expect(strippedClasses(`class="${lines[0][1]}"`)).toEqual([]);
+  // At the top: before the body's first paragraph.
+  expect(html.indexOf(HEADER)).toBeLessThan(html.indexOf("Opening paragraph"));
+}
+
+/** The byline is the site's own, credited as AI-written: no persona, no profile. */
+function expectAiByline(html: string) {
+  expect(html).not.toContain(PERSONA);
+  expect(html).toContain(`${env.siteTitle} Editors`);
+  expect(html).not.toContain("View all"); // AuthorBio
+  expect(html).not.toContain('class="s-author"'); // AuthorCard
+  expect(html).not.toContain('href="/authors/'); // no author page to link to
+  expect(html).toContain(`"author":{"@type":"Organization","@id":"${env.siteUrl}/#organization"`);
+  expect(html).not.toContain('"@type":"Person"');
+}
+
 function expectDisclosed(html: string) {
+  expectHeaderLine(html);
+  expectAiByline(html);
   expect(count(html, `>${FOOTER}</p>`)).toBe(1);
   expect(count(html, `>${BADGE}</span>`)).toBe(1);
   expect(html).toContain('"sponsor":{"@type":"Organization","name":"Acme","url":"https://www.acme.com"}');
@@ -115,6 +165,8 @@ function expectDisclosed(html: string) {
 function expectUndisclosed(html: string) {
   expect(html).not.toContain(FOOTER);
   expect(html).not.toContain(BADGE);
+  expect(html).not.toContain(AI_LABEL);
+  expect(html).not.toContain("disclosure-lead");
   expect(html).not.toContain("cover-disclosure");
   expect(html).not.toContain("article-disclosure");
   expect(html).not.toContain('"sponsor":');
@@ -127,7 +179,7 @@ beforeEach(() => {
 
 describe("sponsor disclosure renders in every article layout", () => {
   describe.each(CLASSIC)("/posts/[slug] — $name", ({ theme, marker }) => {
-    it("shows the footer line, the badge, JSON-LD sponsor and rel=sponsored", async () => {
+    it("shows the header line, the AI byline, the footer line, the badge, JSON-LD sponsor and rel=sponsored", async () => {
       const html = await renderClassic(theme, disclosed);
       expect(html).toContain(marker);
       expectDisclosed(html);
@@ -141,7 +193,7 @@ describe("sponsor disclosure renders in every article layout", () => {
   });
 
   describe.each(LAYOUTS.map((layout) => ({ layout })))("redesign — $layout", ({ layout }) => {
-    it("shows the footer line, the badge, JSON-LD sponsor and rel=sponsored", async () => {
+    it("shows the header line, the AI byline, the footer line, the badge, JSON-LD sponsor and rel=sponsored", async () => {
       expectDisclosed(await renderStudio(layout, disclosed));
     });
 
@@ -156,13 +208,14 @@ describe("sponsor disclosure renders in every article layout", () => {
         surfaces: ["article_footer"],
         sponsor: { name: "Acme", url: "https://acme.com" },
         text: FOOTER,
-        badge_text: BADGE,
+        label: BADGE,
       }),
     )!;
     content.posts = [footerOnly];
     for (const html of [await renderClassic("sleek", footerOnly), await renderStudio("notes", footerOnly)]) {
       expect(count(html, FOOTER)).toBe(1);
       expect(html).not.toContain(BADGE);
+      expect(html).not.toContain(AI_LABEL);
       expect(html).not.toContain('"sponsor":');
       expect(html).not.toMatch(SPONSORED_REL);
     }

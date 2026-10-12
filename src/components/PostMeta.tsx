@@ -1,4 +1,5 @@
-import Link from "@/components/Link";
+import { Fragment } from "react";
+import { AuthorLink } from "@/components/AuthorLink";
 import { formatDate } from "@/lib/format";
 import { bylineFor } from "@/lib/author";
 import {
@@ -10,9 +11,8 @@ import {
 import type { Post } from "@/lib/letterbrace/types";
 
 /**
- * The byline row shared across cards, rows and the article header. Every post
- * gets a real author, a dateline and a reading time — the small print that
- * makes a page read like a working publication rather than a template.
+ * The byline row shared across cards, rows and the article header: the
+ * byline, the publish date when the post has one, and a reading time.
  *
  * `variant`:
  *  - "inline"  — a compact "Author · Date · 5 min read" line (cards, rows).
@@ -43,12 +43,10 @@ export function PostMeta({
   const date = formatDate(iso);
   const read = readingTimeLabel(post);
   const updated = showUpdated && isUpdated(post);
-  const updatedIso = updated ? modifiedDate(post) : "";
+  const updatedIso = (updated && modifiedDate(post)) || "";
 
   const name = linkAuthor ? (
-    <Link href={`/authors/${byline.slug}`} className="ul-link hover:text-foreground">
-      {byline.name}
-    </Link>
+    <AuthorLink byline={byline} className="ul-link hover:text-foreground" />
   ) : (
     byline.name
   );
@@ -68,15 +66,25 @@ export function PostMeta({
             {name}
           </div>
           <div className="text-xs text-muted">
-            {byline.role && <>{byline.role}{" · "}</>}
-            <time dateTime={iso}>{date}</time>
-            {readingTime && <> · {read}</>}
-            {updated && (
-              <>
-                {" · "}
-                <span>Updated <time dateTime={updatedIso}>{formatDate(updatedIso)}</time></span>
-              </>
-            )}
+            {[
+              byline.role,
+              iso && <time dateTime={iso}>{date}</time>,
+              readingTime && read,
+              updated && (
+                <span>
+                  Updated <time dateTime={updatedIso}>{formatDate(updatedIso)}</time>
+                </span>
+              ),
+            ]
+              // Only what the post has, joined once: no role, no date, no
+              // leading or doubled separator.
+              .filter(Boolean)
+              .map((part, i) => (
+                <Fragment key={i}>
+                  {i > 0 && " · "}
+                  {part}
+                </Fragment>
+              ))}
           </div>
         </div>
       </div>
@@ -97,8 +105,12 @@ export function PostMeta({
         </span>
       )}
       <span className="font-medium text-foreground">{name}</span>
-      <span aria-hidden>·</span>
-      <time dateTime={iso}>{date}</time>
+      {iso && (
+        <>
+          <span aria-hidden>·</span>
+          <time dateTime={iso}>{date}</time>
+        </>
+      )}
       {readingTime && (
         <>
           <span aria-hidden>·</span>

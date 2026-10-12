@@ -5,6 +5,7 @@ import { getPosts } from "@/lib/letterbrace/client";
 import { publishDate, readingTimeLabel, sectionFor, sectionHref } from "@/lib/editorial";
 import { bylineFor } from "@/lib/author";
 import { formatDate } from "@/lib/format";
+import { AuthorLink } from "@/components/AuthorLink";
 
 // Fully static chronological index of every published post, newest first.
 export const dynamic = "force-static";
@@ -54,12 +55,7 @@ export default async function LatestPage() {
                   </h2>
                 </Link>
                 <p className="mt-1 text-sm text-muted">
-                  <Link
-                    href={`/authors/${byline.slug}`}
-                    className="transition-colors hover:text-primary"
-                  >
-                    {byline.name}
-                  </Link>{" "}
+                  <AuthorLink byline={byline} className="transition-colors hover:text-primary" />{" "}
                   · {readingTimeLabel(post)}
                 </p>
               </div>

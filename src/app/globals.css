@@ -415,7 +415,8 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
   }
 }
 
-/* ── Sponsor disclosure (components/SponsorDisclosure, components/SponsorBadge)
+/* ── Sponsor disclosure (components/SponsorDisclosure, SponsorBadge,
+   DisclosureLabel, SiteDisclosure)
    The words come from Letterstory verbatim; these rules only set them in the
    theme's tokens. Both must stay clear and conspicuous: body-size, full-ink
    text — never muted, never small. The redesign restyles both in studio.css. */
@@ -465,6 +466,22 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
     font-size: 1.1rem;
     font-weight: 600;
     line-height: 1.6;
+  }
+  /* components/DisclosureLabel: at the top of the article, by the byline. */
+  .disclosure-lead {
+    color: var(--heading-color);
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  /* components/SiteDisclosure: the site statement in every page's footer. */
+  .publication-disclosure {
+    color: var(--heading-color);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.55;
   }
 }
 

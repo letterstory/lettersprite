@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/format";
 import type { StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { TocSpy } from "../TocSpy";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, InlineAsk, Prose, Sources } from "../parts";
@@ -38,6 +39,7 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
               <SponsorBadge disclosure={post.sponsorDisclosure} />
             </div>
           </div>
+          <DisclosureLabel disclosure={post.sponsorDisclosure} />
           <dl className="j-credits">
             <div>
               <dt>Written by</dt>
@@ -51,10 +53,12 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
                 </span>
               </dd>
             </div>
-            <div>
-              <dt>{isUpdated(post) ? "Updated" : "Published"}</dt>
-              <dd>{formatDate(isUpdated(post) ? modifiedDate(post) : post.createdAt)}</dd>
-            </div>
+            {post.createdAt && (
+              <div>
+                <dt>{isUpdated(post) ? "Updated" : "Published"}</dt>
+                <dd>{formatDate(isUpdated(post) ? modifiedDate(post) : post.createdAt)}</dd>
+              </div>
+            )}
             <div>
               <dt>Reading time</dt>
               <dd>{readingTimeLabel(post)}</dd>

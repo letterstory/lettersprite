@@ -3,7 +3,7 @@ import { discloses } from "@/lib/disclosure";
 
 /**
  * "Sponsored by …" over the cover, when the post's disclosure lists
- * `cover_badge`. The words are Letterstory's `badge_text`, verbatim.
+ * `cover_badge`. The words are Letterstory's `label`, verbatim.
  *
  * Set by the template, never burned into the cover pixels: the image stays
  * clean for every crop and the badge goes the moment the setting does.
@@ -24,7 +24,7 @@ export function SponsorBadge({
   if (!discloses(disclosure, "cover_badge")) return null;
   return (
     <span className={inline ? "cover-disclosure cover-disclosure-inline" : "cover-disclosure"}>
-      {disclosure.badgeText}
+      {disclosure.label}
     </span>
   );
 }

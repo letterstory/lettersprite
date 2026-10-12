@@ -6,7 +6,8 @@ import { topicHref, studioHref } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import type { HomeProps } from "./NotesHome";
 
-function longDate(iso: string): string {
+function longDate(iso: string | null): string {
+  if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 }
 

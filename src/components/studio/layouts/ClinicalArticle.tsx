@@ -6,6 +6,7 @@ import { env } from "@/env";
 import { studioHome, numberFigures, studioHref, type StudioArticleData } from "@/lib/studio";
 import { CopyLink } from "../CopyLink";
 import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { AuthorCard, Prose } from "../parts";
 
 /**
@@ -17,7 +18,10 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
   const { post } = a;
   const sections = a.headings.filter((h) => h.level === 2);
   const year = post.createdAt ? new Date(post.createdAt).getFullYear() : "";
-  const cite = `${a.byline.name}. ${post.title}. ${brand.name}. ${formatDate(post.createdAt)}.`;
+  const cite = [a.byline.name, post.title, brand.name, formatDate(post.createdAt)]
+    .filter(Boolean)
+    .map((part) => `${part}.`)
+    .join(" ");
   return (
     <>
       <div className="s-progress" aria-hidden />
@@ -34,11 +38,14 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               {a.byline.name}
               {a.byline.role && <span className="c-authors-role">, {a.byline.role}</span>}
             </p>
+            <DisclosureLabel disclosure={post.sponsorDisclosure} />
             <dl className="c-dates">
-              <div>
-                <dt>Published</dt>
-                <dd>{formatDate(post.createdAt)}</dd>
-              </div>
+              {post.createdAt && (
+                <div>
+                  <dt>Published</dt>
+                  <dd>{formatDate(post.createdAt)}</dd>
+                </div>
+              )}
               {isUpdated(post) && (
                 <div>
                   <dt>Updated</dt>

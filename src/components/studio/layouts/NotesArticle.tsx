@@ -5,6 +5,7 @@ import { sectionFor } from "@/lib/editorial";
 import type { StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
 import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { TocSpy } from "../TocSpy";
 import { AuthorCard, Byline, InlineAsk, Prose, RelatedGrid, Sources } from "../parts";
 
@@ -27,6 +28,7 @@ export function NotesArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
           <h1 className="s-post-title">{post.title}</h1>
           {post.dek && <p className="s-post-dek">{post.dek}</p>}
           <Byline byline={a.byline} post={post} align="center" />
+          <DisclosureLabel disclosure={post.sponsorDisclosure} />
         </header>
 
         <figure className="s-wrap-wide s-post-cover">

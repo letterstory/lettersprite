@@ -143,3 +143,42 @@ describe("authorsFromPosts", () => {
     expect(author.byline.role).toBe("Senior Writer");
   });
 });
+
+describe("ai_authorship", () => {
+  const ai: Post["sponsorDisclosure"] = {
+    surfaces: ["article_footer", "ai_authorship"],
+    sponsor: { name: "Acme", url: null },
+    text: "This article is sponsored by Acme.",
+    label: "Sponsored by Acme",
+    siteText: "",
+    aiLabel: "Written with AI",
+    aiText: null,
+  };
+
+  // Even a post built outside normalize (which nulls these) credits no one.
+  it("is the site-level byline with aiLabel as its role, never the post's author", () => {
+    const b = bylineFor(
+      post("1", { author: "Ines Moreau", authorSlug: "ines-moreau-7", authorProfile: bank, sponsorDisclosure: ai }),
+    );
+    expect(b).toMatchObject({
+      name: `${env.siteTitle} Editors`,
+      role: "Written with AI",
+      provided: false,
+      profile: null,
+      hasProfile: false,
+    });
+  });
+
+  it("puts AI-written posts on no author page", () => {
+    const authors = authorsFromPosts([
+      post("1", { sponsorDisclosure: ai }),
+      post("2", { author: "Jane Doe" }),
+    ]);
+    expect(authors.map((a) => a.byline.name)).toEqual(["Jane Doe"]);
+  });
+
+  it("leaves every other byline with a profile", () => {
+    expect(bylineFor(post("1")).hasProfile).toBe(true);
+    expect(bylineFor(post("2", { authorProfile: bank })).hasProfile).toBe(true);
+  });
+});
