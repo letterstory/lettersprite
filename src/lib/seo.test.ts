@@ -59,18 +59,39 @@ describe("articleLd author", () => {
 
 describe("authorLd", () => {
   it("makes the editorial page's main entity the site Organization", () => {
-    const ld = authorLd(editorialByline(), [post()], ["Technology"]);
+    const ld = authorLd(editorialByline(), [post()]);
     expect(ld.mainEntity).toMatchObject({ "@type": "Organization", "@id": orgId });
   });
 
-  it("keeps a Person with the bio for a real author", () => {
+  it("keeps a name-only Person, with no invented bio or job title", () => {
     const byline = bylineFor(post({ author: "Jane Doe" }));
-    const ld = authorLd(byline, [post()], ["Design"]);
+    const ld = authorLd(byline, [post()]);
     expect(ld.mainEntity).toMatchObject({
       "@type": "Person",
       name: "Jane Doe",
-      jobTitle: "Staff Writer",
-      description: `Jane Doe covers design for ${env.siteTitle}.`,
+    });
+    expect(ld.mainEntity).not.toHaveProperty("description");
+    expect(ld.mainEntity).not.toHaveProperty("jobTitle");
+  });
+
+  it("mirrors the bank bio and role when the author has them", () => {
+    const byline = bylineFor(
+      post({
+        authorProfile: {
+          name: "Ines Moreau",
+          slug: "ines-moreau-7",
+          bio: "Ines covers cloud.",
+          role: "Senior Writer",
+          expertise: [],
+          startedAt: null,
+        },
+      }),
+    );
+    const ld = authorLd(byline, [post()]);
+    expect(ld.mainEntity).toMatchObject({
+      "@type": "Person",
+      jobTitle: "Senior Writer",
+      description: "Ines covers cloud.",
     });
   });
 });

@@ -37,7 +37,7 @@ export function NotesArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
           <div className="s-post-main">
             <Prose before={a.before} after={a.after} middle={<InlineAsk brand={brand} />} />
             <Sources sources={post.paperTrail} />
-            <AuthorCard byline={a.byline} profile={a.profile} />
+            <AuthorCard byline={a.byline} />
           </div>
           <aside className="s-post-aside" aria-label={brand.name}>
             <div className="s-aside-card">

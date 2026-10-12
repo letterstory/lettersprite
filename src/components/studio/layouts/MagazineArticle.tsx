@@ -1,5 +1,6 @@
 import Link from "@/components/Link";
 import type { Brand } from "@/lib/brand";
+import { authorProfile } from "@/lib/author";
 import { readingTimeMinutes, sectionFor } from "@/lib/editorial";
 import { topicHref, studioHome, pullQuote, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
@@ -13,6 +14,7 @@ import { AuthorCard, Byline, Prose, RelatedGrid, Sources } from "../parts";
 export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleData }) {
   const { post } = a;
   const quote = pullQuote(a.html);
+  const { bio } = authorProfile(a.byline);
   return (
     <>
       <div className="s-progress" aria-hidden />
@@ -35,7 +37,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
             <div className="m-rail-inner">
               <p className="m-rail-label">Words by</p>
               <p className="m-rail-name">{a.byline.name}</p>
-              <p className="m-rail-bio">{a.profile.bio}</p>
+              {bio && <p className="m-rail-bio">{bio}</p>}
               <p className="m-rail-label">Filed under</p>
               <p>
                 <a href={topicHref(sectionFor(post))}>{sectionFor(post)}</a>
@@ -57,7 +59,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               }
             />
             <Sources sources={post.paperTrail} title="Notes" />
-            <AuthorCard byline={a.byline} profile={a.profile} />
+            <AuthorCard byline={a.byline} />
             <p className="m-end">
               <Link href={studioHome()}>← Back to {brand.name}</Link>
             </p>

@@ -51,7 +51,7 @@ export function SlateIndex({
   posts,
   footer,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   accentLinks?: { label: string; href: string }[];
   avatar?: { initials: string; color: string };
@@ -80,7 +80,7 @@ export function SlateIndex({
               {avatar.initials}
             </span>
             <div className="min-w-0">
-              <p className="font-display text-sm italic text-muted">{eyebrow}</p>
+              {eyebrow && <p className="font-display text-sm italic text-muted">{eyebrow}</p>}
               <h1 className="mt-0.5 text-5xl font-extrabold uppercase leading-[0.9] tracking-tight text-heading sm:text-6xl">
                 <span className="font-heading">{title}</span>
               </h1>

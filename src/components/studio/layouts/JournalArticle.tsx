@@ -45,7 +45,7 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
                 </span>
                 <span>
                   {a.byline.name}
-                  <span className="j-credit-sub">{a.byline.role}</span>
+                  {a.byline.role && <span className="j-credit-sub">{a.byline.role}</span>}
                 </span>
               </dd>
             </div>
@@ -92,7 +92,7 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
               middle={brand.ask === "product" ? <InlineAsk brand={brand} /> : undefined}
             />
             <Sources sources={post.paperTrail} title="Methodology & sources" />
-            <AuthorCard byline={a.byline} profile={a.profile} />
+            <AuthorCard byline={a.byline} />
           </div>
         </div>
       </article>

@@ -93,7 +93,7 @@ function personNode(byline: Byline, description?: string): Json {
     "@type": "Person",
     "@id": `${url}/#person`,
     name: byline.name,
-    jobTitle: byline.role,
+    jobTitle: byline.role ?? undefined,
     description,
     knowsAbout: expertise.length ? expertise : undefined,
     url,
@@ -201,19 +201,18 @@ export function breadcrumbLd(post: Post): Json {
 /**
  * A ProfilePage for an author's `/authors/[slug]` page: the Person (or, for
  * the editorial byline, the site Organization) plus their stories, so the page
- * reads as a real staff page to search engines. Mirrors the visible bio and
- * the article-level `authorNode`.
+ * reads as a real staff page to search engines. Mirrors the visible bio (when
+ * the bank has one) and the article-level `authorNode`.
  */
-export function authorLd(byline: Byline, posts: Post[], beats: string[]): Json {
+export function authorLd(byline: Byline, posts: Post[]): Json {
   const url = authorUrl(byline);
-  const { bio } = authorProfile(byline, beats);
   return {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     "@id": `${url}/#profile`,
     url,
     isPartOf: { "@id": SITE_ID },
-    mainEntity: byline.provided ? personNode(byline, bio) : orgAuthorNode(),
+    mainEntity: byline.provided ? personNode(byline, authorProfile(byline).bio) : orgAuthorNode(),
     hasPart: posts.slice(0, 20).map((p) => ({
       "@type": "BlogPosting",
       "@id": `${postUrl(p)}/#article`,

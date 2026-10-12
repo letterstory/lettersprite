@@ -13,7 +13,7 @@ import {
 import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
-import { AuthorBio } from "@/components/AuthorBio";
+import { AuthorCard } from "@/components/AuthorCard";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
 import { JsonLd } from "@/components/JsonLd";
@@ -38,7 +38,6 @@ export type FluxArticleProps = {
   section: string;
   iso: string;
   byline: Byline;
-  authorBeats: string[];
   authorPostsCount: number;
   related: Post[];
   prev: Post | null;
@@ -61,7 +60,6 @@ export function FluxArticle({
   section,
   iso,
   byline,
-  authorBeats,
   authorPostsCount,
   related,
   prev,
@@ -134,9 +132,8 @@ export function FluxArticle({
                 Return to top ↑
               </a>
             </div>
-            <AuthorBio
+            <AuthorCard
               byline={byline}
-              beats={authorBeats}
               storyCount={authorPostsCount}
               className="mt-12"
             />

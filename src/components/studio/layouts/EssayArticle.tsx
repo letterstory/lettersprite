@@ -37,7 +37,7 @@ export function EssayArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
             {brand.cta.label}
           </a>
         </div>
-        <AuthorCard byline={a.byline} profile={a.profile} />
+        <AuthorCard byline={a.byline} />
         {a.related.length > 0 && (
           <section className="e-more" aria-labelledby="more">
             <h2 id="more" className="e-more-title">

@@ -29,7 +29,7 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
             <h1 className="c-title">{post.title}</h1>
             <p className="c-authors">
               {a.byline.name}
-              <span className="c-authors-role">, {a.byline.role}</span>
+              {a.byline.role && <span className="c-authors-role">, {a.byline.role}</span>}
             </p>
             <dl className="c-dates">
               <div>
@@ -109,7 +109,7 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               </p>
               {year && <p className="c-cite-year">© {year} {brand.name}</p>}
             </section>
-            <AuthorCard byline={a.byline} profile={a.profile} />
+            <AuthorCard byline={a.byline} />
           </div>
         </div>
       </article>

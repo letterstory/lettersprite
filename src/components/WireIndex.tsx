@@ -49,7 +49,7 @@ export function WireIndex({
   posts,
   footer,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   stat?: string;
   chips?: { label: string; href: string }[];
@@ -72,9 +72,11 @@ export function WireIndex({
             </span>
           )}
           <div>
-            <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              {eyebrow}
-            </p>
+            {eyebrow && (
+              <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                {eyebrow}
+              </p>
+            )}
             <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-heading sm:text-5xl">
               {title}
             </h1>
