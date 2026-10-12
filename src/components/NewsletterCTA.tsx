@@ -26,10 +26,8 @@ export function NewsletterCTA({
 }) {
   if (!env.newsletterEnabled) return null;
 
-  const title =
-    heading ?? `Get ${env.siteTitle} in your inbox`;
-  const description =
-    blurb ?? "Get new articles by email.";
+  const title = heading ?? `Get ${env.siteTitle} in your inbox`;
+  const description = blurb ?? "Get new articles by email.";
 
   const action = env.newsletterAction || undefined;
   const method = action ? "post" : undefined;
@@ -76,7 +74,10 @@ export function NewsletterCTA({
         </h3>
         <p className="text-sm text-muted">{description}</p>
         {form}
-        <p className="text-xs text-muted">No spam. Unsubscribe anytime.</p>
+        {/* A promise about emails only where there is a list to send them. */}
+        {action && (
+          <p className="text-xs text-muted">No spam. Unsubscribe anytime.</p>
+        )}
       </aside>
     );
   }
@@ -92,9 +93,9 @@ export function NewsletterCTA({
         </h2>
         <p className="max-w-lg text-muted">{description}</p>
         <div className="mt-1 flex w-full justify-center">{form}</div>
-        <p className="text-xs text-muted">
-          No spam. Unsubscribe anytime.
-        </p>
+        {action && (
+          <p className="text-xs text-muted">No spam. Unsubscribe anytime.</p>
+        )}
       </div>
     </section>
   );
