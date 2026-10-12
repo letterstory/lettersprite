@@ -1,4 +1,7 @@
 import type { Brand } from "@/lib/brand";
+import { siteDisclosure } from "@/lib/disclosure";
+import { getPosts } from "@/lib/letterbrace/client";
+import { SiteDisclosure } from "@/components/SiteDisclosure";
 
 const SOCIAL_LABELS: Record<string, string> = {
   linkedin: "LinkedIn",
@@ -9,9 +12,13 @@ const SOCIAL_LABELS: Record<string, string> = {
   tiktok: "TikTok",
 };
 
-/** A closing band in the brand's own voice, then the site's real footer links. */
-export function StudioFooter({ brand }: { brand: Brand }) {
+/**
+ * A closing band in the brand's own voice, then the site's real footer links,
+ * and the site statement when the site discloses one.
+ */
+export async function StudioFooter({ brand }: { brand: Brand }) {
   const year = new Date().getFullYear();
+  const disclosure = siteDisclosure(await getPosts());
   return (
     <footer className="s-footer">
       <section className="s-closer">
@@ -43,6 +50,7 @@ export function StudioFooter({ brand }: { brand: Brand }) {
           ))}
           <a href="/feed.xml">RSS</a>
         </nav>
+        <SiteDisclosure disclosure={disclosure} />
         <p className="s-footer-fine">
           © {year} {brand.name}
         </p>

@@ -9,8 +9,11 @@ import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { AuthorCard } from "@/components/AuthorCard";
+import { AuthorLink } from "@/components/AuthorLink";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { PostContent } from "@/components/PostContent";
@@ -28,7 +31,7 @@ export type RiotArticleProps = {
   bodyHtml: string;
   headings: Heading[];
   section: string;
-  iso: string;
+  iso: string | null;
   byline: Byline;
   authorPostsCount: number;
   related: Post[];
@@ -83,6 +86,7 @@ export function RiotArticle({
             className="aspect-[16/10] w-full object-cover opacity-90"
           />
           <span aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+          <SponsorBadge disclosure={post.sponsorDisclosure} />
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-8 text-center sm:pb-10">
             <Link href={sectionHref(section)} className="font-display text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-70">
               {section}
@@ -91,8 +95,12 @@ export function RiotArticle({
               {post.title}
             </h1>
             <p className="mt-4 flex items-center gap-3 font-display text-[0.7rem] font-medium uppercase tracking-[0.12em] text-white/75">
-              <span>{formatDate(iso)}</span>
-              <span aria-hidden className="text-white/40">·</span>
+              {iso && (
+                <>
+                  <span>{formatDate(iso)}</span>
+                  <span aria-hidden className="text-white/40">·</span>
+                </>
+              )}
               <span>{readingTimeLabel(post)}</span>
               <span aria-hidden className="text-white/40">·</span>
               <span>{words.toLocaleString("en-US")} words</span>
@@ -106,11 +114,11 @@ export function RiotArticle({
           <ShareRow url={url} title={post.title} withLabel />
           <p className="font-display text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted">
             Text:{" "}
-            <Link href={`/authors/${byline.slug}`} className="text-primary transition-opacity hover:opacity-70">
-              {byline.name}
-            </Link>
+            <AuthorLink byline={byline} className="text-primary transition-opacity hover:opacity-70" />
           </p>
         </div>
+
+        <DisclosureLabel disclosure={post.sponsorDisclosure} className="mx-auto mt-6 max-w-3xl" />
 
         {post.dek && (
           <p className="mx-auto mt-6 max-w-3xl font-heading text-xl font-bold leading-snug text-heading text-pretty">
@@ -123,7 +131,7 @@ export function RiotArticle({
         <div className="mx-auto mt-8 grid max-w-5xl gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,38rem)]">
           <div className="min-w-0 lg:order-2">
             <TableOfContents headings={headings} className="mb-10" />
-            <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+            <PostContent html={bodyHtml} sanitized dropCap={dropCap} disclosure={post.sponsorDisclosure} />
             <div className="fin" aria-hidden />
             <PostSources sources={post.paperTrail} className="mt-10" />
             <TopicTags tags={post.tags} linkableSlugs={linkableSlugs} className="mt-10" />

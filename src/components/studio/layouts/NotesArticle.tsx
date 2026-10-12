@@ -4,6 +4,8 @@ import type { Brand } from "@/lib/brand";
 import { sectionFor } from "@/lib/editorial";
 import type { StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
+import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { TocSpy } from "../TocSpy";
 import { AuthorCard, Byline, InlineAsk, Prose, RelatedGrid, Sources } from "../parts";
 
@@ -26,16 +28,20 @@ export function NotesArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
           <h1 className="s-post-title">{post.title}</h1>
           {post.dek && <p className="s-post-dek">{post.dek}</p>}
           <Byline byline={a.byline} post={post} align="center" />
+          <DisclosureLabel disclosure={post.sponsorDisclosure} />
         </header>
 
         <figure className="s-wrap-wide s-post-cover">
-          <StudioCover post={post} brand={brand} sizes="100vw" />
+          <div className="disclosure-frame">
+            <StudioCover post={post} brand={brand} sizes="100vw" />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
+          </div>
         </figure>
 
         <div className="s-wrap s-post-grid">
           <aside className="s-post-rail">{a.headings.length > 2 && <TocSpy headings={a.headings} />}</aside>
           <div className="s-post-main">
-            <Prose before={a.before} after={a.after} middle={<InlineAsk brand={brand} />} />
+            <Prose disclosure={post.sponsorDisclosure} before={a.before} after={a.after} middle={<InlineAsk brand={brand} />} />
             <Sources sources={post.paperTrail} />
             <AuthorCard byline={a.byline} />
           </div>

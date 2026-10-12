@@ -1,15 +1,17 @@
 import Link from "@/components/Link";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
+import { siteDisclosure } from "@/lib/disclosure";
 import { sectionHref, topSections } from "@/lib/editorial";
 import { Logo } from "./Logo";
 import { NewsletterCTA } from "./NewsletterCTA";
+import { SiteDisclosure } from "./SiteDisclosure";
 
 /**
  * The footer. Carries the canonical newsletter capture (anchored at
- * `#newsletter`, the target of every Subscribe button) plus a masthead
- * colophon: wordmark, sections, feed, and social — the furniture that makes a
- * deployment read like an established outlet.
+ * `#newsletter`, the target of every Subscribe button) plus a colophon:
+ * wordmark, sections, feed and social, and — when the site discloses one — the
+ * site statement, on every page.
  */
 export async function SiteFooter() {
   const year = new Date().getFullYear();
@@ -20,7 +22,9 @@ export async function SiteFooter() {
         .map((s) => s.trim())
         .filter(Boolean)
     : topSections(posts, 6);
+  // A real, configured founding year (SITE_ESTABLISHED) or nothing.
   const established = env.established && `Est. ${env.established}`;
+  const disclosure = siteDisclosure(posts);
 
   return (
     <footer className="no-print mt-20">
@@ -109,6 +113,14 @@ export async function SiteFooter() {
             </ul>
           </nav>
         </div>
+
+        {disclosure && (
+          <div className="border-t border-border">
+            <div className="container-wide px-6 py-5">
+              <SiteDisclosure disclosure={disclosure} />
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-border">
           <div className="container-wide flex flex-col items-center justify-between gap-2 px-6 py-6 text-xs text-muted sm:flex-row">

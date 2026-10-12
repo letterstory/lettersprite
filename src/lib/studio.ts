@@ -95,7 +95,7 @@ export async function loadArticle(slug: string): Promise<StudioArticleData | nul
   if (!post) return null;
   const all = await getPosts();
   const byline = bylineFor(post);
-  const { html, headings } = buildToc(sanitizePostHtml(post.content));
+  const { html, headings } = buildToc(sanitizePostHtml(post.content, post.sponsorDisclosure));
   return {
     post,
     html,

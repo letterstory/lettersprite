@@ -1,6 +1,8 @@
 import sanitizeHtml from "sanitize-html";
 import { tightenPunctuationSpacing } from "@/lib/text";
 import { env } from "@/env";
+import { addRelToken, isSponsorHref, sponsoredHost } from "@/lib/disclosure";
+import type { SponsorDisclosure } from "@/lib/letterbrace/types";
 
 /** This deployment's own host, for telling internal links from outbound ones. */
 const SITE_HOST = (() => {
@@ -29,6 +31,21 @@ function isInternalHref(href: string | undefined): boolean {
     return false;
   }
 }
+
+/**
+ * Internal links stay followed so link equity flows between our own posts
+ * (the whole point of the topical internal-linking pass); only outbound links
+ * from generated content are nofollowed and untrusted.
+ */
+const linkRel: sanitizeHtml.Transformer = (tagName, attribs) => ({
+  tagName,
+  attribs: {
+    ...attribs,
+    rel: isInternalHref(attribs.href)
+      ? "noopener"
+      : "noopener noreferrer nofollow",
+  },
+});
 
 /**
  * Article bodies arrive as HTML from Letterbrace. We render them with
@@ -102,18 +119,7 @@ const options: sanitizeHtml.IOptions = {
       ? text
       : tightenPunctuationSpacing(text),
   transformTags: {
-    // Internal links stay followed so link equity flows between our own posts
-    // (the whole point of the topical internal-linking pass); only outbound
-    // links from generated content are nofollowed and untrusted.
-    a: (tagName, attribs) => ({
-      tagName,
-      attribs: {
-        ...attribs,
-        rel: isInternalHref(attribs.href)
-          ? "noopener"
-          : "noopener noreferrer nofollow",
-      },
-    }),
+    a: linkRel,
     // Lazy-load images by default.
     img: (tagName, attribs) => ({
       tagName,
@@ -122,6 +128,30 @@ const options: sanitizeHtml.IOptions = {
   },
 };
 
-export function sanitizePostHtml(html: string): string {
-  return sanitizeHtml(html, options);
+/**
+ * Sanitize an article body. Pass the post's sponsor disclosure so that, when it
+ * lists `sponsored_links`, links to the sponsor's site (or any subdomain of it)
+ * also carry `rel="sponsored"` — Google's markup for paid links. The token is
+ * added to the rel the sanitizer already sets, never instead of it.
+ */
+export function sanitizePostHtml(
+  html: string,
+  disclosure?: SponsorDisclosure | null,
+): string {
+  const host = sponsoredHost(disclosure);
+  if (!host) return sanitizeHtml(html, options);
+  return sanitizeHtml(html, {
+    ...options,
+    transformTags: {
+      ...options.transformTags,
+      a: (tagName, attribs) => {
+        const out = linkRel(tagName, attribs);
+        if (!isSponsorHref(attribs.href, host)) return out;
+        return {
+          ...out,
+          attribs: { ...out.attribs, rel: addRelToken(out.attribs.rel, "sponsored") },
+        };
+      },
+    },
+  });
 }

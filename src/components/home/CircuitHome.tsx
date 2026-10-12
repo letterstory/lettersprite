@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/format";
 import { bylineFor } from "@/lib/author";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { FakeAd } from "@/components/FakeAd";
+import { AuthorLink } from "@/components/AuthorLink";
 
 /**
  * Circuit front — a WIRED-style portal. A labeled leaderboard, then a
@@ -53,11 +54,13 @@ function Byline({ post, className = "" }: { post: Post; className?: string }) {
   const b = bylineFor(post);
   return (
     <p className={`text-[0.66rem] uppercase tracking-[0.05em] text-muted ${className}`}>
-      <Link href={`/authors/${b.slug}`} className="font-semibold text-foreground transition-colors hover:text-primary">
-        {b.name}
-      </Link>
-      <span className="mx-1.5" aria-hidden>·</span>
-      {formatDate(publishDate(post))}
+      <AuthorLink byline={b} className="font-semibold text-foreground transition-colors hover:text-primary" />
+      {publishDate(post) && (
+        <>
+          <span className="mx-1.5" aria-hidden>·</span>
+          {formatDate(publishDate(post))}
+        </>
+      )}
     </p>
   );
 }

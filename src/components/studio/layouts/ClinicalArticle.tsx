@@ -5,6 +5,8 @@ import { formatDate } from "@/lib/format";
 import { env } from "@/env";
 import { studioHome, numberFigures, studioHref, type StudioArticleData } from "@/lib/studio";
 import { CopyLink } from "../CopyLink";
+import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { AuthorCard, Prose } from "../parts";
 
 /**
@@ -16,7 +18,10 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
   const { post } = a;
   const sections = a.headings.filter((h) => h.level === 2);
   const year = post.createdAt ? new Date(post.createdAt).getFullYear() : "";
-  const cite = `${a.byline.name}. ${post.title}. ${brand.name}. ${formatDate(post.createdAt)}.`;
+  const cite = [a.byline.name, post.title, brand.name, formatDate(post.createdAt)]
+    .filter(Boolean)
+    .map((part) => `${part}.`)
+    .join(" ");
   return (
     <>
       <div className="s-progress" aria-hidden />
@@ -26,16 +31,21 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
             <p className="c-type">
               <Link href={studioHome()}>{brand.name}</Link> <span aria-hidden>·</span> {sectionFor(post)}
             </p>
+            {/* Clinical sets no cover, so the badge sits in the header. */}
+            <SponsorBadge disclosure={post.sponsorDisclosure} inline />
             <h1 className="c-title">{post.title}</h1>
             <p className="c-authors">
               {a.byline.name}
               {a.byline.role && <span className="c-authors-role">, {a.byline.role}</span>}
             </p>
+            <DisclosureLabel disclosure={post.sponsorDisclosure} />
             <dl className="c-dates">
-              <div>
-                <dt>Published</dt>
-                <dd>{formatDate(post.createdAt)}</dd>
-              </div>
+              {post.createdAt && (
+                <div>
+                  <dt>Published</dt>
+                  <dd>{formatDate(post.createdAt)}</dd>
+                </div>
+              )}
               {isUpdated(post) && (
                 <div>
                   <dt>Updated</dt>
@@ -81,7 +91,7 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               </section>
             )}
             <div className="c-numbered">
-              <Prose before={numberFigures(a.before)} after={numberFigures(a.after)} />
+              <Prose disclosure={post.sponsorDisclosure} before={numberFigures(a.before)} after={numberFigures(a.after)} />
             </div>
 
             {post.paperTrail.length > 0 && (

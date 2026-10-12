@@ -73,8 +73,12 @@ function Lead({ post }: { post: Post }) {
           <Link href={sectionHref(section)} className="transition-colors hover:text-primary">
             {section}
           </Link>
-          <span aria-hidden>·</span>
-          <span>{formatDate(publishDate(post))}</span>
+          {publishDate(post) && (
+            <>
+              <span aria-hidden>·</span>
+              <span>{formatDate(publishDate(post))}</span>
+            </>
+          )}
         </div>
         <Link href={`/posts/${post.slug}`}>
           <h2 className="mt-2 max-w-2xl text-2xl font-semibold leading-[1.15] tracking-[-0.02em] text-heading text-balance transition-colors group-hover:text-primary sm:text-[1.7rem]">

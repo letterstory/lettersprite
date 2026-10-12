@@ -4,7 +4,8 @@ import type { Brand } from "@/lib/brand";
 import { authorProfile, type Byline as BylineData } from "@/lib/author";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
-import type { PaperTrailSource, Post } from "@/lib/letterbrace/types";
+import type { PaperTrailSource, Post, SponsorDisclosure as Disclosure } from "@/lib/letterbrace/types";
+import { SponsorDisclosure } from "@/components/SponsorDisclosure";
 import { studioHome, studioHref } from "@/lib/studio";
 import { StoryCard } from "./StoryCard";
 import { CopyLink } from "./CopyLink";
@@ -32,7 +33,12 @@ export function Byline({
           {byline.role && <span className="s-byline-role"> · {byline.role}</span>}
         </span>
         <span className="s-meta">
-          {formatDate(post.createdAt)} <span aria-hidden>·</span> {readingTimeLabel(post)}
+          {post.createdAt && (
+            <>
+              {formatDate(post.createdAt)} <span aria-hidden>·</span>{" "}
+            </>
+          )}
+          {readingTimeLabel(post)}
         </span>
       </span>
       {share && (
@@ -65,7 +71,9 @@ export function Sources({ sources, title = "Sources" }: { sources: PaperTrailSou
   );
 }
 
+/** The contributor card; none for a byline with no profile (a `site_byline` post). */
 export function AuthorCard({ byline }: { byline: BylineData }) {
+  if (!byline.hasProfile) return null;
   const { bio } = authorProfile(byline);
   return (
     <section className="s-author">
@@ -96,8 +104,22 @@ export function InlineAsk({ brand }: { brand: Brand }) {
   );
 }
 
-/** The article body, with an optional moment set between its two halves. */
-export function Prose({ before, after, middle }: { before: string; after: string; middle?: ReactNode }) {
+/**
+ * The article body, with an optional moment set between its two halves, then
+ * the sponsor disclosure line. `disclosure` is required so no layout can set a
+ * body without deciding about the line that follows it.
+ */
+export function Prose({
+  before,
+  after,
+  middle,
+  disclosure,
+}: {
+  before: string;
+  after: string;
+  middle?: ReactNode;
+  disclosure: Disclosure | null;
+}) {
   return (
     <>
       <div className="s-prose" dangerouslySetInnerHTML={{ __html: before }} />
@@ -107,6 +129,7 @@ export function Prose({ before, after, middle }: { before: string; after: string
           <div className="s-prose" dangerouslySetInnerHTML={{ __html: after }} />
         </>
       )}
+      <SponsorDisclosure disclosure={disclosure} />
     </>
   );
 }

@@ -3,6 +3,8 @@ import type { Brand } from "@/lib/brand";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { topicHref, studioHome, pullQuote, studioHref, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
+import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, Prose, Sources } from "../parts";
 
@@ -35,19 +37,23 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
               {a.byline.role && <span className="b-byline-role">{a.byline.role}</span>}
             </span>
             <span className="b-byline-date">
-              {longDate(post.createdAt)} · {readingTimeLabel(post)}
+              {post.createdAt && <>{longDate(post.createdAt)} · </>}
+              {readingTimeLabel(post)}
             </span>
             <CopyLink />
           </div>
+          <DisclosureLabel disclosure={post.sponsorDisclosure} />
         </header>
         <figure className="b-figure">
-          <div className="b-figure-media">
+          <div className="b-figure-media disclosure-frame">
             <StudioCover post={post} brand={brand} sizes="100vw" />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
           </div>
           {caption && <figcaption>{caption}</figcaption>}
         </figure>
         <div className="b-body">
           <Prose
+            disclosure={post.sponsorDisclosure}
             before={a.before}
             after={a.after}
             middle={

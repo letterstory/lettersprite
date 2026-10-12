@@ -7,6 +7,7 @@ import { bylineFor } from "@/lib/author";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { FakeAd } from "@/components/FakeAd";
 import { MockPost } from "@/components/MockPost";
+import { AuthorLink } from "@/components/AuthorLink";
 
 /**
  * Flux front — a bold ad-supported tech-editorial front: a leaderboard, a hero
@@ -20,9 +21,7 @@ function Byline({ post, className = "" }: { post: Post; className?: string }) {
   const b = bylineFor(post);
   return (
     <p className={`font-display text-[0.66rem] font-bold uppercase tracking-[0.08em] ${className}`}>
-      <Link href={`/authors/${b.slug}`} className="text-primary transition-opacity hover:opacity-70">
-        {b.name}
-      </Link>
+      <AuthorLink byline={b} className="text-primary transition-opacity hover:opacity-70" />
       <span className="ml-2 text-muted">{formatDate(publishDate(post))}</span>
     </p>
   );

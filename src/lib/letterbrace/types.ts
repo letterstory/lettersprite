@@ -37,6 +37,66 @@ export interface CoverCredit {
 }
 
 /**
+ * Where a sponsored publication discloses its sponsor. Letterstory decides the set
+ * per collection; the site renders whichever are listed and branches on
+ * nothing else.
+ *
+ * - `article_header`: `label` at the top of the article, by the byline (the
+ *   FTC's placement: with the content, hard to miss).
+ * - `article_footer`: the disclosure sentence (`text`) after the body.
+ * - `cover_badge`: `label` set over the cover.
+ * - `structured_data`: schema.org `sponsor` on the article JSON-LD.
+ * - `sponsored_links`: `rel="sponsored"` on body links to the sponsor's site.
+ * - `meta_description`: `label` prefixed to the meta, Open Graph and Twitter
+ *   descriptions (and the post's RSS item).
+ * - `site_statement`: `siteText` site-wide — every page's footer, the About
+ *   page, `llms.txt`, the RSS channel and the site's `funder` JSON-LD.
+ * - `site_byline`: the byline is the site's own ("<Site> Editors"), never a
+ *   persona: no author page, bio card or Person. (`ai_authorship` is read as
+ *   this surface's earlier name; see `normalize.ts`.)
+ */
+export const DISCLOSURE_SURFACES = [
+  "article_header",
+  "article_footer",
+  "cover_badge",
+  "structured_data",
+  "sponsored_links",
+  "meta_description",
+  "site_statement",
+  "site_byline",
+] as const;
+export type DisclosureSurface = (typeof DISCLOSURE_SURFACES)[number];
+
+/**
+ * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` on
+ * every article read (docs/architecture/sponsor-disclosure.md in letterstory).
+ * Null when the publication discloses nothing — including every payload from
+ * before the field existed.
+ *
+ * Every string is rendered verbatim. The site never composes its own wording:
+ * each sentence is decided once, in Letterstory, so a disclosure cannot drift
+ * into something softer per theme. A surface whose words did not arrive is
+ * dropped in `normalize.ts`, so a listed surface always has its string.
+ */
+export interface SponsorDisclosure {
+  /** Never empty: a disclosure with no surface to render on is null. */
+  surfaces: DisclosureSurface[];
+  sponsor: {
+    name: string;
+    /** The sponsor's site, for JSON-LD, links and `sponsored_links`; null when unknown. */
+    url: string | null;
+  };
+  /** The footer sentence — e.g. "This article is sponsored by Acme." Empty when not served. */
+  text: string;
+  /** The short label — e.g. "Sponsored by Acme" — for the header, the cover
+   *  badge and the description prefix. Empty when not served. */
+  label: string;
+  /** The site-wide sentence — e.g. "This publication is sponsored by Acme."
+   *  Empty when not served. */
+  siteText: string;
+}
+
+/**
  * The structured author record Letterbrace ships as `author_profile` for a
  * byline drawn from the site's author bank — the recurring set of authors
  * generated once per site and reused across its posts. Absent (null) for
@@ -94,4 +154,6 @@ export interface Post {
   updatedAt: string | null;
   /** The article's Paper Trail — vetted sources, or [] when there are none. */
   paperTrail: PaperTrailSource[];
+  /** Who sponsors the publication and where to say so; null discloses nothing. */
+  sponsorDisclosure: SponsorDisclosure | null;
 }

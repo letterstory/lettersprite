@@ -5,6 +5,7 @@ import { env } from "@/env";
 import { readingTimeLabel, sectionFor, sectionHref } from "@/lib/editorial";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { bylineFor } from "@/lib/author";
+import { AuthorLink } from "@/components/AuthorLink";
 
 /**
  * Commons front — a take on syg.ma: a stark hero statement, a thin filter bar,
@@ -35,9 +36,7 @@ function Meta({ post }: { post: Post }) {
   const b = bylineFor(post);
   return (
     <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.72rem] text-muted">
-      <Link href={`/authors/${b.slug}`} className="transition-colors hover:text-primary">
-        {b.name}
-      </Link>
+      <AuthorLink byline={b} className="transition-colors hover:text-primary" />
       <span aria-hidden>·</span>
       <span>{readingTimeLabel(post)}</span>
     </div>

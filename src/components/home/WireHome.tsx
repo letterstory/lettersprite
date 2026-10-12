@@ -1,3 +1,4 @@
+import { bylineFor } from "@/lib/author";
 import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { AdSlot } from "@/components/AdSlot";
@@ -41,7 +42,8 @@ function Chip({ section, className = "" }: { section: string; className?: string
 function Meta({ post }: { post: Post }) {
   return (
     <span className="font-mono text-[0.7rem] uppercase tracking-wider text-muted">
-      {post.author} · {formatDate(publishDate(post))} · {readingTimeLabel(post)}
+      {bylineFor(post).name} · {publishDate(post) && <>{formatDate(publishDate(post))} · </>}
+      {readingTimeLabel(post)}
     </span>
   );
 }

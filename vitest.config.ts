@@ -6,6 +6,6 @@ import { resolve } from "node:path";
 // person or a machine, and is the one piece here whose mistakes are invisible
 // in the rendered page. That is what this config exists for.
 export default defineConfig({
-  test: { environment: "node", include: ["src/**/*.test.ts"] },
+  test: { environment: "node", include: ["src/**/*.test.{ts,tsx}"] },
   resolve: { alias: { "@": resolve(__dirname, "src") } },
 });

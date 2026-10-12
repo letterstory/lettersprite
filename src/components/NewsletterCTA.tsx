@@ -4,8 +4,8 @@ import { env } from "@/env";
  * Newsletter sign-up. Subscriptions are the long-term goal for these
  * publications, so the capture is treated as first-class furniture, not an
  * afterthought. If `NEWSLETTER_ACTION` is set it posts there (Mailchimp,
- * Buttondown, etc.); otherwise it renders as a polished, inert form so the site
- * still looks like it has an audience.
+ * Buttondown, etc.); otherwise it renders as an inert form. The copy makes no
+ * claim about an audience or a cadence the site cannot back up.
  *
  * `variant`:
  *  - "band"    — a full-width call-to-action block (homepage, footer).
@@ -26,11 +26,8 @@ export function NewsletterCTA({
 }) {
   if (!env.newsletterEnabled) return null;
 
-  const title =
-    heading ?? `Get ${env.siteTitle} in your inbox`;
-  const description =
-    blurb ??
-    "The stories that matter, distilled and delivered. Join thousands of readers — free, every week.";
+  const title = heading ?? `Get ${env.siteTitle} in your inbox`;
+  const description = blurb ?? "Get new articles by email.";
 
   const action = env.newsletterAction || undefined;
   const method = action ? "post" : undefined;
@@ -77,7 +74,10 @@ export function NewsletterCTA({
         </h3>
         <p className="text-sm text-muted">{description}</p>
         {form}
-        <p className="text-xs text-muted">No spam. Unsubscribe anytime.</p>
+        {/* A promise about emails only where there is a list to send them. */}
+        {action && (
+          <p className="text-xs text-muted">No spam. Unsubscribe anytime.</p>
+        )}
       </aside>
     );
   }
@@ -93,9 +93,9 @@ export function NewsletterCTA({
         </h2>
         <p className="max-w-lg text-muted">{description}</p>
         <div className="mt-1 flex w-full justify-center">{form}</div>
-        <p className="text-xs text-muted">
-          No spam. Unsubscribe anytime.
-        </p>
+        {action && (
+          <p className="text-xs text-muted">No spam. Unsubscribe anytime.</p>
+        )}
       </div>
     </section>
   );

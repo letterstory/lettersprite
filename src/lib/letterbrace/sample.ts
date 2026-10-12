@@ -10,7 +10,7 @@ import type { Post } from "./types";
  * The set deliberately mixes: some posts carry an author, most don't (to
  * exercise the site-level editorial byline fallback); some carry a cover
  * image, most don't (to exercise the generated tessellation covers); some
- * carry a date, most don't (to exercise the stable synthesized datelines).
+ * carry a date, most don't (to exercise undated posts, which show no date).
  */
 
 const P = (
@@ -40,6 +40,7 @@ const P = (
   createdAt: null,
   updatedAt: null,
   paperTrail: [],
+  sponsorDisclosure: null,
   ...extra,
 });
 

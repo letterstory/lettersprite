@@ -43,8 +43,12 @@ function Card({ post }: { post: Post }) {
           </svg>
           {readingTimeLabel(post)}
         </span>
-        <span aria-hidden>·</span>
-        <span>{formatDate(publishDate(post))}</span>
+        {publishDate(post) && (
+          <>
+            <span aria-hidden>·</span>
+            <span>{formatDate(publishDate(post))}</span>
+          </>
+        )}
       </div>
     </article>
   );

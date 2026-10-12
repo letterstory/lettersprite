@@ -228,9 +228,13 @@ function FeedRow({ post }: { post: FeedPost }) {
         {post.dek && <p className="mt-1.5 line-clamp-2 text-sm leading-snug text-fg-soft">{post.dek}</p>}
         <p className="mt-1.5 font-display text-[0.66rem] font-bold uppercase tracking-[0.08em] text-muted">
           By{" "}
-          <Link href={`/authors/${post.authorSlug}`} className="text-primary transition-opacity hover:opacity-70">
-            {post.authorName}
-          </Link>
+          {post.authorSlug ? (
+            <Link href={`/authors/${post.authorSlug}`} className="text-primary transition-opacity hover:opacity-70">
+              {post.authorName}
+            </Link>
+          ) : (
+            <span className="text-primary">{post.authorName}</span>
+          )}
         </p>
       </div>
       <Link href={`/posts/${post.slug}`} className="block h-20 w-24 shrink-0 overflow-hidden bg-surfaceAlt">

@@ -23,6 +23,7 @@ import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { buildToc } from "@/lib/toc";
 import { postUrl } from "@/lib/url";
 import { formatDate } from "@/lib/format";
+import { disclosedDescription } from "@/lib/disclosure";
 import { getActiveTheme } from "@/themes";
 import { getLayout } from "@/lib/studio";
 import { StudioPostPage } from "@/components/studio/pages";
@@ -30,8 +31,11 @@ import { BlitzArticle } from "@/components/article/BlitzArticle";
 import { FluxArticle } from "@/components/article/FluxArticle";
 import { RiotArticle } from "@/components/article/RiotArticle";
 import { AuthorCard } from "@/components/AuthorCard";
+import { AuthorLink } from "@/components/AuthorLink";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -62,7 +66,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const post = await getPostBySlug(slug);
   if (!post) return {};
 
-  const description = post.excerpt || undefined;
+  // Led by the disclosure label when it lists `meta_description`; the title
+  // is left alone.
+  const description = disclosedDescription(post.sponsorDisclosure, post.excerpt);
   const url = postUrl(post);
   const byline = bylineFor(post);
   const published = publishDate(post);
@@ -84,8 +90,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       url,
       siteName: env.siteTitle,
       locale: "en_US",
-      publishedTime: published,
-      modifiedTime: modifiedDate(post),
+      publishedTime: published ?? undefined,
+      modifiedTime: modifiedDate(post) ?? undefined,
       authors: [byline.name],
       tags: post.tags,
       section: sectionFor(post),
@@ -133,7 +139,7 @@ export default async function PostPage({ params }: Params) {
 
   // Sanitize once, then inject heading anchors and extract the outline for the
   // table of contents — all at build time.
-  const { html: bodyHtml, headings } = buildToc(sanitizePostHtml(post.content));
+  const { html: bodyHtml, headings } = buildToc(sanitizePostHtml(post.content, post.sponsorDisclosure));
 
   // The author's full body of work (for the author card's "view all"), kept
   // identical to the /authors/[slug] page.
@@ -239,6 +245,9 @@ export default async function PostPage({ params }: Params) {
                 decoding="async"
                 className="max-h-full w-auto max-w-6xl object-contain"
               />
+              {/* The art is contained, not cropped, so its box varies with
+                  the image: the badge frames to the hero area instead. */}
+              <SponsorBadge disclosure={post.sponsorDisclosure} />
             </div>
           ) : (
             <>
@@ -250,6 +259,7 @@ export default async function PostPage({ params }: Params) {
                 className="h-full w-full object-cover"
               />
               <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/45 to-transparent" />
+              <SponsorBadge disclosure={post.sponsorDisclosure} />
             </>
           )}
           {/* Overlaid breadcrumb masthead: wordmark — section — title. */}
@@ -290,7 +300,7 @@ export default async function PostPage({ params }: Params) {
 
       {/* Franklin Azzi: a static full-bleed cover hero above a centered header. */}
       {vitrine && (
-        <div className="w-full overflow-hidden bg-surfaceAlt">
+        <div className="disclosure-frame w-full overflow-hidden bg-surfaceAlt">
           <img
             src={coverImageFor(post, 1600)}
             alt={coverAltFor(post)}
@@ -298,6 +308,7 @@ export default async function PostPage({ params }: Params) {
             decoding="async"
             className="h-[42vh] w-full object-cover sm:h-[54vh]"
           />
+          <SponsorBadge disclosure={post.sponsorDisclosure} />
         </div>
       )}
 
@@ -319,15 +330,17 @@ export default async function PostPage({ params }: Params) {
               the author's other Salesly pieces, plus date and reading time. */}
           {commons && (
             <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.82rem] text-muted">
-              <Link
-                href={`/authors/${byline.slug}`}
+              <AuthorLink
+                byline={byline}
                 className="font-medium text-heading underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
-              >
-                {byline.name}
-              </Link>
+              />
               <span aria-hidden>·</span>
-              <span>{formatDate(iso)}</span>
-              <span aria-hidden>·</span>
+              {iso && (
+                <>
+                  <span>{formatDate(iso)}</span>
+                  <span aria-hidden>·</span>
+                </>
+              )}
               <span>{readingTimeLabel(post)}</span>
             </div>
           )}
@@ -361,6 +374,8 @@ export default async function PostPage({ params }: Params) {
             </p>
           )}
 
+          <DisclosureLabel disclosure={post.sponsorDisclosure} className="mt-6" />
+
           {!commons && (
             <div
               className={`mt-7 flex flex-wrap items-center gap-4 border-y border-border py-4 ${vitrine ? "justify-center" : "justify-between"}`}
@@ -392,16 +407,19 @@ export default async function PostPage({ params }: Params) {
         <figure
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >
-          <img
-            src={coverImageFor(post, 1600)}
-            alt={coverAltFor(post)}
-            fetchPriority="high"
-            decoding="async"
-            className="aspect-[3/2] w-full rounded-[var(--radius)] object-cover"
-          />
+          <div className="disclosure-frame">
+            <img
+              src={coverImageFor(post, 1600)}
+              alt={coverAltFor(post)}
+              fetchPriority="high"
+              decoding="async"
+              className="aspect-[3/2] w-full rounded-[var(--radius)] object-cover"
+            />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
+          </div>
           <figcaption className="mt-2.5 text-xs text-muted">
             <span>
-              {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+              {section} · {iso && <>{formatDate(iso)} · </>}{readingTimeLabel(post)} ·{" "}
               {words.toLocaleString("en-US")} words
             </span>
             {/* Its own line: a photo credit is an obligation to a person, not
@@ -415,7 +433,7 @@ export default async function PostPage({ params }: Params) {
         <div className="container-content mt-10">
           <TableOfContents headings={headings} className="mb-10" />
 
-          <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+          <PostContent html={bodyHtml} sanitized dropCap={dropCap} disclosure={post.sponsorDisclosure} />
 
           {/* End-of-story mark (the printer's "fin"). */}
           <div className="fin" aria-hidden />

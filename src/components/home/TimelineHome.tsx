@@ -52,7 +52,7 @@ export function TimelineHome({ posts }: { posts: Post[] }) {
                   aria-hidden
                 />
                 <time
-                  dateTime={publishDate(post)}
+                  dateTime={publishDate(post) ?? undefined}
                   className="kicker kicker-muted"
                 >
                   {formatDate(publishDate(post))}

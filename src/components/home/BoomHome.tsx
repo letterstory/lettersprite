@@ -62,7 +62,11 @@ function Cover({
         />
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ backgroundColor: "#b5451b", opacity: 0.05, mixBlendMode: "multiply" }}
+          style={{
+            backgroundColor: "#b5451b",
+            opacity: 0.05,
+            mixBlendMode: "multiply",
+          }}
         />
       </div>
     </Link>
@@ -150,7 +154,8 @@ export function BoomHome({ posts }: { posts: Post[] }) {
       <section className="bg-surface">
         <div className="container-wide px-6 pt-6 pb-2 sm:pt-7 sm:pb-2">
           <p className="font-display text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-foreground/55">
-            The Weekly Letter{env.established ? ` · Est. ${env.established}` : ""}
+            The Weekly Letter
+            {env.established ? ` · Est. ${env.established}` : ""}
           </p>
           <h1 className="mt-2 font-heading text-3xl font-bold leading-[1] tracking-[-0.03em] text-heading sm:text-[2.6rem]">
             {env.siteTitle}
@@ -173,7 +178,9 @@ export function BoomHome({ posts }: { posts: Post[] }) {
             ))}
           </div>
           {/* Centre — dominant feature. */}
-          <div className="lg:col-span-6">{lead && <Card post={lead} cover={cv(lead.slug)} size="lg" />}</div>
+          <div className="lg:col-span-6">
+            {lead && <Card post={lead} cover={cv(lead.slug)} size="lg" />}
+          </div>
           {/* Right — text list. */}
           <div className="flex flex-col lg:col-span-3 lg:border-l lg:border-border lg:pl-8">
             {rightList.map((p) => (
@@ -213,8 +220,7 @@ export function BoomHome({ posts }: { posts: Post[] }) {
           </h2>
           <div>
             <p className="max-w-md text-lg leading-relaxed text-[#f7f4ef]/75">
-              A weekly brief on funds, LPs and the funding landscape — read by the
-              people who allocate. No noise.
+              New articles on funds, LPs and the funding landscape, by email.
             </p>
             <form className="mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
               <input

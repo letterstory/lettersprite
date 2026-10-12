@@ -3,7 +3,12 @@ import Link from "@/components/Link";
 import { env } from "@/env";
 import { getActiveTheme } from "@/themes";
 import { getPosts } from "@/lib/letterbrace/client";
-import { editionDate, topSections, sectionFor, sectionHref } from "@/lib/editorial";
+import {
+  editionDate,
+  topSections,
+  sectionFor,
+  sectionHref,
+} from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
 import { EditionDate } from "./EditionDate";
 import { FluxMenu } from "./FluxMenu";
@@ -25,8 +30,9 @@ import { StickyMasthead } from "./StickyMasthead";
  * Sections are real links to `/sections/[slug]` index pages.
  */
 
-/** Format a deterministic ISO date as a masthead edition line. */
-function formatEdition(iso: string): string {
+/** Format a deterministic ISO date as a masthead edition line ("" when undated). */
+function formatEdition(iso: string | null): string {
+  if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -59,7 +65,6 @@ function SubscribeButton({ compact = false }: { compact?: boolean }) {
     </a>
   );
 }
-
 
 export async function SiteHeader() {
   const theme = getActiveTheme();
@@ -117,7 +122,11 @@ export async function SiteHeader() {
                 ))}
               </nav>
               <div className="ml-auto flex shrink-0 items-center gap-3">
-                <SiteSearch index={searchIndex} trending={trending} className="w-44 sm:w-56" />
+                <SiteSearch
+                  index={searchIndex}
+                  trending={trending}
+                  className="w-44 sm:w-56"
+                />
                 <a
                   href="#newsletter"
                   className="hidden whitespace-nowrap rounded-full bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-[color:var(--primary-fg)] transition-opacity hover:opacity-90 sm:inline-block"
@@ -129,7 +138,10 @@ export async function SiteHeader() {
           </div>
           {/* Swipeable mono section strip on < lg. */}
           {sections.length > 0 && (
-            <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+            <nav
+              aria-label="Sections"
+              className="swipe-x border-t border-border lg:hidden"
+            >
               <div className="flex w-max gap-5 px-6 py-2.5">
                 {sections.map((s) => (
                   <Link
@@ -181,11 +193,17 @@ export async function SiteHeader() {
             aria-label={env.siteTitle}
             className="flex items-center justify-center gap-6"
           >
-            <span aria-hidden className="hidden h-px flex-1 bg-border sm:block" />
+            <span
+              aria-hidden
+              className="hidden h-px flex-1 bg-border sm:block"
+            />
             <span className="text-center font-display text-[2rem] font-bold leading-none tracking-tight text-primary sm:text-[2.6rem] lg:text-[3rem]">
               {env.siteTitle}
             </span>
-            <span aria-hidden className="hidden h-px flex-1 bg-border sm:block" />
+            <span
+              aria-hidden
+              className="hidden h-px flex-1 bg-border sm:block"
+            />
           </Link>
           {env.siteTagline && (
             <div className="mt-3 flex items-center justify-center gap-2.5 text-xs">
@@ -251,7 +269,10 @@ export async function SiteHeader() {
                 align="center"
                 className="text-center"
               />
-              <SiteSearch index={searchIndex} className="hidden w-56 shrink-0 lg:block" />
+              <SiteSearch
+                index={searchIndex}
+                className="hidden w-56 shrink-0 lg:block"
+              />
             </div>
             {/* Full-width search on small screens where the inline box is hidden */}
             <div className="border-t border-border pb-3 pt-2 lg:hidden">
@@ -275,7 +296,10 @@ export async function SiteHeader() {
       >
         {/* Row 1 — utility bar: a wide prominent search, subscribe on the right. */}
         <div className="border-b border-border">
-          <div data-hero-hide className="container-wide flex items-center gap-4 px-6 py-2.5">
+          <div
+            data-hero-hide
+            className="container-wide flex items-center gap-4 px-6 py-2.5"
+          >
             <EditionDate className="hidden shrink-0 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-muted lg:inline" />
             <SiteSearch index={searchIndex} className="min-w-0 flex-1" />
             <div className="flex shrink-0 items-center gap-4">
@@ -300,7 +324,12 @@ export async function SiteHeader() {
                   aria-label="X"
                   className="hidden text-muted transition-colors hover:text-heading sm:block"
                 >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    aria-hidden
+                  >
                     <path d="M18.9 1.6h3.5l-7.6 8.7L23.7 22h-7l-5.5-7.2L4.9 22H1.4l8.1-9.3L.7 1.6h7.2l5 6.6 5.9-6.6Zm-1.2 18.3h1.9L6.9 3.6H4.8l12.9 16.3Z" />
                   </svg>
                 </a>
@@ -390,7 +419,9 @@ export async function SiteHeader() {
               className="hidden w-40 md:mr-6 md:block"
             />
             {theme.features?.modeToggle && <ModeToggle />}
-            <FluxMenu items={sections.map((s) => ({ name: s, href: sectionHref(s) }))} />
+            <FluxMenu
+              items={sections.map((s) => ({ name: s, href: sectionHref(s) }))}
+            />
           </div>
         </div>
         {/* Verge-style centered pill toggle; active pill tracks the route. */}
@@ -417,7 +448,11 @@ export async function SiteHeader() {
             >
               Latest
             </Link>
-            <Link href="/" aria-label={env.siteTitle} className="flex flex-1 items-center justify-center px-4 py-2.5">
+            <Link
+              href="/"
+              aria-label={env.siteTitle}
+              className="flex flex-1 items-center justify-center px-4 py-2.5"
+            >
               <span className="font-display text-xl font-bold uppercase leading-none tracking-[0.05em] text-white sm:text-2xl md:text-3xl">
                 {env.siteTitle}
               </span>
@@ -439,7 +474,15 @@ export async function SiteHeader() {
               className="flex items-center gap-2 border-l border-white/15 px-4 font-display text-sm font-semibold uppercase tracking-[0.14em] text-white/90 transition-opacity hover:opacity-70 sm:px-5"
             >
               <span className="hidden md:inline">Search</span>
-              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <svg
+                viewBox="0 0 24 24"
+                className="h-[18px] w-[18px]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden
+              >
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.5-3.5" />
               </svg>
@@ -447,7 +490,10 @@ export async function SiteHeader() {
           </div>
         </div>
         {sections.length > 0 && (
-          <nav aria-label="Sections" className="border-b border-border bg-background">
+          <nav
+            aria-label="Sections"
+            className="border-b border-border bg-background"
+          >
             <div className="container-wide flex flex-wrap items-center justify-center gap-x-7 gap-y-1 px-6 py-2.5">
               {sections.map((s) => (
                 <Link
@@ -476,7 +522,8 @@ export async function SiteHeader() {
         <div className="bg-[color:var(--secondary)]">
           <div className="container-wide flex items-center justify-center px-6 py-1.5">
             <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white/90">
-              {env.siteTagline || `The ${env.siteTitle} Newsletter — subscribe for weekly briefings`}
+              {env.siteTagline ||
+                `The ${env.siteTitle} Newsletter — new articles by email`}
             </span>
           </div>
         </div>
@@ -491,7 +538,10 @@ export async function SiteHeader() {
                 {env.siteTitle}
               </span>
             </Link>
-            <nav aria-label="Primary" className="hidden min-w-0 flex-1 items-center gap-5 lg:flex">
+            <nav
+              aria-label="Primary"
+              className="hidden min-w-0 flex-1 items-center gap-5 lg:flex"
+            >
               {sections.slice(0, 7).map((s) => (
                 <Link
                   key={s}
@@ -520,7 +570,10 @@ export async function SiteHeader() {
           </div>
           {/* Section strip on small screens (inline nav hidden). */}
           {sections.length > 0 && (
-            <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+            <nav
+              aria-label="Sections"
+              className="swipe-x border-t border-border lg:hidden"
+            >
               <div className="flex w-max gap-5 px-6 py-2">
                 {sections.map((s) => (
                   <Link
@@ -608,10 +661,7 @@ export async function SiteHeader() {
       <div aria-hidden style={{ borderTop: `1.5px solid ${ink}` }} />
     );
     return (
-      <header
-        data-quarto-masthead
-        className="no-print bg-background"
-      >
+      <header data-quarto-masthead className="no-print bg-background">
         {/* Emblem — the deployment logo (SITE_LOGO_SVG, in lockstep with the
             favicon) when set, else an original monogram roundel fallback. */}
         <div className="mx-auto flex max-w-5xl justify-center px-6 pb-5 pt-8">
@@ -633,7 +683,8 @@ export async function SiteHeader() {
           </Link>
         </div>
         <Rule />
-        {/* Big centered wordmark, flanked by Vol. / Est. */}
+        {/* Big centered wordmark, flanked by Vol. / Est. (the configured
+            founding year, SITE_ESTABLISHED; nothing when unset). */}
         <div className="mx-auto max-w-5xl px-6">
           <div className="relative py-6">
             <span className="absolute left-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
@@ -646,9 +697,11 @@ export async function SiteHeader() {
             >
               {env.siteTitle}
             </Link>
-            <span className="absolute right-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
-              Est.&nbsp;2026
-            </span>
+            {env.established && (
+              <span className="absolute right-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
+                Est.&nbsp;{env.established}
+              </span>
+            )}
           </div>
         </div>
         <Rule />
@@ -716,7 +769,10 @@ export async function SiteHeader() {
           </div>
         </div>
         {sections.length > 0 && (
-          <nav aria-label="Sections" className="swipe-x border-t border-border md:hidden">
+          <nav
+            aria-label="Sections"
+            className="swipe-x border-t border-border md:hidden"
+          >
             <div className="flex w-max gap-4 px-6 py-2">
               {sections.map((s) => (
                 <Link
@@ -738,7 +794,8 @@ export async function SiteHeader() {
   // a ghosted centered search, then an understated uppercase section-tab row.
   if (theme.features?.vitrineMasthead) {
     const flankL = sections[0];
-    const flankR = sections.length > 1 ? sections[sections.length - 1] : undefined;
+    const flankR =
+      sections.length > 1 ? sections[sections.length - 1] : undefined;
     return (
       <header data-vitrine-masthead className="no-print bg-background">
         <div className="container-wide grid grid-cols-3 items-center gap-4 px-6 pb-5 pt-7">
@@ -767,9 +824,17 @@ export async function SiteHeader() {
           </div>
         </div>
         {/* Centered SEARCH with a hairline running along both sides. */}
-        <div data-hero-hide className="container-wide flex items-center gap-6 px-6 pb-7 pt-1">
+        <div
+          data-hero-hide
+          className="container-wide flex items-center gap-6 px-6 pb-7 pt-1"
+        >
           <span aria-hidden className="h-px flex-1 bg-border" />
-          <SiteSearch index={searchIndex} bare placeholder="Search" className="w-64 shrink-0" />
+          <SiteSearch
+            index={searchIndex}
+            bare
+            placeholder="Search"
+            className="w-64 shrink-0"
+          />
           <span aria-hidden className="h-px flex-1 bg-border" />
         </div>
         {sections.length > 0 && (
@@ -798,7 +863,10 @@ export async function SiteHeader() {
   // horizontally scrollable section nav on its own line.
   if (theme.features?.kioskMasthead) {
     return (
-      <header data-kiosk-masthead className="no-print sticky top-0 z-50 bg-background/95 backdrop-blur-md">
+      <header
+        data-kiosk-masthead
+        className="no-print sticky top-0 z-50 bg-background/95 backdrop-blur-md"
+      >
         {/* Dateline strip — reads as a real publication of record. */}
         <div className="border-b border-border/70">
           <div className="container-wide flex items-center justify-center px-6 py-2 font-mono text-[0.64rem] uppercase tracking-[0.22em] text-muted">
@@ -809,8 +877,14 @@ export async function SiteHeader() {
           <div className="container-wide grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-5">
             <span aria-hidden />
             <Logo size="md" className="justify-self-center" />
-            <div data-hero-hide className="flex shrink-0 items-center gap-4 justify-self-end">
-              <SiteSearch index={searchIndex} className="hidden w-48 md:block" />
+            <div
+              data-hero-hide
+              className="flex shrink-0 items-center gap-4 justify-self-end"
+            >
+              <SiteSearch
+                index={searchIndex}
+                className="hidden w-48 md:block"
+              />
               <SubscribeButton />
             </div>
           </div>
@@ -839,7 +913,10 @@ export async function SiteHeader() {
 
   if (theme.features?.folioMasthead) {
     return (
-      <header data-folio-masthead className="no-print sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+      <header
+        data-folio-masthead
+        className="no-print sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md"
+      >
         <div className="container-wide flex items-center gap-6 px-6 py-4">
           <Logo size="md" className="shrink-0" />
           <nav className="hidden items-center gap-6 lg:flex">
@@ -853,14 +930,20 @@ export async function SiteHeader() {
               </Link>
             ))}
           </nav>
-          <div data-hero-hide className="ml-auto flex shrink-0 items-center gap-4">
+          <div
+            data-hero-hide
+            className="ml-auto flex shrink-0 items-center gap-4"
+          >
             <SiteSearch index={searchIndex} className="hidden w-44 md:block" />
             <SubscribeButton />
           </div>
         </div>
         {/* Section strip on small screens. */}
         {sections.length > 0 && (
-          <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+          <nav
+            aria-label="Sections"
+            className="swipe-x border-t border-border lg:hidden"
+          >
             <div className="flex w-max gap-5 px-6 py-2.5">
               {sections.map((s) => (
                 <Link
@@ -888,7 +971,10 @@ export async function SiteHeader() {
           <div className="container-wide flex items-center justify-between gap-6 px-6 py-4">
             <Logo size="md" />
             <div className="flex items-center gap-4">
-              <SiteSearch index={searchIndex} className="hidden w-56 sm:block" />
+              <SiteSearch
+                index={searchIndex}
+                className="hidden w-56 sm:block"
+              />
               <SubscribeButton />
             </div>
           </div>
@@ -918,8 +1004,14 @@ export async function SiteHeader() {
         <Logo size="md" />
         {/* Nav takes the middle and is width-bounded (flex-1 min-w-0) so it can
             measure how many sections fit and fold the rest into "More". */}
-        <SectionNav sections={sections} className="hidden min-w-0 flex-1 md:flex" />
-        <SiteSearch index={searchIndex} className="hidden w-52 shrink-0 md:block" />
+        <SectionNav
+          sections={sections}
+          className="hidden min-w-0 flex-1 md:flex"
+        />
+        <SiteSearch
+          index={searchIndex}
+          className="hidden w-52 shrink-0 md:block"
+        />
         <SubscribeButton />
       </div>
       {/* Section nav + search wrap to their own rows on small screens */}

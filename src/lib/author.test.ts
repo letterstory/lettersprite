@@ -26,6 +26,7 @@ const post = (id: string, extra: Partial<Post> = {}): Post => ({
   createdAt: null,
   updatedAt: null,
   paperTrail: [],
+  sponsorDisclosure: null,
   ...extra,
 });
 
@@ -140,5 +141,42 @@ describe("authorsFromPosts", () => {
     expect(author.posts).toHaveLength(2);
     expect(author.byline.profile).toBe(bank);
     expect(author.byline.role).toBe("Senior Writer");
+  });
+});
+
+describe("site_byline", () => {
+  const ai: Post["sponsorDisclosure"] = {
+    surfaces: ["article_footer", "site_byline"],
+    sponsor: { name: "Acme", url: null },
+    text: "This article is sponsored by Acme.",
+    label: "Sponsored by Acme",
+    siteText: "",
+  };
+
+  // Even a post built outside normalize (which nulls these) credits no one.
+  it("is the site-level byline with no role, never the post's author", () => {
+    const b = bylineFor(
+      post("1", { author: "Ines Moreau", authorSlug: "ines-moreau-7", authorProfile: bank, sponsorDisclosure: ai }),
+    );
+    expect(b).toMatchObject({
+      name: `${env.siteTitle} Editors`,
+      role: null,
+      provided: false,
+      profile: null,
+      hasProfile: false,
+    });
+  });
+
+  it("puts site-byline posts on no author page", () => {
+    const authors = authorsFromPosts([
+      post("1", { sponsorDisclosure: ai }),
+      post("2", { author: "Jane Doe" }),
+    ]);
+    expect(authors.map((a) => a.byline.name)).toEqual(["Jane Doe"]);
+  });
+
+  it("leaves every other byline with a profile", () => {
+    expect(bylineFor(post("1")).hasProfile).toBe(true);
+    expect(bylineFor(post("2", { authorProfile: bank })).hasProfile).toBe(true);
   });
 });

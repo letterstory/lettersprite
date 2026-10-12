@@ -1,16 +1,16 @@
 import type { MetadataRoute } from "next";
 import { env } from "@/env";
 import { getPosts } from "@/lib/letterbrace/client";
-import { allSections, publishDate, sectionSlug, postsInSection } from "@/lib/editorial";
+import { allSections, latestDate, publishDate, sectionSlug, postsInSection } from "@/lib/editorial";
 import { authorsFromPosts } from "@/lib/author";
 import { absoluteCover, xmlSafeUrl } from "@/lib/url";
 import type { Post } from "@/lib/letterbrace/types";
 
 export const dynamic = "force-static";
 
-/** Newest publish date across a set of posts (ISO), or undefined when empty. */
+/** Newest publish date across a set of posts (ISO), or undefined when none is dated. */
 function latestPublish(posts: Post[]): string | undefined {
-  return posts.map((p) => publishDate(p)).sort((a, b) => b.localeCompare(a))[0] ?? undefined;
+  return latestDate(posts) ?? undefined;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -23,15 +23,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // post is re-pinned or the fleet is redeployed, so it collapsed every URL onto
   // one build-day instant — the "the entire site changed today" signal that Google
   // reads as churn and that made this sitemap unhealthy. publishDate is the
-  // set-once publish date: spread across the real timeline, stable across rebuilds,
-  // and consistent with the page's datePublished.
+  // set-once publish date: stable across rebuilds and consistent with the page's
+  // datePublished. An undated post has no <lastmod> rather than an invented one.
   // Next's sitemap serializer emits every <loc>/<image:loc> value RAW (no XML
   // escaping), so each URL is escaped here before it reaches the document. Cover
   // URLs are the live hazard — Unsplash hotlinks carry `&`-joined query params —
   // but page URLs are escaped too as defense in depth against a stray `&` in a slug.
   const postEntries: MetadataRoute.Sitemap = posts.map((post) => ({
     url: xmlSafeUrl(`${env.siteUrl}/posts/${post.slug}`),
-    lastModified: publishDate(post),
+    lastModified: publishDate(post) ?? undefined,
     changeFrequency: "monthly",
     priority: 0.7,
     images: [xmlSafeUrl(absoluteCover(post))],

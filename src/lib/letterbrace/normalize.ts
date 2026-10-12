@@ -1,9 +1,12 @@
 import { tightenPunctuationSpacing } from "@/lib/text";
-import type {
-  CoverCredit,
-  PaperTrailSource,
-  Post,
-  PostAuthorProfile,
+import {
+  DISCLOSURE_SURFACES,
+  type CoverCredit,
+  type DisclosureSurface,
+  type PaperTrailSource,
+  type Post,
+  type PostAuthorProfile,
+  type SponsorDisclosure,
 } from "./types";
 
 type Raw = Record<string, unknown>;
@@ -303,6 +306,82 @@ function toCoverCredit(raw: Raw): CoverCredit | null {
   return null;
 }
 
+/** An absolute http(s) URL, or null — a sponsor link we can't parse is no link. */
+function httpUrl(value: unknown): string | null {
+  const s = asString(value)?.trim();
+  if (!s) return null;
+  try {
+    const u = new URL(s);
+    return u.protocol === "http:" || u.protocol === "https:" ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A trimmed non-empty string from the first key that has one, else "". */
+function words(d: Raw, ...keys: string[]): string {
+  for (const k of keys) {
+    const s = asString(d[k])?.trim();
+    if (s) return s;
+  }
+  return "";
+}
+
+/** A `SponsorDisclosure` from the served object, or null when it isn't one. */
+function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
+  if (!value || typeof value !== "object") return null;
+  const d = value as Raw;
+  const sponsor = (d.sponsor && typeof d.sponsor === "object" ? d.sponsor : {}) as Raw;
+  // The wording is Letterstory's, never ours: without the name every sentence
+  // names, there is nothing honest to render.
+  const name = asString(sponsor.name)?.trim();
+  if (!name) return null;
+  const text = words(d, "text");
+  // `badge_text` is what an app from before `label` serves for the same words.
+  const label = words(d, "label", "badge_text", "badgeText");
+  const siteText = words(d, "site_text", "siteText");
+  // The string each surface sets. A surface whose words did not arrive is
+  // dropped rather than worded here.
+  const needs: Record<DisclosureSurface, string | true> = {
+    article_header: label,
+    article_footer: text,
+    cover_badge: label,
+    structured_data: true,
+    sponsored_links: true,
+    meta_description: label,
+    site_statement: siteText,
+    site_byline: true,
+  };
+  // Known surfaces only, in canonical order, deduped. `ai_authorship` is
+  // `site_byline`'s earlier name, still read so a payload served during the
+  // switch keeps its byline honest; its `ai_label` / `ai_text` are ignored.
+  const listed = new Set(
+    (Array.isArray(d.surfaces) ? d.surfaces : []).map((s) =>
+      s === "ai_authorship" ? "site_byline" : s,
+    ),
+  );
+  const surfaces = DISCLOSURE_SURFACES.filter(
+    (s): s is DisclosureSurface => listed.has(s) && Boolean(needs[s]),
+  );
+  if (!surfaces.length) return null;
+  return { surfaces, sponsor: { name, url: httpUrl(sponsor.url) }, text, label, siteText };
+}
+
+/**
+ * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` —
+ * the same flat field `cover_image_credit` is. Null when absent (every payload
+ * from before the field existed renders exactly as it did) and when malformed:
+ * unknown surfaces are dropped, so is a surface whose words are missing, and a
+ * disclosure without a sponsor name or any surface left to render on is no
+ * disclosure.
+ */
+function toSponsorDisclosure(raw: Raw): SponsorDisclosure | null {
+  return (
+    sponsorDisclosureFrom(raw.sponsor_disclosure) ??
+    sponsorDisclosureFrom(raw.sponsorDisclosure)
+  );
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
   if (direct) return cleanAuthorName(direct);
@@ -391,7 +470,11 @@ export function normalizePost(raw: Raw): Post | null {
   const suppliedSlug = pick(raw, ["slug", "permalink", "path"]);
   // A credit only belongs to a real cover — see toCoverCredit.
   const coverImage = toCoverImage(raw);
-  const authorProfile = toAuthorProfile(raw);
+  const sponsorDisclosure = toSponsorDisclosure(raw);
+  // Under `site_byline` the byline is the site's own: no author field the
+  // payload (or anything upstream of it) carries may credit a person.
+  const siteByline = Boolean(sponsorDisclosure?.surfaces.includes("site_byline"));
+  const authorProfile = siteByline ? null : toAuthorProfile(raw);
 
   return {
     id,
@@ -401,8 +484,8 @@ export function normalizePost(raw: Raw): Post | null {
     excerpt: suppliedExcerpt ? stripHtml(suppliedExcerpt) : excerptFrom(content),
     dek: suppliedExcerpt ? stripHtml(suppliedExcerpt) : null,
     status: (pick(raw, ["status", "state"]) ?? "published").toLowerCase(),
-    author: toAuthor(raw) ?? authorProfile?.name ?? null,
-    authorSlug: authorProfile?.slug ?? toAuthorSlug(raw),
+    author: siteByline ? null : (toAuthor(raw) ?? authorProfile?.name ?? null),
+    authorSlug: siteByline ? null : (authorProfile?.slug ?? toAuthorSlug(raw)),
     authorProfile,
     coverImage,
     coverImageAlt: toCoverImageAlt(raw),
@@ -417,5 +500,6 @@ export function normalizePost(raw: Raw): Post | null {
     ),
     updatedAt: toIso(raw.updated_at, raw.updatedAt, raw.modified_at),
     paperTrail: toPaperTrail(raw),
+    sponsorDisclosure,
   };
 }

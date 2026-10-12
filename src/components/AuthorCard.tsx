@@ -1,10 +1,11 @@
 import Link from "@/components/Link";
-import { authorProfile, type Byline } from "@/lib/author";
+import { authorHref, authorProfile, type Byline } from "@/lib/author";
 
 /**
  * The contributor card at the foot of an article: avatar, name, and a link to
  * the author's `/authors/[slug]` page, plus the bank's bio when the author has
  * one. By default they don't, so the card is just the name — nothing is invented.
+ * A byline with no profile (a `site_byline` post) has no card.
  */
 export function AuthorCard({
   byline,
@@ -15,8 +16,9 @@ export function AuthorCard({
   storyCount?: number;
   className?: string;
 }) {
+  const href = authorHref(byline);
+  if (!href) return null;
   const { bio } = authorProfile(byline);
-  const href = `/authors/${byline.slug}`;
   const more =
     storyCount > 1 ? `View all ${storyCount} stories` : "View all stories";
 

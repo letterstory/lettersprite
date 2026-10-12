@@ -3,6 +3,7 @@ import type { Post } from "@/lib/letterbrace/types";
 import { sectionFor, sectionHref } from "@/lib/editorial";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { bylineFor } from "@/lib/author";
+import { AuthorLink } from "@/components/AuthorLink";
 
 /**
  * Kiosk (Taste) section/author index: a centered title with flanking rules and
@@ -55,9 +56,7 @@ function Card({ post }: { post: Post }) {
         )}
         <p className="mt-3 font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
           Story:{" "}
-          <Link href={`/authors/${b.slug}`} className="text-heading transition-colors hover:text-primary">
-            {b.name}
-          </Link>
+          <AuthorLink byline={b} className="text-heading transition-colors hover:text-primary" />
         </p>
       </div>
     </article>

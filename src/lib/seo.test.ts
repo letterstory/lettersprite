@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { articleLd, authorLd } from "./seo";
+import { articleLd, authorLd, siteGraphLd } from "./seo";
 import { bylineFor, editorialByline } from "./author";
 import { env } from "@/env";
-import type { Post } from "./letterbrace/types";
+import type { Post, SponsorDisclosure } from "./letterbrace/types";
 
 const post = (extra: Partial<Post> = {}): Post => ({
   id: "1",
@@ -22,6 +22,7 @@ const post = (extra: Partial<Post> = {}): Post => ({
   createdAt: null,
   updatedAt: null,
   paperTrail: [],
+  sponsorDisclosure: null,
   ...extra,
 });
 
@@ -93,5 +94,75 @@ describe("authorLd", () => {
       jobTitle: "Senior Writer",
       description: "Ines covers cloud.",
     });
+  });
+});
+
+describe("articleLd sponsor", () => {
+  const disclosure = (
+    surfaces: SponsorDisclosure["surfaces"],
+    url: string | null = "https://acme.com",
+  ): SponsorDisclosure => ({
+    surfaces,
+    sponsor: { name: "Acme", url },
+    text: "This article is sponsored by Acme.",
+    label: "Sponsored by Acme",
+  siteText: "This publication is sponsored by Acme.",
+  });
+
+  it("names the sponsor Organization when structured_data is listed", () => {
+    const ld = articleLd(post({ sponsorDisclosure: disclosure(["article_footer", "structured_data"]) }));
+    expect(ld.sponsor).toEqual({ "@type": "Organization", name: "Acme", url: "https://acme.com" });
+  });
+
+  it("omits the url when the sponsor has none", () => {
+    const ld = articleLd(post({ sponsorDisclosure: disclosure(["structured_data"], null) }));
+    expect(ld.sponsor).toEqual({ "@type": "Organization", name: "Acme" });
+  });
+
+  it("is absent when structured_data isn't listed, or nothing is disclosed", () => {
+    expect(articleLd(post({ sponsorDisclosure: disclosure(["article_footer", "cover_badge"]) }))).not.toHaveProperty(
+      "sponsor",
+    );
+    expect(articleLd(post())).not.toHaveProperty("sponsor");
+  });
+});
+
+describe("siteGraphLd funder", () => {
+  const site = (url: string | null, surfaces: SponsorDisclosure["surfaces"] = ["site_statement"]): SponsorDisclosure => ({
+    surfaces,
+    sponsor: { name: "Acme", url },
+    text: "",
+    label: "",
+    siteText: "This publication is sponsored by Acme.",
+  });
+  const nodes = (ld: Record<string, unknown>) => ld["@graph"] as Record<string, unknown>[];
+
+  it("names the sponsor as funder of the Organization and the WebSite under site_statement", () => {
+    for (const node of nodes(siteGraphLd(site("https://acme.com")))) {
+      expect(node.funder).toEqual({ "@type": "Organization", name: "Acme", url: "https://acme.com" });
+    }
+  });
+
+  it("omits the url when the sponsor has none", () => {
+    expect(nodes(siteGraphLd(site(null)))[0].funder).toEqual({ "@type": "Organization", name: "Acme" });
+  });
+
+  it("has no funder when site_statement isn't listed, or nothing is disclosed", () => {
+    for (const ld of [siteGraphLd(site("https://acme.com", ["article_footer"])), siteGraphLd(), siteGraphLd(null)]) {
+      for (const node of nodes(ld)) expect(node).not.toHaveProperty("funder");
+    }
+  });
+});
+
+describe("articleLd dates", () => {
+  it("omits datePublished and dateModified for an undated post rather than inventing them", () => {
+    const ld = articleLd(post());
+    expect(ld).not.toHaveProperty("datePublished");
+    expect(ld).not.toHaveProperty("dateModified");
+  });
+
+  it("keeps a real date", () => {
+    const ld = articleLd(post({ createdAt: "2026-08-01T00:00:00.000Z" }));
+    expect(ld.datePublished).toBe("2026-08-01T00:00:00.000Z");
   });
 });

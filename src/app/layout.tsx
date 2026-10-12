@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import { env, hasLetterbraceKey } from "@/env";
 import { siteFavicon } from "@/lib/favicon";
+import { prefixed, siteDisclosure } from "@/lib/disclosure";
+import { getPosts } from "@/lib/letterbrace/client";
 import { siteGraphLd } from "@/lib/seo";
 import { getActiveTheme } from "@/themes";
 import { googleFontsHref, themeToCssVars } from "@/themes/css";
@@ -13,9 +15,14 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ClassicChrome, DesignSwitch, type DemoPeer } from "@/components/DesignSwitch";
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
   const title = env.siteTitle;
-  const description = env.siteDescription || undefined;
+  // The site statement leads the site's description (the home page's, and any
+  // page's that sets none of its own), verbatim.
+  const disclosure = siteDisclosure(await getPosts());
+  const description = disclosure
+    ? prefixed(disclosure.siteText, env.siteDescription)
+    : env.siteDescription || undefined;
   const favicon = siteFavicon();
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.
@@ -70,8 +77,9 @@ function demoPeers(): DemoPeer[] {
   }
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const theme = getActiveTheme();
+  const disclosure = siteDisclosure(await getPosts());
   const fontsHref = googleFontsHref(theme);
   const modeScript = modeBootScript(theme);
 
@@ -111,7 +119,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             data-customer-id={env.maverickCustomerId}
           />
         )}
-        <JsonLd data={siteGraphLd()} />
+        <JsonLd data={siteGraphLd(disclosure)} />
         {modeScript && (
           // Runs before first paint so the saved dark/light choice applies with
           // no flash; exposes window.__applyMode for the masthead toggle.

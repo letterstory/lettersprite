@@ -15,11 +15,15 @@
  * ("<Site> Editors") — never a made-up per-post person. Inventing a fresh
  * creator for every unbylined article is exactly the fabricated-profile pattern
  * search engines treat as deception.
+ *
+ * A post whose disclosure lists `site_byline` gets that same site-level
+ * byline, and no contributor profile: no bio card, no author page, no Person.
  */
 
 import { env } from "@/env";
 import { pick } from "./rng";
 import { orderedByDate } from "./editorial";
+import { siteByline } from "./disclosure";
 import { cleanAuthorName, slugify } from "./letterbrace/normalize";
 import type { Post, PostAuthorProfile } from "./letterbrace/types";
 
@@ -51,6 +55,12 @@ export interface Byline {
   provided: boolean;
   /** The bank record behind this byline, or null (free-form or editorial). */
   profile: PostAuthorProfile | null;
+  /**
+   * Whether the byline has a contributor profile: a bio card under the
+   * article, an `/authors/[slug]` page, a place in the contributor lists.
+   * False under `site_byline`, which credits the site and stands for no one.
+   */
+  hasProfile: boolean;
 }
 
 /** A contributor profile: the byline plus its masthead furniture. */
@@ -106,7 +116,13 @@ export function editorialByline(): Byline {
     slug: authorSlug(name),
     provided: false,
     profile: null,
+    hasProfile: true,
   };
+}
+
+/** The byline's `/authors/[slug]` page, or null when it has none. */
+export function authorHref(byline: Byline): string | null {
+  return byline.hasProfile ? `/authors/${byline.slug}` : null;
 }
 
 /**
@@ -115,6 +131,10 @@ export function editorialByline(): Byline {
  * returns a complete `Byline`; never invents a person.
  */
 export function bylineFor(post: Post): Byline {
+  if (siteByline(post.sponsorDisclosure)) {
+    // Never the payload's author fields, whatever they carry: the site credits itself.
+    return { ...editorialByline(), hasProfile: false };
+  }
   const profile = post.authorProfile ?? null;
   const name = profile?.name ?? providedAuthor(post);
   if (!name) return editorialByline();
@@ -126,6 +146,7 @@ export function bylineFor(post: Post): Byline {
     slug: profile?.slug || post.authorSlug || authorSlug(name),
     provided: true,
     profile,
+    hasProfile: true,
   };
 }
 
@@ -150,6 +171,7 @@ export function authorProfile(byline: Byline): AuthorProfile {
  * share an author when their byline slug matches — the bank slug for bank
  * authors, the slugified name otherwise — so a recurring author collects their
  * full body of work and every unbylined post lands on the one editorial page.
+ * A post whose byline has no profile (`site_byline`) is in no author's list.
  */
 export function authorsFromPosts(
   posts: Post[],
@@ -157,6 +179,7 @@ export function authorsFromPosts(
   const map = new Map<string, { byline: Byline; posts: Post[] }>();
   for (const post of posts) {
     const byline = bylineFor(post);
+    if (!byline.hasProfile) continue;
     const existing = map.get(byline.slug);
     if (existing) {
       existing.posts.push(post);

@@ -4,6 +4,8 @@ import { authorProfile } from "@/lib/author";
 import { readingTimeMinutes, sectionFor } from "@/lib/editorial";
 import { topicHref, studioHome, pullQuote, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
+import { SponsorBadge } from "@/components/SponsorBadge";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { AuthorCard, Byline, Prose, RelatedGrid, Sources } from "../parts";
 
 /**
@@ -20,7 +22,10 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
       <div className="s-progress" aria-hidden />
       <article className="s-article m-article">
         <figure className="m-hero">
-          <StudioCover post={post} brand={brand} sizes="100vw" />
+          <div className="disclosure-frame">
+            <StudioCover post={post} brand={brand} sizes="100vw" />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
+          </div>
         </figure>
         <header className="s-wrap m-head">
           <p className="m-label">
@@ -30,6 +35,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
           <h1 className="m-title">{post.title}</h1>
           {post.dek && <p className="m-dek">{post.dek}</p>}
           <Byline byline={a.byline} post={post} align="center" />
+          <DisclosureLabel disclosure={post.sponsorDisclosure} />
         </header>
 
         <div className="s-wrap m-grid">
@@ -48,6 +54,7 @@ export function MagazineArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
           </aside>
           <div className="m-body">
             <Prose
+              disclosure={post.sponsorDisclosure}
               before={a.before}
               after={a.after}
               middle={

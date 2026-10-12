@@ -14,8 +14,10 @@ import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";
 import { AuthorCard } from "@/components/AuthorCard";
+import { DisclosureLabel } from "@/components/DisclosureLabel";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -36,7 +38,7 @@ export type FluxArticleProps = {
   bodyHtml: string;
   headings: Heading[];
   section: string;
-  iso: string;
+  iso: string | null;
   byline: Byline;
   authorPostsCount: number;
   related: Post[];
@@ -92,6 +94,7 @@ export function FluxArticle({
           {post.dek && (
             <p className="mt-4 text-xl leading-snug text-fg-soft text-pretty">{post.dek}</p>
           )}
+          <DisclosureLabel disclosure={post.sponsorDisclosure} className="mt-5" />
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-y-2 border-foreground py-3">
             <PostMeta post={post} variant="byline" readingTime linkAuthor showUpdated />
             <ShareRow url={url} title={post.title} />
@@ -100,16 +103,19 @@ export function FluxArticle({
 
         {/* Full-width hero. */}
         <figure className="mx-auto mt-8 max-w-5xl">
-          <img
-            src={coverImageFor(post, 1600)}
-            alt={coverAltFor(post)}
-            fetchPriority="high"
-            decoding="async"
-            className="aspect-[16/9] w-full bg-surfaceAlt object-cover"
-          />
+          <div className="disclosure-frame">
+            <img
+              src={coverImageFor(post, 1600)}
+              alt={coverAltFor(post)}
+              fetchPriority="high"
+              decoding="async"
+              className="aspect-[16/9] w-full bg-surfaceAlt object-cover"
+            />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
+          </div>
           <figcaption className="mt-2.5 text-xs text-muted">
             <span>
-              {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
+              {section} · {iso && <>{formatDate(iso)} · </>}{readingTimeLabel(post)} ·{" "}
               {words.toLocaleString("en-US")} words
             </span>
             <CoverCredit credit={post.coverCredit} className="mt-1 block" />
@@ -122,7 +128,7 @@ export function FluxArticle({
         <div className="mx-auto mt-2 grid max-w-5xl gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="min-w-0">
             <TableOfContents headings={headings} className="mb-10" />
-            <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+            <PostContent html={bodyHtml} sanitized dropCap={dropCap} disclosure={post.sponsorDisclosure} />
             <div className="fin" aria-hidden />
             <PostSources sources={post.paperTrail} className="mt-10" />
             <TopicTags tags={post.tags} linkableSlugs={linkableSlugs} className="mt-10" />
