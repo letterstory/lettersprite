@@ -3,6 +3,7 @@ import type { Brand } from "@/lib/brand";
 import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { topicHref, studioHome, pullQuote, studioHref, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, Prose, Sources } from "../parts";
 
@@ -41,13 +42,15 @@ export function BroadsheetArticle({ brand, a }: { brand: Brand; a: StudioArticle
           </div>
         </header>
         <figure className="b-figure">
-          <div className="b-figure-media">
+          <div className="b-figure-media sponsor-cover">
             <StudioCover post={post} brand={brand} sizes="100vw" />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
           </div>
           {caption && <figcaption>{caption}</figcaption>}
         </figure>
         <div className="b-body">
           <Prose
+            disclosure={post.sponsorDisclosure}
             before={a.before}
             after={a.after}
             middle={

@@ -4,6 +4,7 @@ import { isUpdated, modifiedDate, readingTimeLabel, sectionFor } from "@/lib/edi
 import { formatDate } from "@/lib/format";
 import type { StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { TocSpy } from "../TocSpy";
 import { CopyLink } from "../CopyLink";
 import { AuthorCard, InlineAsk, Prose, Sources } from "../parts";
@@ -32,8 +33,9 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
               <h1 className="j-post-title">{post.title}</h1>
               {post.dek && <p className="j-post-dek">{post.dek}</p>}
             </div>
-            <div className="j-head-media">
+            <div className="j-head-media sponsor-cover">
               <StudioCover post={post} brand={brand} />
+              <SponsorBadge disclosure={post.sponsorDisclosure} />
             </div>
           </div>
           <dl className="j-credits">
@@ -87,6 +89,7 @@ export function JournalArticle({ brand, a }: { brand: Brand; a: StudioArticleDat
               </div>
             )}
             <Prose
+              disclosure={post.sponsorDisclosure}
               before={a.before}
               after={a.after}
               middle={brand.ask === "product" ? <InlineAsk brand={brand} /> : undefined}

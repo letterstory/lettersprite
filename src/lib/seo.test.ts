@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { articleLd, authorLd } from "./seo";
 import { bylineFor, editorialByline } from "./author";
 import { env } from "@/env";
-import type { Post } from "./letterbrace/types";
+import type { Post, SponsorDisclosure } from "./letterbrace/types";
 
 const post = (extra: Partial<Post> = {}): Post => ({
   id: "1",
@@ -22,6 +22,7 @@ const post = (extra: Partial<Post> = {}): Post => ({
   createdAt: null,
   updatedAt: null,
   paperTrail: [],
+  sponsorDisclosure: null,
   ...extra,
 });
 
@@ -93,5 +94,34 @@ describe("authorLd", () => {
       jobTitle: "Senior Writer",
       description: "Ines covers cloud.",
     });
+  });
+});
+
+describe("articleLd sponsor", () => {
+  const disclosure = (
+    surfaces: SponsorDisclosure["surfaces"],
+    url: string | null = "https://acme.com",
+  ): SponsorDisclosure => ({
+    surfaces,
+    sponsor: { name: "Acme", url },
+    text: "This article is sponsored by Acme.",
+    badgeText: "Sponsored by Acme",
+  });
+
+  it("names the sponsor Organization when structured_data is listed", () => {
+    const ld = articleLd(post({ sponsorDisclosure: disclosure(["article_footer", "structured_data"]) }));
+    expect(ld.sponsor).toEqual({ "@type": "Organization", name: "Acme", url: "https://acme.com" });
+  });
+
+  it("omits the url when the sponsor has none", () => {
+    const ld = articleLd(post({ sponsorDisclosure: disclosure(["structured_data"], null) }));
+    expect(ld.sponsor).toEqual({ "@type": "Organization", name: "Acme" });
+  });
+
+  it("is absent when structured_data isn't listed, or nothing is disclosed", () => {
+    expect(articleLd(post({ sponsorDisclosure: disclosure(["article_footer", "cover_badge"]) }))).not.toHaveProperty(
+      "sponsor",
+    );
+    expect(articleLd(post())).not.toHaveProperty("sponsor");
   });
 });

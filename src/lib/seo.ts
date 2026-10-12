@@ -24,6 +24,7 @@ import {
 } from "./editorial";
 import { absoluteCover, absoluteUrl, postUrl } from "./url";
 import { coverAltFor } from "./covers";
+import { discloses } from "./disclosure";
 import type { Post } from "./letterbrace/types";
 
 type Json = Record<string, unknown>;
@@ -124,6 +125,22 @@ function creditText(post: Post): string {
   return credit.photographer ? `${credit.photographer} / ${source}` : source;
 }
 
+/**
+ * The sponsor as a schema.org Organization — the machine-readable half of the
+ * visible disclosure, the way `creditText` is for the photo credit and
+ * `citation` for the Sources. Only when the disclosure lists
+ * `structured_data`; the URL is omitted when Letterstory has none.
+ */
+function sponsorNode(post: Post): Json | undefined {
+  const d = post.sponsorDisclosure;
+  if (!discloses(d, "structured_data")) return undefined;
+  return clean({
+    "@type": "Organization",
+    name: d.sponsor.name,
+    url: d.sponsor.url ?? undefined,
+  });
+}
+
 export function articleLd(post: Post): Json {
   const url = postUrl(post);
   return clean({
@@ -164,6 +181,7 @@ export function articleLd(post: Post): Json {
           url: s.url,
         }))
       : undefined,
+    sponsor: sponsorNode(post),
   });
 }
 

@@ -32,6 +32,7 @@ import { RiotArticle } from "@/components/article/RiotArticle";
 import { AuthorCard } from "@/components/AuthorCard";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -133,7 +134,7 @@ export default async function PostPage({ params }: Params) {
 
   // Sanitize once, then inject heading anchors and extract the outline for the
   // table of contents — all at build time.
-  const { html: bodyHtml, headings } = buildToc(sanitizePostHtml(post.content));
+  const { html: bodyHtml, headings } = buildToc(sanitizePostHtml(post.content, post.sponsorDisclosure));
 
   // The author's full body of work (for the author card's "view all"), kept
   // identical to the /authors/[slug] page.
@@ -239,6 +240,9 @@ export default async function PostPage({ params }: Params) {
                 decoding="async"
                 className="max-h-full w-auto max-w-6xl object-contain"
               />
+              {/* The art is contained, not cropped, so its box varies with
+                  the image: the badge frames to the hero area instead. */}
+              <SponsorBadge disclosure={post.sponsorDisclosure} />
             </div>
           ) : (
             <>
@@ -250,6 +254,7 @@ export default async function PostPage({ params }: Params) {
                 className="h-full w-full object-cover"
               />
               <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/45 to-transparent" />
+              <SponsorBadge disclosure={post.sponsorDisclosure} />
             </>
           )}
           {/* Overlaid breadcrumb masthead: wordmark — section — title. */}
@@ -290,7 +295,7 @@ export default async function PostPage({ params }: Params) {
 
       {/* Franklin Azzi: a static full-bleed cover hero above a centered header. */}
       {vitrine && (
-        <div className="w-full overflow-hidden bg-surfaceAlt">
+        <div className="sponsor-cover w-full overflow-hidden bg-surfaceAlt">
           <img
             src={coverImageFor(post, 1600)}
             alt={coverAltFor(post)}
@@ -298,6 +303,7 @@ export default async function PostPage({ params }: Params) {
             decoding="async"
             className="h-[42vh] w-full object-cover sm:h-[54vh]"
           />
+          <SponsorBadge disclosure={post.sponsorDisclosure} />
         </div>
       )}
 
@@ -392,13 +398,16 @@ export default async function PostPage({ params }: Params) {
         <figure
           className={`mx-auto mt-8 ${feature ? "container-wide" : "container-content"}`}
         >
-          <img
-            src={coverImageFor(post, 1600)}
-            alt={coverAltFor(post)}
-            fetchPriority="high"
-            decoding="async"
-            className="aspect-[3/2] w-full rounded-[var(--radius)] object-cover"
-          />
+          <div className="sponsor-cover">
+            <img
+              src={coverImageFor(post, 1600)}
+              alt={coverAltFor(post)}
+              fetchPriority="high"
+              decoding="async"
+              className="aspect-[3/2] w-full rounded-[var(--radius)] object-cover"
+            />
+            <SponsorBadge disclosure={post.sponsorDisclosure} />
+          </div>
           <figcaption className="mt-2.5 text-xs text-muted">
             <span>
               {section} · {formatDate(iso)} · {readingTimeLabel(post)} ·{" "}
@@ -415,7 +424,7 @@ export default async function PostPage({ params }: Params) {
         <div className="container-content mt-10">
           <TableOfContents headings={headings} className="mb-10" />
 
-          <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+          <PostContent html={bodyHtml} sanitized dropCap={dropCap} disclosure={post.sponsorDisclosure} />
 
           {/* End-of-story mark (the printer's "fin"). */}
           <div className="fin" aria-hidden />

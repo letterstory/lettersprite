@@ -4,6 +4,7 @@ import { readingTimeLabel, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { studioHome, studioHref, type StudioArticleData } from "@/lib/studio";
 import { StudioCover } from "../StudioCover";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { AuthorCard, Byline, Prose, Sources } from "../parts";
 
 /**
@@ -26,10 +27,11 @@ export function EssayArticle({ brand, a }: { brand: Brand; a: StudioArticleData 
           {post.dek && <p className="e-dek">{post.dek}</p>}
           <Byline byline={a.byline} post={post} />
         </header>
-        <figure className="e-figure">
+        <figure className="e-figure sponsor-cover">
           <StudioCover post={post} brand={brand} />
+          <SponsorBadge disclosure={post.sponsorDisclosure} />
         </figure>
-        <Prose before={a.before} after={a.after} />
+        <Prose disclosure={post.sponsorDisclosure} before={a.before} after={a.after} />
         <Sources sources={post.paperTrail} title="Notes" />
         <div className="e-thanks">
           <p className="e-thanks-title">{brand.cta.headline}</p>

@@ -26,6 +26,7 @@ const post = (id: string, extra: Partial<Post> = {}): Post => ({
   createdAt: null,
   updatedAt: null,
   paperTrail: [],
+  sponsorDisclosure: null,
   ...extra,
 });
 

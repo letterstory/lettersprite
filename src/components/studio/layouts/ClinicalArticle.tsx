@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/format";
 import { env } from "@/env";
 import { studioHome, numberFigures, studioHref, type StudioArticleData } from "@/lib/studio";
 import { CopyLink } from "../CopyLink";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { AuthorCard, Prose } from "../parts";
 
 /**
@@ -26,6 +27,8 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
             <p className="c-type">
               <Link href={studioHome()}>{brand.name}</Link> <span aria-hidden>·</span> {sectionFor(post)}
             </p>
+            {/* Clinical sets no cover, so the badge sits in the header. */}
+            <SponsorBadge disclosure={post.sponsorDisclosure} inline />
             <h1 className="c-title">{post.title}</h1>
             <p className="c-authors">
               {a.byline.name}
@@ -81,7 +84,7 @@ export function ClinicalArticle({ brand, a }: { brand: Brand; a: StudioArticleDa
               </section>
             )}
             <div className="c-numbered">
-              <Prose before={numberFigures(a.before)} after={numberFigures(a.after)} />
+              <Prose disclosure={post.sponsorDisclosure} before={numberFigures(a.before)} after={numberFigures(a.after)} />
             </div>
 
             {post.paperTrail.length > 0 && (

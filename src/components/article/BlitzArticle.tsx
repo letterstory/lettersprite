@@ -12,6 +12,7 @@ import { AdSlot } from "@/components/AdSlot";
 import { AuthorCard } from "@/components/AuthorCard";
 import { BackToTop } from "@/components/BackToTop";
 import { CoverCredit } from "@/components/CoverCredit";
+import { SponsorBadge } from "@/components/SponsorBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { Kicker } from "@/components/Kicker";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -184,7 +185,7 @@ export function BlitzArticle({
 
           {/* Center: hero → Summary box → body. */}
           <div className="min-w-0">
-            <figure>
+            <figure className="sponsor-cover">
               <img
                 src={coverImageFor(post, 1600)}
                 alt={coverAltFor(post)}
@@ -192,6 +193,7 @@ export function BlitzArticle({
                 decoding="async"
                 className="aspect-[3/2] w-full bg-surfaceAlt object-cover"
               />
+              <SponsorBadge disclosure={post.sponsorDisclosure} />
             </figure>
 
             {summary && (
@@ -204,7 +206,7 @@ export function BlitzArticle({
             <div className="mt-10">
               <TableOfContents headings={headings} className="mb-10" />
 
-              <PostContent html={bodyHtml} sanitized dropCap={dropCap} />
+              <PostContent html={bodyHtml} sanitized dropCap={dropCap} disclosure={post.sponsorDisclosure} />
 
               <div className="fin" aria-hidden />
 

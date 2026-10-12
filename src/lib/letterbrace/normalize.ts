@@ -1,9 +1,12 @@
 import { tightenPunctuationSpacing } from "@/lib/text";
-import type {
-  CoverCredit,
-  PaperTrailSource,
-  Post,
-  PostAuthorProfile,
+import {
+  DISCLOSURE_SURFACES,
+  type CoverCredit,
+  type DisclosureSurface,
+  type PaperTrailSource,
+  type Post,
+  type PostAuthorProfile,
+  type SponsorDisclosure,
 } from "./types";
 
 type Raw = Record<string, unknown>;
@@ -303,6 +306,54 @@ function toCoverCredit(raw: Raw): CoverCredit | null {
   return null;
 }
 
+/** An absolute http(s) URL, or null — a sponsor link we can't parse is no link. */
+function httpUrl(value: unknown): string | null {
+  const s = asString(value)?.trim();
+  if (!s) return null;
+  try {
+    const u = new URL(s);
+    return u.protocol === "http:" || u.protocol === "https:" ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A `SponsorDisclosure` from the served object, or null when it isn't one. */
+function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
+  if (!value || typeof value !== "object") return null;
+  const d = value as Raw;
+  const sponsor = (d.sponsor && typeof d.sponsor === "object" ? d.sponsor : {}) as Raw;
+  // The wording is Letterstory's, never ours: without the sentence or the name
+  // it names, there is nothing honest to render.
+  const name = asString(sponsor.name)?.trim();
+  const text = asString(d.text)?.trim();
+  if (!name || !text) return null;
+  const badgeText = asString(d.badge_text ?? d.badgeText)?.trim() ?? "";
+  // Known surfaces only, in canonical order, deduped. A badge with no words
+  // to set is dropped rather than composed here.
+  const listed = new Set(Array.isArray(d.surfaces) ? d.surfaces : []);
+  const surfaces = DISCLOSURE_SURFACES.filter(
+    (s): s is DisclosureSurface =>
+      listed.has(s) && (s !== "cover_badge" || Boolean(badgeText)),
+  );
+  if (!surfaces.length) return null;
+  return { surfaces, sponsor: { name, url: httpUrl(sponsor.url) }, text, badgeText };
+}
+
+/**
+ * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` —
+ * the same flat field `cover_image_credit` is. Null when absent (every payload
+ * from before the field existed renders exactly as it did) and when malformed:
+ * unknown surfaces are dropped, and a disclosure without a sponsor name, a
+ * sentence, or any surface left to render on is no disclosure.
+ */
+function toSponsorDisclosure(raw: Raw): SponsorDisclosure | null {
+  return (
+    sponsorDisclosureFrom(raw.sponsor_disclosure) ??
+    sponsorDisclosureFrom(raw.sponsorDisclosure)
+  );
+}
+
 function toAuthor(raw: Raw): string | null {
   const direct = pick(raw, ["author", "author_name", "authorName", "byline"]);
   if (direct) return cleanAuthorName(direct);
@@ -417,5 +468,6 @@ export function normalizePost(raw: Raw): Post | null {
     ),
     updatedAt: toIso(raw.updated_at, raw.updatedAt, raw.modified_at),
     paperTrail: toPaperTrail(raw),
+    sponsorDisclosure: toSponsorDisclosure(raw),
   };
 }

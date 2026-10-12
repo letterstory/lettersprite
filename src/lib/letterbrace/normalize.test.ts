@@ -173,3 +173,80 @@ describe("normalizePost — author bank", () => {
     expect(post?.author).toBeNull();
   });
 });
+
+describe("normalizePost — sponsor disclosure", () => {
+  const disclosure = {
+    surfaces: ["article_footer", "cover_badge", "structured_data", "sponsored_links"],
+    sponsor: { name: "Acme", url: "https://www.acme.com" },
+    text: "This article is sponsored by Acme.",
+    badge_text: "Sponsored by Acme",
+  };
+
+  it("reads the flat sponsor_disclosure Letterstory ships, verbatim", () => {
+    const post = normalizePost({ ...base, sponsor_disclosure: disclosure });
+    expect(post?.sponsorDisclosure).toEqual({
+      surfaces: ["article_footer", "cover_badge", "structured_data", "sponsored_links"],
+      sponsor: { name: "Acme", url: "https://www.acme.com" },
+      text: "This article is sponsored by Acme.",
+      badgeText: "Sponsored by Acme",
+    });
+  });
+
+  // Every payload from before the field existed must render exactly as it did.
+  it("is null when absent or explicitly null", () => {
+    expect(normalizePost(base)?.sponsorDisclosure).toBeNull();
+    expect(normalizePost({ ...base, sponsor_disclosure: null })?.sponsorDisclosure).toBeNull();
+  });
+
+  it("keeps a null sponsor url, and drops one that isn't an http(s) URL", () => {
+    const nullUrl = normalizePost({
+      ...base,
+      sponsor_disclosure: { ...disclosure, sponsor: { name: "Acme", url: null } },
+    });
+    expect(nullUrl?.sponsorDisclosure?.sponsor).toEqual({ name: "Acme", url: null });
+    const badUrl = normalizePost({
+      ...base,
+      sponsor_disclosure: { ...disclosure, sponsor: { name: "Acme", url: "javascript:alert(1)" } },
+    });
+    expect(badUrl?.sponsorDisclosure?.sponsor.url).toBeNull();
+  });
+
+  it("drops unknown surfaces and duplicates, in canonical order", () => {
+    const post = normalizePost({
+      ...base,
+      sponsor_disclosure: {
+        ...disclosure,
+        surfaces: ["structured_data", "masthead", "article_footer", "structured_data", 7],
+      },
+    });
+    expect(post?.sponsorDisclosure?.surfaces).toEqual(["article_footer", "structured_data"]);
+  });
+
+  it("drops the badge rather than composing its words when badge_text is missing", () => {
+    const post = normalizePost({
+      ...base,
+      sponsor_disclosure: { ...disclosure, badge_text: "  " },
+    });
+    expect(post?.sponsorDisclosure?.surfaces).toEqual([
+      "article_footer",
+      "structured_data",
+      "sponsored_links",
+    ]);
+  });
+
+  it.each([
+    ["a string", "Acme"],
+    ["an array", [disclosure]],
+    ["no surfaces", { ...disclosure, surfaces: [] }],
+    ["only unknown surfaces", { ...disclosure, surfaces: ["masthead"] }],
+    ["surfaces that isn't an array", { ...disclosure, surfaces: "article_footer" }],
+    ["no sponsor", { ...disclosure, sponsor: null }],
+    ["a blank sponsor name", { ...disclosure, sponsor: { name: " ", url: null } }],
+    ["no text", { ...disclosure, text: undefined }],
+    ["blank text", { ...disclosure, text: "" }],
+  ])("is null for a malformed disclosure: %s", (_, value) => {
+    const post = normalizePost({ ...base, sponsor_disclosure: value });
+    expect(post).not.toBeNull();
+    expect(post?.sponsorDisclosure).toBeNull();
+  });
+});

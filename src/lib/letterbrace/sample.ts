@@ -40,6 +40,7 @@ const P = (
   createdAt: null,
   updatedAt: null,
   paperTrail: [],
+  sponsorDisclosure: null,
   ...extra,
 });
 

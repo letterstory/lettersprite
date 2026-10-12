@@ -37,6 +37,48 @@ export interface CoverCredit {
 }
 
 /**
+ * Where a sponsored publication discloses its sponsor. Letterstory decides the
+ * set per collection; the site renders whichever are listed and branches on
+ * nothing else.
+ *
+ * - `article_footer`: the disclosure sentence after the body.
+ * - `cover_badge`: the badge set over the cover.
+ * - `structured_data`: schema.org `sponsor` on the article JSON-LD.
+ * - `sponsored_links`: `rel="sponsored"` on body links to the sponsor's site.
+ */
+export const DISCLOSURE_SURFACES = [
+  "article_footer",
+  "cover_badge",
+  "structured_data",
+  "sponsored_links",
+] as const;
+export type DisclosureSurface = (typeof DISCLOSURE_SURFACES)[number];
+
+/**
+ * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` on
+ * every article read (docs/architecture/sponsor-disclosure.md in letterstory).
+ * Null when the publication discloses nothing — including every payload from
+ * before the field existed.
+ *
+ * `text` and `badgeText` are rendered verbatim. The site never composes its
+ * own wording: the sentence is decided once, in Letterstory, so a disclosure
+ * cannot drift into something softer per theme.
+ */
+export interface SponsorDisclosure {
+  /** Never empty: a disclosure with no surface to render on is null. */
+  surfaces: DisclosureSurface[];
+  sponsor: {
+    name: string;
+    /** The sponsor's site, for JSON-LD and `sponsored_links`; null when unknown. */
+    url: string | null;
+  };
+  /** The footer sentence, verbatim — e.g. "This article is sponsored by Acme." */
+  text: string;
+  /** The cover badge, verbatim — e.g. "Sponsored by Acme". */
+  badgeText: string;
+}
+
+/**
  * The structured author record Letterbrace ships as `author_profile` for a
  * byline drawn from the site's author bank — the recurring set of authors
  * generated once per site and reused across its posts. Absent (null) for
@@ -94,4 +136,6 @@ export interface Post {
   updatedAt: string | null;
   /** The article's Paper Trail — vetted sources, or [] when there are none. */
   paperTrail: PaperTrailSource[];
+  /** Who sponsors the publication and where to say so; null discloses nothing. */
+  sponsorDisclosure: SponsorDisclosure | null;
 }
