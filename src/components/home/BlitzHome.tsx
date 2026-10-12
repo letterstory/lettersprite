@@ -35,8 +35,12 @@ function Metrics({ post }: { post: Post }) {
         </svg>
         {readingTimeLabel(post)}
       </span>
-      <span aria-hidden>·</span>
-      <span>{formatDate(publishDate(post))}</span>
+      {publishDate(post) && (
+        <>
+          <span aria-hidden>·</span>
+          <span>{formatDate(publishDate(post))}</span>
+        </>
+      )}
       <svg
         viewBox="0 0 24 24"
         className="ml-auto h-3.5 w-3.5 text-muted"

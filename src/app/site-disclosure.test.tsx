@@ -143,3 +143,22 @@ describe("an undisclosed site says nothing it does not mean", () => {
     expect((await siteMetadata()).description).toBe(env.siteDescription || undefined);
   });
 });
+
+// Every site, disclosed or not: the sign-up claims no audience or cadence.
+describe("the newsletter sign-up", () => {
+  it("makes no audience claim", async () => {
+    const { NewsletterCTA } = await import("@/components/NewsletterCTA");
+    const mutableEnv = env as { newsletterEnabled: boolean };
+    const was = mutableEnv.newsletterEnabled;
+    mutableEnv.newsletterEnabled = true;
+    try {
+      for (const variant of ["band", "inline"] as const) {
+        const page = renderToStaticMarkup(<NewsletterCTA variant={variant} />);
+        expect(page).toContain("Get new articles by email.");
+        expect(page).not.toMatch(/thousands|readers|every week/i);
+      }
+    } finally {
+      mutableEnv.newsletterEnabled = was;
+    }
+  });
+});

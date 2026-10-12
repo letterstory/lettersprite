@@ -157,3 +157,16 @@ describe("siteGraphLd funder", () => {
     }
   });
 });
+
+describe("articleLd dates", () => {
+  it("omits datePublished and dateModified for an undated post rather than inventing them", () => {
+    const ld = articleLd(post());
+    expect(ld).not.toHaveProperty("datePublished");
+    expect(ld).not.toHaveProperty("dateModified");
+  });
+
+  it("keeps a real date", () => {
+    const ld = articleLd(post({ createdAt: "2026-08-01T00:00:00.000Z" }));
+    expect(ld.datePublished).toBe("2026-08-01T00:00:00.000Z");
+  });
+});

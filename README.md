@@ -140,12 +140,15 @@ A theme controls:
 - **Scheme** — `light` or `dark` (keeps native controls and scrollbars in sync).
 
 Every post also gets a byline (author name + avatar) and, deterministically
-and for free (no database), a stable dateline, a reading time, a section, and a
-set of suggested "more stories". Bylines come from Letterstory's per-site author
-bank (`author_profile` in the payload; the name and slug are used, the bio and
-role are not shown); a legacy free-form `author` is shown verbatim, and a
-post with no author at all carries the one site-level "<Site> Editors" byline —
-no per-post names are ever invented. See `src/lib/` (`author.ts`, `editorial.ts`, `related.ts`, `rng.ts`).
+and for free (no database), a reading time, a section, and a set of suggested
+"more stories". The dateline is the payload's own publish date; an undated post
+shows none, rather than an invented one. Bylines come from Letterstory's per-site author
+bank (`author_profile` in the payload; the name and slug are used, and a bio or
+role only when the bank supplies one); a legacy free-form `author` is shown
+verbatim, and a post with no author at all carries the one site-level
+"<Site> Editors" byline — no per-post names are ever
+invented. A post whose `sponsor_disclosure` lists `ai_authorship` carries that
+site-level byline too, with Letterstory's AI label as its role and no author page. See `src/lib/` (`author.ts`, `editorial.ts`, `related.ts`, `rng.ts`).
 
 Fine-tune any theme per deployment with the palette and font overrides above —
 supply a whole palette, not just two colors.
@@ -215,7 +218,7 @@ src/
   themes/                 15 themes, registry, CSS/font serializers, type system
   lib/letterbrace/        API client + defensive payload normalization
   lib/author.ts           Bylines from the author bank + editorial fallback
-  lib/editorial.ts        Reading time, stable datelines, sections
+  lib/editorial.ts        Reading time, publish dates (never invented), sections
   lib/related.ts          Suggested-reading selection
   lib/seo.ts              JSON-LD (Organization, BlogPosting, Breadcrumb)
   lib/sanitize.ts         Article HTML sanitizer (XSS-safe render)

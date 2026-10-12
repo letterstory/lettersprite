@@ -99,6 +99,8 @@ const disclosed = normalizePost(
   }),
 )!;
 const undisclosed = normalizePost(payload("undisclosed", null))!;
+// No `published_at`: the page must show no date rather than invent one.
+const undated = normalizePost({ ...payload("undated", null), published_at: undefined })!;
 
 const count = (html: string, needle: string) => html.split(needle).length - 1;
 const SPONSORED_REL = /rel="[^"]*\bsponsored\b/;
@@ -173,6 +175,14 @@ function expectUndisclosed(html: string) {
   expect(html).not.toMatch(SPONSORED_REL);
 }
 
+/** No dateline, no datetime, no datePublished — and no stray separator where one was. */
+function expectUndated(html: string) {
+  expect(html).not.toContain("datePublished");
+  expect(html).not.toContain("dateTime=");
+  expect(html).not.toMatch(/\b(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}/);
+  expect(html).not.toMatch(/·\s*(<[^>]+>\s*)*·/);
+}
+
 beforeEach(() => {
   content.posts = [disclosed, undisclosed];
 });
@@ -190,6 +200,11 @@ describe("sponsor disclosure renders in every article layout", () => {
       expect(html).toContain(marker);
       expectUndisclosed(html);
     });
+
+    it("renders an undated post with no date", async () => {
+      content.posts = [undated];
+      expectUndated(await renderClassic(theme, undated));
+    });
   });
 
   describe.each(LAYOUTS.map((layout) => ({ layout })))("redesign — $layout", ({ layout }) => {
@@ -199,6 +214,11 @@ describe("sponsor disclosure renders in every article layout", () => {
 
     it("shows none of them when sponsor_disclosure is null", async () => {
       expectUndisclosed(await renderStudio(layout, undisclosed));
+    });
+
+    it("renders an undated post with no date", async () => {
+      content.posts = [undated];
+      expectUndated(await renderStudio(layout, undated));
     });
   });
 

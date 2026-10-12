@@ -25,8 +25,9 @@ import { StickyMasthead } from "./StickyMasthead";
  * Sections are real links to `/sections/[slug]` index pages.
  */
 
-/** Format a deterministic ISO date as a masthead edition line. */
-function formatEdition(iso: string): string {
+/** Format a deterministic ISO date as a masthead edition line ("" when undated). */
+function formatEdition(iso: string | null): string {
+  if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -633,7 +634,8 @@ export async function SiteHeader() {
           </Link>
         </div>
         <Rule />
-        {/* Big centered wordmark, flanked by Vol. / Est. */}
+        {/* Big centered wordmark, flanked by Vol. / Est. (the configured
+            founding year, SITE_ESTABLISHED; nothing when unset). */}
         <div className="mx-auto max-w-5xl px-6">
           <div className="relative py-6">
             <span className="absolute left-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
@@ -646,9 +648,11 @@ export async function SiteHeader() {
             >
               {env.siteTitle}
             </Link>
-            <span className="absolute right-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
-              Est.&nbsp;2026
-            </span>
+            {env.established && (
+              <span className="absolute right-0 top-1/2 hidden -translate-y-1/2 text-[0.72rem] uppercase tracking-[0.16em] text-muted sm:block">
+                Est.&nbsp;{env.established}
+              </span>
+            )}
           </div>
         </div>
         <Rule />

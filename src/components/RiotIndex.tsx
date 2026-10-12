@@ -16,8 +16,12 @@ import { FakeAd } from "@/components/FakeAd";
 function Meta({ post, light = false }: { post: Post; light?: boolean }) {
   return (
     <p className={`mt-2 flex items-center gap-3 font-display text-[0.66rem] font-medium uppercase tracking-[0.12em] ${light ? "text-white/70" : "text-muted"}`}>
-      <span>{formatDate(publishDate(post))}</span>
-      <span aria-hidden className={light ? "text-white/40" : "text-border"}>·</span>
+      {publishDate(post) && (
+        <>
+          <span>{formatDate(publishDate(post))}</span>
+          <span aria-hidden className={light ? "text-white/40" : "text-border"}>·</span>
+        </>
+      )}
       <span>{readingTimeLabel(post)}</span>
     </p>
   );

@@ -33,8 +33,12 @@ function MetaLine({
       className={`font-heading text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted ${className}`}
     >
       {label}
-      <span className="mx-1.5 text-border">·</span>
-      <time className="font-semibold">{formatDate(publishDate(post))}</time>
+      {publishDate(post) && (
+        <>
+          <span className="mx-1.5 text-border">·</span>
+          <time className="font-semibold">{formatDate(publishDate(post))}</time>
+        </>
+      )}
     </p>
   );
 }

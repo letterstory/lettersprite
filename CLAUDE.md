@@ -21,10 +21,16 @@ is configured entirely by environment variables. **No database, no admin panel.*
   and this directory stop naming the same themes.
 - **Bylines** (`lib/author.ts`): from Letterstory's per-site author bank
   (`author_profile`), else the free-form `author`, else one site-level
-  "<Site> Editors" byline. Never synthesize per-post people.
+  "<Site> Editors" byline. Never synthesize per-post people. Under the
+  `ai_authorship` disclosure surface the byline is always that site-level one,
+  with Letterstory's `ai_label` as its role, and no author page or Person.
+- **Sponsor disclosure** (`lib/disclosure.ts`): `post.sponsorDisclosure` lists the
+  surfaces to render; every string is Letterstory's, verbatim. The site-wide
+  statement is read off the posts (`siteDisclosure`). Disclosure classes must
+  survive Readability (`components/disclosure-readability.test.tsx`).
 - **Generated editorial metadata** (no database, all deterministic so it never
-  drifts across builds): stable datelines +
-  reading time + sections (`lib/editorial.ts`), suggested reading (`lib/related.ts`),
+  drifts across builds): reading time + sections (`lib/editorial.ts`; dates are
+  the payload's, never invented), suggested reading (`lib/related.ts`),
   seeded via `lib/rng.ts`. SEO/JSON-LD lives in `lib/seo.ts`.
 - **Config**: `src/env.ts` centralizes all env access (palette + font + newsletter
   overrides included). See `.env.example`.

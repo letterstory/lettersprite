@@ -1,21 +1,12 @@
 /**
- * Editorial metadata derived from a post: reading time, a stable fallback
- * publish date, and a section label. Like bylines, anything synthesized here is
- * deterministic so it never changes between builds.
+ * Editorial metadata derived from a post: reading time, its publish date, and
+ * a section label. Anything derived here is deterministic so it never changes
+ * between builds — and nothing here is invented: a post the payload gives no
+ * date shows no date.
  */
 
 import { slugify, stripHtml } from "./letterbrace/normalize";
-import { hashString } from "./rng";
 import type { Post } from "./letterbrace/types";
-
-/**
- * Fixed reference point for synthesized publish dates. Dateless posts are
- * spread backward from here, deterministically, so a fresh deployment with no
- * real timestamps still reads like an active publication with a back catalogue.
- * Bump this when refreshing the fleet.
- */
-const DATE_ANCHOR = Date.UTC(2026, 6, 10); // 2026-07-10
-const DAY = 86_400_000;
 
 /** Words per minute used for the reading-time estimate. */
 const WPM = 225;
@@ -44,24 +35,19 @@ export function readingTimeLabel(post: Post): string {
 }
 
 /**
- * The publish date to display: the real timestamp when present, otherwise a
- * stable synthesized ISO date. Never returns null, so every card and header can
- * show a dateline (a hallmark of a real outlet).
+ * The publish date the payload gave, or null. Never synthesized: a made-up
+ * dateline claims a back catalogue the site does not have, so an undated post
+ * shows no date and its structured data omits `datePublished`.
  */
-export function publishDate(post: Post): string {
-  if (post.createdAt) return post.createdAt;
-  // Spread dateless posts across ~2–430 days before the anchor, weighted toward
-  // recent by squaring a [0,1) value derived from the post.
-  const r = (hashString(`${post.id}:date`) % 100000) / 100000;
-  const daysAgo = 2 + Math.floor(r * r * 428);
-  return new Date(DATE_ANCHOR - daysAgo * DAY).toISOString();
+export function publishDate(post: Post): string | null {
+  return post.createdAt;
 }
 
 /**
  * The one-time fleet re-pin (2026-07-30) that restamped every post's version
  * timestamp. `updatedAt` at or before this instant reflects that mass operation,
  * NOT an editorial revision — so we don't advertise it as a modification. Doing
- * so would put a "modified" date days after a (deliberately spread) publish date
+ * so would put a "modified" date days after the publish date
  * and disagree with the sitemap `<lastmod>` and `datePublished`, the exact
  * inconsistency Google Search Console distrusts. Genuine edits after this cutoff
  * advance `dateModified` normally.
@@ -70,10 +56,12 @@ const FLEET_REPIN_CUTOFF = "2026-07-31T00:00:00.000Z";
 
 /** True when `updatedAt` represents a real post-publish edit worth advertising. */
 function isGenuineEdit(post: Post): boolean {
+  const published = publishDate(post);
   return Boolean(
-    post.updatedAt &&
+    published &&
+      post.updatedAt &&
       post.updatedAt > FLEET_REPIN_CUTOFF &&
-      post.updatedAt > publishDate(post),
+      post.updatedAt > published,
   );
 }
 
@@ -82,18 +70,19 @@ function isGenuineEdit(post: Post): boolean {
  * was genuinely edited (see {@link isGenuineEdit}), otherwise the publish date.
  * Keeping it equal to the publish date for un-edited posts makes `dateModified`,
  * the sitemap `<lastmod>`, and `datePublished` agree — one honest date, which is
- * what GSC rewards — and guarantees `dateModified >= datePublished`.
+ * what GSC rewards — and guarantees `dateModified >= datePublished`. Null for
+ * an undated post, like its publish date.
  */
-export function modifiedDate(post: Post): string {
+export function modifiedDate(post: Post): string | null {
   return isGenuineEdit(post) ? (post.updatedAt as string) : publishDate(post);
 }
 
 /**
  * Whether to show an "Updated" stamp. True only for a genuine post-publish edit,
- * so the stamp never fires for the fleet re-pin or a synthesized baseline.
+ * so the stamp never fires for the fleet re-pin or an undated post.
  */
 export function isUpdated(post: Post): boolean {
-  return Boolean(post.createdAt && isGenuineEdit(post));
+  return isGenuineEdit(post);
 }
 
 /** Words past which a piece reads as a "long read" (worth a badge). */
@@ -107,19 +96,29 @@ export function isLongread(post: Post): boolean {
 /**
  * The "edition" dateline for the masthead — the date of the most recent story,
  * so it's meaningful and deterministic (never a build-time wall-clock read).
- * Falls back to the date anchor when there are no posts.
+ * Null when no post is dated.
  */
-export function editionDate(posts: Post[]): string {
-  const latest = posts
-    .map((p) => publishDate(p))
-    .sort((a, b) => b.localeCompare(a))[0];
-  return latest ?? new Date(DATE_ANCHOR).toISOString();
+export function editionDate(posts: Post[]): string | null {
+  return latestDate(posts);
 }
 
-/** Posts in canonical reading order: newest first by (synthesized) publish date. */
+/** The newest real publish date across `posts` (ISO), or null when none is dated. */
+export function latestDate(posts: Post[]): string | null {
+  let latest: string | null = null;
+  for (const p of posts) {
+    const d = publishDate(p);
+    if (d && (!latest || d > latest)) latest = d;
+  }
+  return latest;
+}
+
+/**
+ * Posts in canonical reading order: newest first by publish date. Undated
+ * posts follow every dated one, in the order they were given (sort is stable).
+ */
 export function orderedByDate(posts: Post[]): Post[] {
   return [...posts].sort((a, b) =>
-    publishDate(b).localeCompare(publishDate(a)),
+    (publishDate(b) ?? "").localeCompare(publishDate(a) ?? ""),
   );
 }
 
