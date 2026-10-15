@@ -42,3 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /.demo-data/
+
+# Local-preview-only reference material (never shipped, never committed)
+/design-ref/glide-images/
+/public/_local-preview/

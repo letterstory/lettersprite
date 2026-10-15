@@ -546,33 +546,46 @@ export async function SiteHeader() {
     return (
       <header
         data-canvas-masthead
-        className="no-print sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md"
+        className="no-print sticky top-0 z-[60] bg-background/90 backdrop-blur-md"
       >
-        <div className="container-wide flex items-center gap-4 px-6 py-4">
-          <Logo size="md" className="shrink-0" />
-          <nav className="mx-auto hidden items-center rounded-full border border-border p-1 lg:flex">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 xl:px-10">
+          <Logo size="sm" className="shrink-0" />
+          <nav className="hidden min-w-0 items-center gap-1 lg:flex">
             {sections.map((s) => (
               <Link
                 key={s}
                 href={sectionHref(s)}
-                className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm text-muted transition-colors hover:bg-surface hover:text-primary"
+                className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-[color:var(--surface)]"
               >
                 {s}
               </Link>
             ))}
           </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-1">
             <SiteSearch
               index={searchIndex}
               bare
               bareSize="sm"
               placeholder="Search"
-              className="hidden w-44 sm:block"
+              className="hidden w-40 md:block"
             />
-            <SubscribeButton compact />
+            <Link
+              href="#newsletter"
+              className="hidden rounded-full px-4 py-2 text-sm text-foreground transition-colors hover:bg-[color:var(--surface)] sm:inline-block"
+            >
+              Log in
+            </Link>
+            {env.newsletterEnabled && (
+              <a
+                href="#newsletter"
+                className="whitespace-nowrap rounded-full bg-primary px-5 py-2 text-sm font-medium text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+              >
+                Subscribe
+              </a>
+            )}
           </div>
         </div>
-        {/* Swipeable section strip on small screens (pill nav hidden). */}
+        {/* Swipeable section strip on small screens (inline nav hidden). */}
         {sections.length > 0 && (
           <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
             <div className="flex w-max gap-5 px-6 py-2.5">

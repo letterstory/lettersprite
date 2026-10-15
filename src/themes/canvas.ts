@@ -7,9 +7,12 @@ import type { Theme } from "./types";
  * author avatars and generous whitespace. No ads, no rails — a calm product
  * blog, not a news portal.
  *
- * Built for claimscurrent.com, so the palette is matched to its live site
- * (not Glide's own brand colors): warm paper ground, deep green primary,
- * navy secondary, amber accent, crimson kicker.
+ * Palette is Glide's own exact neutral system, read from computed styles in
+ * design-ref/glide-tokens.json (not claimscurrent's colors): near-black ink
+ * for headlines/solid buttons, grays for muted text/hairlines/placeholders,
+ * pure white ground. Glide uses no brand color anywhere on this page, so
+ * none is introduced here either — kickers, pills and active states all stay
+ * neutral, exactly like the reference.
  *
  * Fonts (free / Google, standing in for Glide's commercial faces):
  *  - Plus Jakarta Sans → display / heading / body (≈ Booton VF, Glide's one
@@ -24,21 +27,21 @@ export const canvas: Theme = {
     "Glide-style modern SaaS product blog: centered hero + subscribe field, pill-nav masthead, rounded 16:9 card grid with circular author avatars. No ads.",
   colorScheme: "light",
   colors: {
-    background: "#f7f4ef",
-    surface: "#eeeae2",
-    surfaceAlt: "#f5efe6",
-    foreground: "#1c1c1a",
-    muted: "#5c5852",
-    border: "#ded8ce",
-    primary: "#1a6b4a",
+    background: "#ffffff",
+    surface: "#f5f5f2",
+    surfaceAlt: "#d9dad3",
+    foreground: "#000000",
+    muted: "#525252",
+    border: "#dcdcdc",
+    primary: "#171715",
     primaryForeground: "#ffffff",
-    secondary: "#2d4a6e",
-    accent: "#d4820a",
-    link: "#1a6b4a",
-    heading: "#0f2d1f",
-    kicker: "#e3120b",
-    heroFrom: "#0f2d1f",
-    heroTo: "#1a6b4a",
+    secondary: "#171715",
+    accent: "#525252",
+    link: "#171715",
+    heading: "#0e0e0d",
+    kicker: "#525252",
+    heroFrom: "#171715",
+    heroTo: "#000000",
   },
   fonts: {
     display: {
