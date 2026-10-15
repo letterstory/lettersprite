@@ -539,6 +539,59 @@ export async function SiteHeader() {
     );
   }
 
+  // Glide-style masthead: left wordmark, a centered pill-bordered nav, search
+  // and a solid rounded "Subscribe" on the right — one clean sticky bar, no
+  // utility strip or dateline. Calm SaaS-product-blog chrome.
+  if (theme.features?.canvasMasthead) {
+    return (
+      <header
+        data-canvas-masthead
+        className="no-print sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md"
+      >
+        <div className="container-wide flex items-center gap-4 px-6 py-4">
+          <Logo size="md" className="shrink-0" />
+          <nav className="mx-auto hidden items-center rounded-full border border-border p-1 lg:flex">
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm text-muted transition-colors hover:bg-surface hover:text-primary"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <SiteSearch
+              index={searchIndex}
+              bare
+              bareSize="sm"
+              placeholder="Search"
+              className="hidden w-44 sm:block"
+            />
+            <SubscribeButton compact />
+          </div>
+        </div>
+        {/* Swipeable section strip on small screens (pill nav hidden). */}
+        {sections.length > 0 && (
+          <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+            <div className="flex w-max gap-5 px-6 py-2.5">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 whitespace-nowrap text-sm text-muted transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
+
   // Minimal monospace image-archive masthead: wordmark + search on one hairline
   // row, a slim centered mono section nav below.
   if (theme.features?.starkMasthead) {
