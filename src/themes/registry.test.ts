@@ -41,6 +41,19 @@ describe("theme registry ⇄ implementations", () => {
 		).toEqual([]);
 	});
 
+	it("each theme's registered home is the home it renders", () => {
+		// The app picks a site's look from a pool that includes classic homes, and it
+		// learns which theme supplies which home from the registry's `home` field.
+		const wrong = registry.themes
+			.map((t) => ({ value: t.value, home: (t as { home?: string }).home }))
+			.filter((t) => t.home !== undefined && themes[t.value] && themes[t.value].home !== t.home)
+			.map((t) => `${t.value}: registry says "${t.home}", src/themes says "${themes[t.value].home}"`);
+		expect(
+			wrong,
+			`design/themes.json in letterstory/letterstory names a different home than the theme renders:\n${wrong.join("\n")}`
+		).toEqual([]);
+	});
+
 	it("the default theme is implemented and registered", () => {
 		expect(implemented.has(DEFAULT_THEME)).toBe(true);
 		expect(registered.has(DEFAULT_THEME)).toBe(true);

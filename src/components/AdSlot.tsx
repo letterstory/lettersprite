@@ -83,8 +83,7 @@ export function AdSlot({
               {env.siteTitle}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              The playbooks and case studies behind great startup video — in your
-              inbox, weekly.
+              {env.siteDescription || `Every new piece from ${env.siteTitle}, as it's published.`}
             </p>
           </div>
           <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[color:var(--primary-fg)]">

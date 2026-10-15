@@ -212,33 +212,35 @@ export function BoomHome({ posts }: { posts: Post[] }) {
         </section>
       )}
 
-      {/* Black promo band — the newsletter. */}
-      <section className="bg-[#15181c] text-[#eef1f4]">
-        <div className="container-wide grid items-center gap-8 px-6 py-16 lg:grid-cols-2">
-          <h2 className="font-heading text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-[#eef1f4] sm:text-6xl">
-            The Letter
-          </h2>
-          <div>
-            <p className="max-w-md text-lg leading-relaxed text-[#f7f4ef]/75">
-              New articles on funds, LPs and the funding landscape, by email.
-            </p>
-            <form className="mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
-              <input
-                type="email"
-                placeholder="you@fund.com"
-                aria-label="Email address"
-                className="w-full flex-1 rounded-sm border border-white/25 bg-transparent px-4 py-3 text-sm text-[#f7f4ef] placeholder:text-[#f7f4ef]/40 focus:border-primary focus:outline-none"
-              />
-              <button
-                type="button"
-                className="rounded-sm bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
-              >
-                Subscribe
-              </button>
-            </form>
+      {/* Black promo band — the newsletter, hidden until the site opts in (NEWSLETTER_ENABLED). */}
+      {env.newsletterEnabled && (
+        <section className="bg-[#15181c] text-[#eef1f4]">
+          <div className="container-wide grid items-center gap-8 px-6 py-16 lg:grid-cols-2">
+            <h2 className="font-heading text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-[#eef1f4] sm:text-6xl">
+              The Letter
+            </h2>
+            <div>
+              <p className="max-w-md text-lg leading-relaxed text-[#f7f4ef]/75">
+                New articles on funds, LPs and the funding landscape, by email.
+              </p>
+              <form className="mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
+                <input
+                  type="email"
+                  placeholder="you@fund.com"
+                  aria-label="Email address"
+                  className="w-full flex-1 rounded-sm border border-white/25 bg-transparent px-4 py-3 text-sm text-[#f7f4ef] placeholder:text-[#f7f4ef]/40 focus:border-primary focus:outline-none"
+                />
+                <button
+                  type="button"
+                  className="rounded-sm bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Latest. */}
       {latest.length > 0 && (

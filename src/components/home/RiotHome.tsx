@@ -169,87 +169,6 @@ function BandLabel({ name }: { name: string }) {
   );
 }
 
-/**
- * A sticky "skyscraper" house ad parked in the page gutter on wide screens
- * (≥1640px, where there's room beside the centered container). Invented brand,
- * riot palette, motif contained by `relative overflow-hidden`. Decorative only.
- */
-function SideAd({ side }: { side: "left" | "right" }) {
-  const c =
-    side === "left"
-      ? {
-          brand: "PARSEC",
-          tag: "Uptime you can bet on.",
-          cta: "Start free",
-          bg: "#f5622d",
-          fg: "#ffffff",
-          accent: "#0f0e0c",
-        }
-      : {
-          brand: "SENTRYLOOP",
-          tag: "Catch every silent failure.",
-          cta: "Get a key",
-          bg: "#0f0e0c",
-          fg: "#f5622d",
-          accent: "#f5622d",
-        };
-  return (
-    <aside
-      aria-hidden
-      className={`fixed top-1/2 z-30 hidden w-[140px] -translate-y-1/2 min-[1640px]:block ${side === "left" ? "left-4" : "right-4"}`}
-    >
-      <p className="mb-1 text-center font-mono text-[0.5rem] uppercase tracking-[0.22em] text-muted">
-        Advertisement
-      </p>
-      <div
-        className="ad-anim relative flex h-[560px] flex-col justify-between overflow-hidden p-4"
-        style={{ backgroundColor: c.bg, color: c.fg }}
-      >
-        <svg
-          aria-hidden
-          className="ad-motif pointer-events-none absolute inset-0 h-full w-full opacity-30"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <pattern
-              id={`sky-${side}`}
-              width="26"
-              height="26"
-              patternUnits="userSpaceOnUse"
-              patternTransform="rotate(45)"
-            >
-              <rect width="13" height="26" fill={c.accent} />
-            </pattern>
-          </defs>
-          <rect width="120%" height="120%" fill={`url(#sky-${side})`} />
-        </svg>
-        <div className="relative z-10 flex items-center gap-2">
-          <span
-            className="flex h-7 w-7 shrink-0 items-center justify-center border-2 font-display text-sm font-extrabold"
-            style={{ borderColor: c.fg }}
-          >
-            {c.brand[0]}
-          </span>
-          <span className="font-display text-sm font-bold uppercase tracking-[0.04em]">
-            {c.brand}
-          </span>
-        </div>
-        <div className="relative z-10">
-          <p className="font-display text-xl font-extrabold uppercase leading-[1.03]">
-            {c.tag}
-          </p>
-          <span
-            className="mt-3 inline-block px-3 py-1.5 font-display text-[0.68rem] font-bold uppercase tracking-wider"
-            style={{ backgroundColor: c.fg, color: c.bg }}
-          >
-            {c.cta} →
-          </span>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
 export function RiotHome({ posts }: { posts: Post[] }) {
   const lead = posts[0];
   const railTop = posts.slice(1, 3);
@@ -269,8 +188,6 @@ export function RiotHome({ posts }: { posts: Post[] }) {
 
   return (
     <div className="container-wide px-4 pb-20 pt-8 sm:px-6">
-      <SideAd side="left" />
-      <SideAd side="right" />
 
       {/* Hero zone: big burned-in hero + mixed right rail + ad column. */}
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)_300px]">
