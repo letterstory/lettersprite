@@ -592,6 +592,72 @@ export async function SiteHeader() {
     );
   }
 
+  // Glide-style masthead: left wordmark, a centered pill-bordered nav, search
+  // and a solid rounded "Subscribe" on the right — one clean sticky bar, no
+  // utility strip or dateline. Calm SaaS-product-blog chrome.
+  if (theme.features?.canvasMasthead) {
+    return (
+      <header
+        data-canvas-masthead
+        className="no-print sticky top-0 z-[60] bg-background/90 backdrop-blur-md"
+      >
+        <div className="flex items-center justify-between gap-4 px-4 py-3 xl:px-10">
+          <Logo size="sm" className="shrink-0" />
+          <nav className="hidden min-w-0 items-center gap-1 lg:flex">
+            {sections.map((s) => (
+              <Link
+                key={s}
+                href={sectionHref(s)}
+                className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-[color:var(--surface)]"
+              >
+                {s}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <SiteSearch
+              index={searchIndex}
+              bare
+              bareSize="sm"
+              placeholder="Search"
+              className="hidden w-40 md:block"
+            />
+            <Link
+              href="#newsletter"
+              className="hidden rounded-full px-4 py-2 text-sm text-foreground transition-colors hover:bg-[color:var(--surface)] sm:inline-block"
+            >
+              Log in
+            </Link>
+            {env.newsletterEnabled && (
+              <a
+                href="#newsletter"
+                className="whitespace-nowrap rounded-full bg-primary px-5 py-2 text-sm font-medium text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+              >
+                Subscribe
+              </a>
+            )}
+          </div>
+        </div>
+        {/* Swipeable section strip on small screens (inline nav hidden). */}
+        {sections.length > 0 && (
+          <nav aria-label="Sections" className="swipe-x border-t border-border lg:hidden">
+            <div className="flex w-max gap-5 px-6 py-2.5">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 whitespace-nowrap text-sm text-muted transition-colors hover:text-primary"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
+
   // Minimal monospace image-archive masthead: wordmark + search on one hairline
   // row, a slim centered mono section nav below.
   if (theme.features?.starkMasthead) {

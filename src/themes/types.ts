@@ -55,7 +55,8 @@ export type HomeLayout =
   | "flux"
   | "relay"
   | "riot"
-  | "circuit";
+  | "circuit"
+  | "canvas";
 
 /**
  * How the article page reads.
@@ -208,6 +209,8 @@ export interface ThemeFeatures {
   riotArticle?: boolean;
   /** WIRED-style masthead: top-left heavy wordmark + Menu & inline nav + solid Subscribe, over a red-ruled section bar. */
   circuitMasthead?: boolean;
+  /** Glide-style masthead: left wordmark + centered pill-bordered nav + search + solid rounded Subscribe, one clean sticky bar. */
+  canvasMasthead?: boolean;
   /** Minimal mono image-archive index: centered mono captions over a single image column. */
   starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */
