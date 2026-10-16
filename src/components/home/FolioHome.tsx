@@ -150,12 +150,14 @@ export function FolioHome({ posts }: { posts: Post[] }) {
 
   return (
     <div>
-      {/* Announcement strip. */}
-      <div className="border-b border-border bg-[color:var(--accent)]">
-        <div className="container-wide px-6 py-2.5 text-center font-sans text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-heading">
-          {env.siteTagline || "Tools for finance teams"} — the operator's field guide
+      {/* Announcement strip: the site's own line, never another publication's. */}
+      {(env.siteTagline || env.siteDescription) && (
+        <div className="border-b border-border bg-[color:var(--accent)]">
+          <div className="container-wide px-6 py-2.5 text-center font-sans text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-heading">
+            {env.siteTagline || env.siteDescription}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top feature row: big feature + featured rail (card + Latest list). */}
       <section className="container-wide grid items-stretch gap-6 px-6 pb-6 pt-8 lg:grid-cols-3">

@@ -5,7 +5,6 @@ import { formatDate } from "@/lib/format";
 import { bylineFor } from "@/lib/author";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { FakeAd } from "@/components/FakeAd";
-import { MockPost } from "@/components/MockPost";
 import { AuthorLink } from "@/components/AuthorLink";
 
 /**
@@ -131,8 +130,6 @@ export function RelayHome({ posts }: { posts: Post[] }) {
   const more = posts.slice(2, 8);
   const latest = posts.slice(4, 12);
   const rail = posts.slice(3, 12);
-  const igImage = coverImageFor(posts[5] ?? posts[0], 640);
-  const igImage2 = coverImageFor(posts[8] ?? posts[1], 640);
 
   return (
     <div className="container-wide px-6 pb-16">
@@ -154,12 +151,6 @@ export function RelayHome({ posts }: { posts: Post[] }) {
 
           {blocks[0] && <SectionBlock {...blocks[0]} />}
 
-          {/* Instagram embed band. */}
-          <div className="my-9 border-y border-border py-8">
-            <BandLabel label="From the community" />
-            <MockPost variant="instagram" seed={0} image={igImage} className="mt-5 max-w-md" />
-          </div>
-
           <FakeAd variant="leaderboard" seed={4} className="my-9 border-y border-border py-6" />
 
           {blocks[1] && <SectionBlock {...blocks[1]} />}
@@ -173,12 +164,6 @@ export function RelayHome({ posts }: { posts: Post[] }) {
               </div>
             </section>
           )}
-
-          {/* Twitter embed band. */}
-          <div className="my-9 border-y border-border py-8">
-            <BandLabel label="On the timeline" />
-            <MockPost variant="twitter" seed={1} className="mt-5 max-w-2xl" />
-          </div>
 
           <FakeAd variant="leaderboard" seed={5} className="my-9 border-y border-border py-6" />
 
@@ -209,13 +194,11 @@ export function RelayHome({ posts }: { posts: Post[] }) {
           </div>
 
           <FakeAd variant="box" seed={0} className="my-8" />
-          <MockPost variant="twitter" seed={0} className="my-8" />
 
           <div className="divide-y divide-border border-t border-border">
             {rail.slice(4, 7).map((p) => <RailItem key={p.id} post={p} />)}
           </div>
 
-          <MockPost variant="instagram" seed={1} image={igImage2} className="my-8" />
           <FakeAd variant="box" seed={4} className="my-8" />
 
           <div className="divide-y divide-border border-t border-border">

@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { bylineFor } from "@/lib/author";
 import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
@@ -168,15 +169,14 @@ export function WireHome({ posts }: { posts: Post[] }) {
       {/* Oversized display title. */}
       <section className="relative">
         <p className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-primary">
-          ▸ The Wire
+          ▸ Latest
         </p>
         <h1 className="mt-3 font-display text-5xl font-bold leading-[0.95] tracking-tight text-heading sm:text-7xl lg:text-[5.5rem]">
-          APIs, in depth.
+          {env.siteTagline || env.siteTitle}
         </h1>
-        <p className="mt-4 max-w-xl text-lg leading-relaxed text-fg-soft">
-          Integration architecture, API security and observability — the
-          engineering desk for teams shipping real integrations.
-        </p>
+        {env.siteDescription && (
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-fg-soft">{env.siteDescription}</p>
+        )}
 
         {/* Rotated side label + asymmetric mosaic. */}
         <div className="relative mt-10">
@@ -231,35 +231,37 @@ export function WireHome({ posts }: { posts: Post[] }) {
         </section>
       ))}
 
-      {/* Newsletter. */}
-      <section
-        id="newsletter"
-        className="mt-20 scroll-mt-24 rounded-[1.75rem] border border-border bg-surface p-8 text-center sm:p-14"
-      >
-        <span className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">
-          ▸ The Payload
-        </span>
-        <h2 className="mx-auto mt-3 max-w-xl font-display text-2xl font-bold tracking-tight text-heading sm:text-3xl">
-          API design, security and observability, in your inbox weekly.
-        </h2>
-        <p className="mx-auto mt-3 max-w-md leading-relaxed text-fg-soft">
-          One concise brief on integration architecture and API security. No noise.
-        </p>
-        <form className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
-          <input
-            type="email"
-            placeholder="you@company.com"
-            aria-label="Email address"
-            className="w-full flex-1 rounded-full border border-border bg-background px-5 py-3 font-mono text-sm text-foreground placeholder:text-muted focus:border-primary focus:outline-none"
-          />
-          <button
-            type="button"
-            className="rounded-full bg-primary px-6 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
-          >
-            Subscribe
-          </button>
-        </form>
-      </section>
+      {/* Newsletter: hidden until the site opts in (NEWSLETTER_ENABLED). */}
+      {env.newsletterEnabled && (
+        <section
+          id="newsletter"
+          className="mt-20 scroll-mt-24 rounded-[1.75rem] border border-border bg-surface p-8 text-center sm:p-14"
+        >
+          <span className="font-mono text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-primary">
+            ▸ The Payload
+          </span>
+          <h2 className="mx-auto mt-3 max-w-xl font-display text-2xl font-bold tracking-tight text-heading sm:text-3xl">
+            API design, security and observability, in your inbox weekly.
+          </h2>
+          <p className="mx-auto mt-3 max-w-md leading-relaxed text-fg-soft">
+            One concise brief on integration architecture and API security. No noise.
+          </p>
+          <form className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
+            <input
+              type="email"
+              placeholder="you@company.com"
+              aria-label="Email address"
+              className="w-full flex-1 rounded-full border border-border bg-background px-5 py-3 font-mono text-sm text-foreground placeholder:text-muted focus:border-primary focus:outline-none"
+            />
+            <button
+              type="button"
+              className="rounded-full bg-primary px-6 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-[color:var(--primary-fg)] transition-opacity hover:opacity-90"
+            >
+              Subscribe
+            </button>
+          </form>
+        </section>
+      )}
 
       <AdSlot className="mt-16" minHeightClass="min-h-[90px]" />
     </div>

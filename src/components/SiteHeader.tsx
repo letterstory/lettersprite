@@ -89,8 +89,7 @@ export async function SiteHeader() {
   // subscribe). A swipeable mono section strip on small screens.
   if (theme.features?.wireMasthead) {
     const trending = searchIndex.slice(0, 6);
-    const tagline =
-      env.siteTagline || "APIs, integration & security — in depth";
+    const tagline = env.siteTagline || env.siteDescription;
     return (
       <header className="no-print bg-background">
         {topRule && <div className="hero-wash h-0.5 w-full" />}

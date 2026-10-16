@@ -213,52 +213,6 @@ function River({ name, lead, rest }: { name: string; lead: Post; rest: Post[] })
   );
 }
 
-/**
- * Full-bleed hero/billboard ad — WIRED's top "takeover" slot: edge-to-edge,
- * tall, a premium brand creative with a labeled "Advertisement" strip above.
- */
-function HeroAd() {
-  return (
-    <section className="no-print w-full border-b border-border bg-[#0a0f1a]">
-      <p className="py-2 text-center font-mono text-[0.58rem] uppercase tracking-[0.25em] text-white/40">
-        Advertisement
-      </p>
-      <div className="relative mx-auto flex h-[300px] max-w-[1800px] items-center overflow-hidden sm:h-[380px] lg:h-[440px]">
-        {/* Premium brand ground + motif. */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#12314a] via-[#0a0f1a] to-[#2a1c0b]" />
-        <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.18]" preserveAspectRatio="none">
-          <defs>
-            <pattern id="heroad-grid" width="54" height="54" patternUnits="userSpaceOnUse">
-              <path d="M54 0H0V54" fill="none" stroke="#f0c040" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#heroad-grid)" />
-        </svg>
-        <div aria-hidden className="pointer-events-none absolute -right-24 top-1/2 h-[560px] w-[560px] -translate-y-1/2 rounded-full border-[48px] border-[#f0c040]/15" />
-        <div aria-hidden className="pointer-events-none absolute right-40 top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full border-[28px] border-white/10" />
-
-        <div className="relative z-10 w-full max-w-[1800px] px-8 sm:px-14 lg:px-20">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[#f0c040]">
-              <span className="flex h-6 w-6 items-center justify-center bg-[#f0c040] font-display text-sm font-black text-[#0a0f1a]">C</span>
-              Clarus RCM
-            </span>
-            <p className="mt-4 font-display text-3xl font-black leading-[1.03] text-white sm:text-5xl lg:text-6xl">
-              Get paid faster.<br />Denials, handled.
-            </p>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/70 sm:text-base">
-              The end-to-end revenue-cycle platform built for physician practices — appeal, recover, and prevent denials on autopilot.
-            </p>
-            <span className="mt-6 inline-block bg-[#f0c040] px-6 py-3 font-display text-sm font-bold uppercase tracking-wider text-[#0a0f1a]">
-              Request a demo →
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function CircuitHome({ posts }: { posts: Post[] }) {
   const lead = posts[0];
   const picks = posts.slice(1, 5);
@@ -279,7 +233,6 @@ export function CircuitHome({ posts }: { posts: Post[] }) {
   return (
     <>
       {/* Full-bleed hero/billboard takeover ad. */}
-      <HeroAd />
 
       <div className="container-wide px-6 pb-16">
       {/* Wide editorial main + an ad-dense right rail. */}
