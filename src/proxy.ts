@@ -46,6 +46,7 @@ import {
 import redirectManifest from "@/generated/redirect-manifest.json";
 import { env } from "@/env";
 import { STYLE_COOKIE, isLayout } from "@/lib/layouts";
+import { maverickTrafficEnabled, reportMaverickPageRequest } from "@/lib/maverick-traffic";
 
 // Valid post/section slugs for THIS build (see scripts/gen-redirect-manifest.mjs).
 const manifest = redirectManifest as {
@@ -119,6 +120,9 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   if (redirect) return redirect;
   const styled = styleRewrite(request);
   if (styled) return styled;
+
+  // Explicit opt-in, independent of Letterbrace's access-reporting switch.
+  if (maverickTrafficEnabled()) event.waitUntil(reportMaverickPageRequest(request));
 
   const enabled = accessReportingEnabled();
 

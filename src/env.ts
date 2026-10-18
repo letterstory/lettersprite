@@ -149,6 +149,9 @@ export const env = {
    */
   maverickCustomerId: str("MAVERICK_CUSTOMER_ID"),
   maverickApiKey: str("MAVERICK_API_KEY"),
+  /** Server-only page-request forwarding. Prefer a domain-scoped data key. */
+  maverickTrafficEnabled: bool("MAVERICK_TRAFFIC_ENABLED", false),
+  maverickTrafficKey: str("MAVERICK_TRAFFIC_KEY"),
 
   /** Content behaviour. */
   postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
