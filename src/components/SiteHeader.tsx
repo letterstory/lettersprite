@@ -657,6 +657,79 @@ export async function SiteHeader() {
     );
   }
 
+  // every.to-style masthead: a solid-black bar — burger + search left, muted
+  // "Sign in" + a pale sky-cyan rounded Subscribe pill right — with the serif
+  // wordmark centered on its own row beneath. One consistent black bar on
+  // every page (see codex.ts for why this theme doesn't swap to a light
+  // masthead on article pages the way every.to itself does).
+  if (theme.features?.codexMasthead) {
+    return (
+      <header
+        data-codex-masthead
+        className="no-print sticky top-0 z-[60] border-b border-[#505050] bg-black text-white"
+      >
+        <div className="relative flex items-center justify-between gap-4 px-4 py-5 xl:px-10">
+          <div className="flex shrink-0 items-center gap-4">
+            <button
+              type="button"
+              aria-label="Open menu"
+              className="flex flex-col gap-[3px] p-1"
+            >
+              <span className="block h-[2px] w-5 bg-current" />
+              <span className="block h-[2px] w-5 bg-current" />
+              <span className="block h-[2px] w-5 bg-current" />
+            </button>
+            <SiteSearch
+              index={searchIndex}
+              bare
+              bareSize="sm"
+              placeholder="Search"
+              className="hidden w-40 text-white md:block"
+            />
+          </div>
+          <Link
+            href="/"
+            aria-label={env.siteTitle}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-xl font-normal tracking-tight text-white transition-opacity hover:opacity-80 sm:text-2xl"
+          >
+            {env.siteTitle}
+          </Link>
+          <div className="flex shrink-0 items-center gap-4">
+            <Link
+              href="#newsletter"
+              className="hidden text-sm text-[#BDBDBD] transition-colors hover:text-white sm:inline-block"
+            >
+              Sign in
+            </Link>
+            {env.newsletterEnabled && (
+              <a
+                href="#newsletter"
+                className="whitespace-nowrap rounded-md bg-[#c0f0fb] px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-90"
+              >
+                Subscribe
+              </a>
+            )}
+          </div>
+        </div>
+        {sections.length > 0 && (
+          <nav aria-label="Sections" className="swipe-x border-t border-[#505050]">
+            <div className="flex w-max gap-5 px-6 py-2.5">
+              {sections.map((s) => (
+                <Link
+                  key={s}
+                  href={sectionHref(s)}
+                  className="shrink-0 whitespace-nowrap text-sm text-[#BDBDBD] transition-colors hover:text-white"
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+    );
+  }
+
   // Minimal monospace image-archive masthead: wordmark + search on one hairline
   // row, a slim centered mono section nav below.
   if (theme.features?.starkMasthead) {
