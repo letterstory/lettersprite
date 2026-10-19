@@ -39,20 +39,27 @@ export interface AccessExtras {
   /** Normalized self-identification token for an UNNAMED bot ('foobot'),
    *  '' = nothing to discover. Feeds Letterbrace's unknown-agents ledger. */
   botToken: string;
+  /** The raw User-Agent of a request that isn't a browser, '' for a browser.
+   *  Letterbrace forwards it to Maverick, the source of truth for AI agents per
+   *  page, which classifies the agent itself. A bot's User-Agent names software,
+   *  not a person; a browser's is never sent. */
+  userAgent: string;
 }
 
 const NO_EXTRAS: AccessExtras = {
   verified: false,
   provenance: "",
   botToken: "",
+  userAgent: "",
 };
 
 /**
  * Tell Letterbrace that a page was requested. Resolves either way; never throws.
  *
  * Note what is NOT sent: no IP address, no cookie, no identifier of any kind,
- * and no full URL. A path, a day, what kind of thing asked, and labels DERIVED
- * from the request in-process (see AccessExtras). That is enough for every
+ * and no full URL. A path, a day, what kind of thing asked, labels DERIVED
+ * from the request in-process, and a non-browser's own User-Agent (see
+ * AccessExtras). That is enough for every
  * question the feature answers, and it keeps the whole system clear of
  * personal data — which is a design constraint, not an oversight.
  */
@@ -88,6 +95,7 @@ export async function reportAccess(
         verified: extras.verified,
         provenance: extras.provenance,
         bot_token: extras.botToken,
+        ...(extras.userAgent ? { user_agent: extras.userAgent } : {}),
       }),
       signal: AbortSignal.timeout(REPORT_TIMEOUT_MS),
       // This must never be served from a cache, and there is nothing to cache.
