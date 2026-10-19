@@ -206,6 +206,13 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
       requester.class === "other_bot" && requester.agent === ""
         ? extractBotToken(userAgent)
         : "",
+    // A non-browser's own User-Agent, for Maverick's per-page agent counts
+    // (Letterbrace queues it there), and only on a site that opted into
+    // Maverick (MAVERICK_CUSTOMER_ID set). Never a browser's.
+    userAgent:
+      env.maverickCustomerId && requester.class !== "browser"
+        ? (userAgent ?? "").slice(0, 1024)
+        : "",
   };
 
   // waitUntil keeps the invocation alive for the report without the reader
