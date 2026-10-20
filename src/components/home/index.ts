@@ -26,6 +26,7 @@ import { RelayHome } from "./RelayHome";
 import { RiotHome } from "./RiotHome";
 import { CircuitHome } from "./CircuitHome";
 import { CanvasHome } from "./CanvasHome";
+import { CodexHome } from "./CodexHome";
 
 type HomeLayout = ComponentType<{ posts: Post[] }>;
 
@@ -57,6 +58,7 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   riot: RiotHome,
   circuit: CircuitHome,
   canvas: CanvasHome,
+  codex: CodexHome,
 };
 
 /** Resolve a theme's home layout, falling back to the default grid. */

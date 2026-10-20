@@ -56,7 +56,8 @@ export type HomeLayout =
   | "relay"
   | "riot"
   | "circuit"
-  | "canvas";
+  | "canvas"
+  | "codex";
 
 /**
  * How the article page reads.
@@ -211,6 +212,8 @@ export interface ThemeFeatures {
   circuitMasthead?: boolean;
   /** Glide-style masthead: left wordmark + centered pill-bordered nav + search + solid rounded Subscribe, one clean sticky bar. */
   canvasMasthead?: boolean;
+  /** every.to-style masthead: solid-black bar, burger + search left, muted Sign-in + pale sky-cyan Subscribe pill right, centered serif wordmark. */
+  codexMasthead?: boolean;
   /** Minimal mono image-archive index: centered mono captions over a single image column. */
   starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */

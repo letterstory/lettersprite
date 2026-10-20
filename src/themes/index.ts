@@ -21,6 +21,7 @@ import { relay } from "./relay";
 import { riot } from "./riot";
 import { circuit } from "./circuit";
 import { canvas } from "./canvas";
+import { codex } from "./codex";
 import { dispatch } from "./dispatch";
 import { metro } from "./metro";
 import { review } from "./review";
@@ -108,6 +109,7 @@ export const themes: Record<string, Theme> = {
   [riot.name]: riot, // youragentrunning: FURFUR-style bold gridded culture magazine
   [circuit.name]: circuit, // managedenials: WIRED-style tech-news portal (white/black/red)
   [canvas.name]: canvas, // claimscurrent: Glide-blog-style modern SaaS product blog (green/navy/amber)
+  [codex.name]: codex, // preauthreview: every.to-style literary tech-essay blog (black masthead, cream paper, serif)
   [dispatch.name]: dispatch, // tech-news feed
   [metro.name]: metro, // bold asymmetric culture mosaic
   [review.name]: review, // refined longform column
