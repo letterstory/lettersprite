@@ -338,7 +338,7 @@ function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
   const sponsor = (
     d.sponsor && typeof d.sponsor === "object" ? d.sponsor : {}
   ) as Raw;
-  // The wording is Letterstory's, never ours: without the name every sentence
+  // The wording is Letter's, never ours: without the name every sentence
   // names, there is nothing honest to render.
   const name = asString(sponsor.name)?.trim();
   if (!name) return null;
@@ -383,7 +383,7 @@ function sponsorDisclosureFrom(value: unknown): SponsorDisclosure | null {
 }
 
 /**
- * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` —
+ * The sponsor disclosure Letter ships flat as `sponsor_disclosure` —
  * the same flat field `cover_image_credit` is. Null when absent (every payload
  * from before the field existed renders exactly as it did) and when malformed:
  * unknown surfaces are dropped, so is a surface whose words are missing, and a

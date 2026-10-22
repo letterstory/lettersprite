@@ -37,7 +37,7 @@ export interface CoverCredit {
 }
 
 /**
- * Where a sponsored publication discloses its sponsor. Letterstory decides the set
+ * Where a sponsored publication discloses its sponsor. Letter decides the set
  * per collection; the site renders whichever are listed and branches on
  * nothing else.
  *
@@ -51,7 +51,7 @@ export interface CoverCredit {
  *   descriptions (and the post's RSS item).
  * - `site_statement`: `siteText` site-wide — every page's footer, the About
  *   page, `llms.txt`, the RSS channel and the site's `funder` JSON-LD.
- * - `cover_baked`: the label is drawn into the cover image by Letterstory, so the
+ * - `cover_baked`: the label is drawn into the cover image by Letter, so the
  *   served `coverImage` already carries it (into link previews and shares too).
  *   The site sets no badge over it, and shows that cover even on themes that
  *   normally use stock covers.
@@ -73,13 +73,13 @@ export const DISCLOSURE_SURFACES = [
 export type DisclosureSurface = (typeof DISCLOSURE_SURFACES)[number];
 
 /**
- * The sponsor disclosure Letterstory ships flat as `sponsor_disclosure` on
- * every article read (docs/architecture/sponsor-disclosure.md in letterstory).
+ * The sponsor disclosure Letter ships flat as `sponsor_disclosure` on
+ * every article read (Letter's docs/architecture/sponsor-disclosure.md).
  * Null when the publication discloses nothing — including every payload from
  * before the field existed.
  *
  * Every string is rendered verbatim. The site never composes its own wording:
- * each sentence is decided once, in Letterstory, so a disclosure cannot drift
+ * each sentence is decided once, in Letter, so a disclosure cannot drift
  * into something softer per theme. A surface whose words did not arrive is
  * dropped in `normalize.ts`, so a listed surface always has its string.
  */
