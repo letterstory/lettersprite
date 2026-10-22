@@ -58,7 +58,7 @@ function SvgMark({ size }: { size: Size }) {
         ? { role: "img", "aria-label": env.logoAlt || env.siteTitle }
         : { "aria-hidden": true })}
       // `max-w-full` on the wrapper + `max-w-full max-h-full h-auto w-auto` on
-      // the inner SVG lets a wide wordmark (letterstory generates them up to
+      // the inner SVG lets a wide wordmark (Letter generates them up to
       // ~17:1) shrink instead of overflowing the header on mobile — which was
       // pushing whole pages into horizontal scroll on phone viewports. Height
       // binds on desktop (usual case); width binds on narrow screens. The SVG's

@@ -19,13 +19,13 @@ is configured entirely by environment variables. **No database, no admin panel.*
   vars there. 55 themes ship, and the set is shared: `@letterstory/design/themes.json`
   is the registry a customer picks from, and `src/themes/registry.test.ts` fails if it
   and this directory stop naming the same themes.
-- **Bylines** (`lib/author.ts`): from Letterstory's per-site author bank
+- **Bylines** (`lib/author.ts`): from Letter's per-site author bank
   (`author_profile`), else the free-form `author`, else one site-level
   "<Site> Editors" byline. Never synthesize per-post people. Under the
   `site_byline` disclosure surface (`ai_authorship` is read as its old name) the
   byline is always that site-level one, with no role, author page or Person.
 - **Sponsor disclosure** (`lib/disclosure.ts`): `post.sponsorDisclosure` lists the
-  surfaces to render; every string is Letterstory's, verbatim. The site-wide
+  surfaces to render; every string is Letter's, verbatim. The site-wide
   statement is read off the posts (`siteDisclosure`). Disclosure classes must
   survive Readability (`components/disclosure-readability.test.tsx`).
 - **Generated editorial metadata** (no database, all deterministic so it never

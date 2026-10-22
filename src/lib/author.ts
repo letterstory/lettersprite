@@ -1,12 +1,12 @@
 /**
  * Bylines.
  *
- * Every byline names someone real to the site. Letterstory assigns each post
+ * Every byline names someone real to the site. Letter assigns each post
  * an author from the site's author bank — a recurring set of authors generated
  * once per site and reused across its posts — and ships it as `author_profile`
  * (name, slug, bio, role, tenure). We render that record as-is and invent
  * nothing around it: a bank author with no bio or role is credited by name
- * alone (the default — Letterstory's generator writes names only unless asked
+ * alone (the default — Letter's generator writes names only unless asked
  * for more). The bank slug keys the `/authors/[slug]` page, so one author
  * collects their whole body of work. A legacy free-form `author` string is
  * used verbatim.

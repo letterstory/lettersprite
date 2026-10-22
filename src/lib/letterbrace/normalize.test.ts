@@ -222,7 +222,7 @@ describe("normalizePost — sponsor disclosure", () => {
     ]);
   });
 
-  it("reads the flat sponsor_disclosure Letterstory ships, verbatim", () => {
+  it("reads the flat sponsor_disclosure Letter ships, verbatim", () => {
     const post = normalizePost({ ...base, sponsor_disclosure: disclosure });
     expect(post?.sponsorDisclosure).toEqual({
       surfaces: disclosure.surfaces,
