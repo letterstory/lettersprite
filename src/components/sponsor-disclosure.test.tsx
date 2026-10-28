@@ -116,6 +116,7 @@ const CLASSIC: { name: string; theme: string; marker: string }[] = [
   { name: "FluxArticle (flux)", theme: "flux", marker: "Most Popular" },
   { name: "FluxArticle (relay)", theme: "relay", marker: "Most Popular" },
   { name: "RiotArticle (riot)", theme: "riot", marker: "Most Read" },
+  { name: "CodexArticle (codex)", theme: "codex", marker: "data-codex-article" },
 ];
 
 const mutableEnv = env as { theme: string; redesign: boolean };

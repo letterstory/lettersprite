@@ -10,6 +10,7 @@ import {
   sectionHref,
 } from "@/lib/editorial";
 import type { Post } from "@/lib/letterbrace/types";
+import { CodexMenu } from "./CodexMenu";
 import { EditionDate } from "./EditionDate";
 import { FluxMenu } from "./FluxMenu";
 import { Logo } from "./Logo";
@@ -657,75 +658,58 @@ export async function SiteHeader() {
     );
   }
 
-  // every.to-style masthead: a solid-black bar — burger + search left, muted
-  // "Sign in" + a pale sky-cyan rounded Subscribe pill right — with the serif
-  // wordmark centered on its own row beneath. One consistent black bar on
-  // every page (see codex.ts for why this theme doesn't swap to a light
-  // masthead on article pages the way every.to itself does).
+  // every.to-style masthead, two rows:
+  //  1. a big centered serif wordmark between thin rules — scrolls away with
+  //     the page, not sticky.
+  //  2. a slim sticky utility bar beneath it — burger + search left, muted
+  //     "Sign in" + a rounded Subscribe pill right. No visible section nav
+  //     (the source doesn't show one either; the burger stands in for it).
+  // Both rows read `--codex-mh-*` vars off `[data-codex-masthead]`, which
+  // `body:has([data-codex-article])` repaints cream-on-black for article
+  // pages — see globals.css and codex.ts.
   if (theme.features?.codexMasthead) {
     return (
       <header
         data-codex-masthead
-        className="no-print sticky top-0 z-[60] border-b border-[#505050] bg-black text-white"
+        className="no-print border-b border-[color:var(--codex-mh-border)] bg-[color:var(--codex-mh-bg)] text-[color:var(--codex-mh-fg)] transition-colors"
       >
-        <div className="relative flex items-center justify-between gap-4 px-4 py-5 xl:px-10">
+        <div className="border-b border-[color:var(--codex-mh-border)] px-4 py-7 text-center sm:py-9 xl:px-10">
+          <Link
+            href="/"
+            aria-label={env.siteTitle}
+            className="font-display text-3xl font-normal tracking-tight transition-opacity hover:opacity-80 sm:text-4xl md:text-5xl"
+          >
+            {env.siteTitle}
+          </Link>
+        </div>
+        <div className="sticky top-0 z-[60] flex items-center justify-between gap-4 bg-[color:var(--codex-mh-bg)] px-4 py-4 transition-colors xl:px-10">
           <div className="flex shrink-0 items-center gap-4">
-            <button
-              type="button"
-              aria-label="Open menu"
-              className="flex flex-col gap-[3px] p-1"
-            >
-              <span className="block h-[2px] w-5 bg-current" />
-              <span className="block h-[2px] w-5 bg-current" />
-              <span className="block h-[2px] w-5 bg-current" />
-            </button>
+            <CodexMenu sections={sections} />
             <SiteSearch
               index={searchIndex}
               bare
               bareSize="sm"
               placeholder="Search"
-              className="hidden w-40 text-white md:block"
+              className="hidden w-40 text-[color:var(--codex-mh-fg)] md:block"
             />
           </div>
-          <Link
-            href="/"
-            aria-label={env.siteTitle}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-xl font-normal tracking-tight text-white transition-opacity hover:opacity-80 sm:text-2xl"
-          >
-            {env.siteTitle}
-          </Link>
           <div className="flex shrink-0 items-center gap-4">
             <Link
               href="#newsletter"
-              className="hidden text-sm text-[#BDBDBD] transition-colors hover:text-white sm:inline-block"
+              className="hidden text-sm text-[color:var(--codex-mh-muted)] transition-colors hover:text-[color:var(--codex-mh-fg)] sm:inline-block"
             >
               Sign in
             </Link>
             {env.newsletterEnabled && (
               <a
                 href="#newsletter"
-                className="whitespace-nowrap rounded-md bg-[#c0f0fb] px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-90"
+                className="whitespace-nowrap rounded-md bg-[color:var(--codex-mh-subscribe-bg)] px-4 py-2 text-sm font-medium text-[color:var(--codex-mh-subscribe-fg)] transition-opacity hover:opacity-90"
               >
                 Subscribe
               </a>
             )}
           </div>
         </div>
-        {sections.length > 0 && (
-          <nav aria-label="Sections" className="swipe-x border-t border-[#505050]">
-            <div className="flex w-max gap-5 px-6 py-2.5">
-              {sections.map((s) => (
-                <Link
-                  key={s}
-                  href={sectionHref(s)}
-                  className="shrink-0 whitespace-nowrap text-sm text-[#BDBDBD] transition-colors hover:text-white"
-                >
-                  {s}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        )}
       </header>
     );
   }

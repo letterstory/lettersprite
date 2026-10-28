@@ -47,6 +47,27 @@ body:has([data-kiosk-hero]) [data-kiosk-masthead] {
   width: auto;
 }
 
+/* Codex masthead: solid black chrome by default (the home front). On an
+   article page the `data-codex-article` marker in the page body flips the
+   masthead's own CSS vars to a cream bar with a solid-black Subscribe pill —
+   both read `[data-codex-masthead]`, so no component takes a route prop. */
+[data-codex-masthead] {
+  --codex-mh-bg: #000000;
+  --codex-mh-fg: #ffffff;
+  --codex-mh-muted: #bdbdbd;
+  --codex-mh-border: #505050;
+  --codex-mh-subscribe-bg: #c0f0fb;
+  --codex-mh-subscribe-fg: #000000;
+}
+body:has([data-codex-article]) [data-codex-masthead] {
+  --codex-mh-bg: #fdfaf7;
+  --codex-mh-fg: #111111;
+  --codex-mh-muted: #6b6b6b;
+  --codex-mh-border: #d5d5d5;
+  --codex-mh-subscribe-bg: #111111;
+  --codex-mh-subscribe-fg: #ffffff;
+}
+
 /* Vitrine: a text caret that blinks in the bare search before it's focused. */
 @keyframes vitrine-blink {
   0%,
