@@ -11,7 +11,7 @@ import { strippedClasses } from "./readability-patterns";
 
 /**
  * Every article layout renders the sponsor disclosure. The doc this ships
- * against (letterstory docs/architecture/article-disclosure.md §5.2) names the
+ * against (Letter's docs/architecture/article-disclosure.md §5.2) names the
  * failure this guards: rendering only where `CoverCredit` appears would miss
  * most layouts, and a disclosure that shows on some themes is not a disclosure.
  *
