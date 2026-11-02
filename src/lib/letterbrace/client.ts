@@ -121,10 +121,11 @@ function publishedPath(params: Record<string, string> = {}): string {
  * posts can exceed Next.js's 2MB data-cache entry limit — a page that big
  * silently fails to cache, forcing every rebuild to re-fetch it uncached,
  * which is what took a fleet build's `/latest` page down after 3 retries
- * (observed: a 20-post page hit ~7MB for a content-heavy collection). We
- * only ever render `postsLimit` (≤100) posts, and the list is newest-first,
- * so paging a small window and stopping once we have enough keeps every
- * request cheap and cacheable.
+ * (observed: a 20-post page hit ~7MB for a content-heavy collection). The list
+ * is newest-first, so paging a small window and stopping once we have
+ * `postsLimit` (a ceiling on the whole archive, ≤1000) keeps every request
+ * cheap and cacheable. The limit bounds the build; it must stay above the
+ * largest archive, or the posts past it are never deployed.
  */
 const PAGE_SIZE = 5;
 
@@ -151,7 +152,7 @@ function readCursor(payload: unknown): { nextCursor: string | null; hasMore: boo
 export async function getPosts(): Promise<Post[]> {
   if (!hasLetterbraceKey) return samplePosts;
   try {
-    // Enough pages to fill postsLimit (≤100), with margin for any filtered rows.
+    // Enough pages to fill postsLimit (≤1000), with margin for any filtered rows.
     const maxPages = Math.ceil(env.postsLimit / PAGE_SIZE) + 2;
     const collected: Post[] = [];
     let cursor: string | undefined;

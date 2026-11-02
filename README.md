@@ -60,7 +60,7 @@ All configuration is via environment variables. See [`.env.example`](./.env.exam
 | `SITE_LOGO_ALT` | no | `SITE_TITLE` | Accessible label for `SITE_LOGO_SVG`. |
 | `NEWSLETTER_ENABLED` | no | `false` | Show the subscribe capture (hidden by default — no backend yet). |
 | `NEWSLETTER_ACTION` | no | – | Form `action` URL to wire subscribe to a real provider. |
-| `POSTS_LIMIT` | no | `50` | Max posts fetched for the index (1–100). |
+| `POSTS_LIMIT` | no | `500` | Ceiling on the archive the build serves (1–1000): every post under it gets a page, a sitemap entry, a feed item and an llms.txt line. |
 | `SHOW_DRAFTS` | no | `false` | Include draft-status posts. |
 
 ### Custom logo

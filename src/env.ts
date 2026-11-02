@@ -150,8 +150,13 @@ export const env = {
   maverickCustomerId: str("MAVERICK_CUSTOMER_ID"),
   maverickApiKey: str("MAVERICK_API_KEY"),
 
-  /** Content behaviour. */
-  postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 50), 1), 100),
+  /**
+   * Content behaviour. POSTS_LIMIT is a ceiling on the build's whole archive, not a
+   * page size: every post under it gets a page, a sitemap entry, a feed item and an
+   * llms.txt line. It used to default to 50 (max 100), which silently left every post
+   * past the newest 50 undeployed (404/redirect) and out of the sitemap.
+   */
+  postsLimit: Math.min(Math.max(num("POSTS_LIMIT", 500), 1), 1000),
   /**
    * Posts per page on the home listing (SITE_PAGE_SIZE). Page 1 is `/`, further
    * pages are `/page/2`, `/page/3`… Clamped to a sane range; default 12.
