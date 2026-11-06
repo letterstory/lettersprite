@@ -75,6 +75,15 @@ describe("getPosts — bounded cursor pagination", () => {
     expect(calls).toHaveLength(2); // two pages of 5 reach a limit of 10
   });
 
+  it("serves an archive past the old 50-post ceiling in full", async () => {
+    mockEnv.env.postsLimit = 500;
+    const { calls } = fakePublished(83); // LLM Router Stack: 83 published, sitemap listed 50
+    const posts = await getPosts();
+
+    expect(posts).toHaveLength(83);
+    expect(calls).toHaveLength(17); // 16 full pages + the last 3
+  });
+
   it("caps total pages so a misbehaving cursor can't loop forever", async () => {
     mockEnv.env.postsLimit = 100;
     // Server always claims there's more but the client must stop at maxPages.

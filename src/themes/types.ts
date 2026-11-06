@@ -214,6 +214,10 @@ export interface ThemeFeatures {
   canvasMasthead?: boolean;
   /** every.to-style masthead: solid-black bar, burger + search left, muted Sign-in + pale sky-cyan Subscribe pill right, centered serif wordmark. */
   codexMasthead?: boolean;
+  /** every.to-style article: full-bleed hero, a cream reading surface (the
+   * masthead flips light too, via a CSS `:has()` hook — see codex.ts), a
+   * square section-color kicker chip, and an inline byline/date/share row. */
+  codexArticle?: boolean;
   /** Minimal mono image-archive index: centered mono captions over a single image column. */
   starkLists?: boolean;
   /** Use curated stock photography for every cover instead of the stored image. */

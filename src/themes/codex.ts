@@ -24,12 +24,13 @@ import type { Theme } from "./types";
  *    monospace accent anywhere, matching every.to's own template (its one
  *    mono face is used by an unrelated conference microsite, not the blog).
  *
- * Deliberate deviation from the source: every.to swaps its masthead to a
- * light cream bar with thin flanking rules on article pages and a solid-black
- * bar on the homepage. This codebase's masthead is one consistent chrome per
- * theme (not per-route), so codex keeps the black masthead everywhere — the
- * single most recognizable piece of every.to's chrome — rather than add a
- * route-aware variant no other theme in this fleet does.
+ * Route-aware masthead, matching the source: solid black (white wordmark,
+ * sky-cyan Subscribe) on the home front, flipping to cream (black wordmark,
+ * black Subscribe pill) on article pages. Done with a CSS `:has()` hook
+ * (see globals.css) rather than passing a variant prop through the shared
+ * root layout — `[data-codex-masthead]` reads `--codex-mh-*` vars that
+ * `body:has([data-codex-article])` overrides, so the one masthead component
+ * stays route-agnostic.
  */
 export const codex: Theme = {
   name: "codex",
@@ -80,6 +81,7 @@ export const codex: Theme = {
   logo: "serif",
   features: {
     codexMasthead: true,
+    codexArticle: true,
     allowSerif: true,
   },
 };

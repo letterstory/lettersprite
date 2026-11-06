@@ -28,6 +28,7 @@ import { getActiveTheme } from "@/themes";
 import { getLayout } from "@/lib/studio";
 import { StudioPostPage } from "@/components/studio/pages";
 import { BlitzArticle } from "@/components/article/BlitzArticle";
+import { CodexArticle } from "@/components/article/CodexArticle";
 import { FluxArticle } from "@/components/article/FluxArticle";
 import { RiotArticle } from "@/components/article/RiotArticle";
 import { AuthorCard } from "@/components/AuthorCard";
@@ -192,6 +193,28 @@ export default async function PostPage({ params }: Params) {
         dropCap={dropCap}
         allPosts={allPosts}
         words={words}
+      />
+    );
+  }
+
+  // every.to-style article (opt-in): edge-to-edge hero, section-color kicker
+  // chip, inline byline/date/share row, serif reading column — and the
+  // `data-codex-article` marker that flips the shared masthead to cream.
+  if (theme.features?.codexArticle) {
+    return (
+      <CodexArticle
+        post={post}
+        bodyHtml={bodyHtml}
+        headings={headings}
+        section={section}
+        iso={iso}
+        byline={byline}
+        authorPostsCount={authorPosts.length}
+        related={related}
+        prev={prev}
+        next={next}
+        linkableSlugs={linkableSlugs}
+        dropCap={dropCap}
       />
     );
   }
