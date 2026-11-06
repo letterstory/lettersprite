@@ -38,7 +38,7 @@ export function generateMetadata(): Metadata {
  * modest — it states what the site covers, not fabricated credentials.
  *
  * When the site discloses (`siteDisclosure` lists `site_statement`), it says
- * who funds it — Letterstory's words, verbatim — and, under `site_byline`,
+ * who funds it — Letter's words, verbatim — and, under `site_byline`,
  * lists no contributors: the writing is credited to the publication, not to
  * people.
  */

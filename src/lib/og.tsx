@@ -557,7 +557,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
     useSvgLogo && !env.logoIconOnly && !svgIsLikelyWordmark;
   const brand = useLogo ? mastheadTitle(opts.title) : opts.title;
 
-  // Logo mode paints the card on `background` — the ground the letterstory
+  // Logo mode paints the card on `background` — the ground the Letter-generated
   // wordmark and the theme's `primary`/`accent` decorations are authored
   // against — so an SVG in `primary` never blends into a hero gradient that
   // also starts at `primary`. Non-logo (section) cards keep the hero gradient
@@ -626,7 +626,7 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
   const fam = (name?: string): { fontFamily?: string } => (name ? { fontFamily: name } : {});
 
   // Fit the embedded logo inside the card's content area (padding 80x76 →
-  // ~1040x478). Wordmarks from letterstory can be very wide (6:1, 8:1); scale
+  // ~1040x478). Wordmarks from Letter can be very wide (6:1, 8:1); scale
   // by whichever axis binds first so the mark never overflows or crops. In
   // paired-with-wordmark mode the SVG is a small companion icon, so cap it
   // tighter to leave room for the text next to it.
@@ -648,11 +648,11 @@ export async function ogCardResponse(opts: OgCardOptions): Promise<ImageResponse
     CARD_CONTENT_WIDTH - iconW - iconGap,
   );
 
-  // Letterstory-generated SVGs are authored against `background`, but a mark
+  // Letter-generated SVGs are authored against `background`, but a mark
   // colored for one theme becomes invisible when a phantom later pairs it with
   // a theme whose background matches the ink (dark-on-dark, or light-on-light
   // after a theme swap). The correct place to prevent that mismatch is
-  // upstream in letterstory's picker, which knows both sides at phantom
+  // upstream in Letter's picker, which knows both sides at phantom
   // creation time. Here on the OG surface we just need to ship a legible
   // card, so we detect the SVG's dominant fill and plate the mark against the
   // theme's `foreground` when its luminance is too close to `background`.

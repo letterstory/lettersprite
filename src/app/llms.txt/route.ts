@@ -13,7 +13,7 @@ function oneLine(s: string): string {
 }
 
 /**
- * Letterstory's site statement, verbatim, then the sponsor's site as a link
+ * Letter's site statement, verbatim, then the sponsor's site as a link
  * when it has one — the sentence already names the sponsor, so the link line
  * adds only where to find them.
  */

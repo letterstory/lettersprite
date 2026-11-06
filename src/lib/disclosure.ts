@@ -2,7 +2,7 @@ import type { DisclosureSurface, Post, SponsorDisclosure } from "@/lib/letterbra
 
 /**
  * Sponsor disclosure, read side. Every renderer asks one question — "is this
- * surface listed?" — and renders Letterstory's words if so. Nothing here
+ * surface listed?" — and renders Letter's words if so. Nothing here
  * decides whether a publication is sponsored or how to say it.
  */
 

@@ -142,7 +142,7 @@ A theme controls:
 Every post also gets a byline (author name + avatar) and, deterministically
 and for free (no database), a reading time, a section, and a set of suggested
 "more stories". The dateline is the payload's own publish date; an undated post
-shows none, rather than an invented one. Bylines come from Letterstory's per-site author
+shows none, rather than an invented one. Bylines come from Letter's per-site author
 bank (`author_profile` in the payload; the name and slug are used, and a bio or
 role only when the bank supplies one); a legacy free-form `author` is shown
 verbatim, and a post with no author at all carries the one site-level

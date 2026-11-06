@@ -438,7 +438,7 @@ body:has([data-codex-article]) [data-codex-masthead] {
 
 /* ── Sponsor disclosure (components/SponsorDisclosure, SponsorBadge,
    DisclosureLabel, SiteDisclosure)
-   The words come from Letterstory verbatim; these rules only set them in the
+   The words come from Letter verbatim; these rules only set them in the
    theme's tokens. Both must stay clear and conspicuous: body-size, full-ink
    text — never muted, never small. The redesign restyles both in studio.css. */
 @layer components {

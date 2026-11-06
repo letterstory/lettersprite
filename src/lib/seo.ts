@@ -146,7 +146,7 @@ function creditText(post: Post): string {
  * The sponsor as a schema.org Organization — the machine-readable half of the
  * visible disclosure, the way `creditText` is for the photo credit and
  * `citation` for the Sources. Only when the disclosure lists
- * `structured_data`; the URL is omitted when Letterstory has none.
+ * `structured_data`; the URL is omitted when Letter has none.
  */
 function sponsorNode(post: Post): Json | undefined {
   const d = post.sponsorDisclosure;

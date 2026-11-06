@@ -5,7 +5,7 @@ import { discloses } from "@/lib/disclosure";
  * The sponsor disclosure line, set after the article body when the post's
  * disclosure lists `article_footer`.
  *
- * The sentence is Letterstory's, rendered verbatim — the site never words a
+ * The sentence is Letter's, rendered verbatim — the site never words a
  * disclosure itself, so no theme can soften it. It is presentation, never part
  * of the body: the body is what the mention machinery measures, and a
  * disclosure is a statement about the publication, not a mention in the

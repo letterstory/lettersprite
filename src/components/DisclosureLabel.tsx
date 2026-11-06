@@ -3,7 +3,7 @@ import { headerLine } from "@/lib/disclosure";
 
 /**
  * The disclosure at the top of the article, by the byline, when the post's
- * disclosure lists `article_header`: Letterstory's `label`, verbatim
+ * disclosure lists `article_header`: Letter's `label`, verbatim
  * ("Sponsored by Acme"). The FTC's placement — with the content, hard to miss — where the
  * footer line is the weakest one.
  *
