@@ -18,6 +18,11 @@ environment variables: **there is no database and no admin panel.**
   the `THEME` environment variable. Themes are plain data committed to the repo.
 - **Configuration** lives entirely in the environment (`src/env.ts`). To change
   a blog, change its env and redeploy.
+- **Posts as files.** A copy of this repo with a `content/posts/` directory reads
+  its posts from the Markdown files there instead of the API: one `<slug>.md` per
+  post, frontmatter holding the fields `/published` serves, the body as Markdown.
+  It is what a site Letter moves to code becomes (each new post arrives as a pull
+  request adding its file). `LETTER_CONTENT_DIR` names another directory.
 
 ## Quick start (local)
 

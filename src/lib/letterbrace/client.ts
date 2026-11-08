@@ -1,4 +1,5 @@
 import { env, hasLetterbraceKey } from "@/env";
+import { postFilesDir, readPostFiles } from "./files";
 import { normalizePost } from "./normalize";
 import { samplePosts } from "./sample";
 import type { Post } from "./types";
@@ -139,10 +140,20 @@ function readCursor(payload: unknown): { nextCursor: string | null; hasMore: boo
   return { nextCursor: null, hasMore: false };
 }
 
+/** Newest first, one per id, capped at POSTS_LIMIT, slugs unique: the archive the build serves. */
+function archiveOf(posts: Post[]): Post[] {
+  const kept = dedupeById(posts)
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+    .slice(0, env.postsLimit);
+  return ensureUniqueSlugs(kept);
+}
+
 /**
- * All visible published posts, newest first, capped at POSTS_LIMIT. Returns
- * sample posts when no key is configured, and [] (rather than throwing) on API
- * errors, so the site renders an empty state instead of a 500.
+ * All visible published posts, newest first, capped at POSTS_LIMIT. A site that
+ * keeps its posts as Markdown files reads them from its posts directory
+ * (`files.ts`) and never calls the API. Otherwise returns sample posts when no
+ * key is configured, and [] (rather than throwing) on API errors, so the site
+ * renders an empty state instead of a 500.
  *
  * Pages the `/published` list with a small `limit`, following `next_cursor`
  * until it has enough visible posts or the feed ends — never the whole org in
@@ -150,6 +161,15 @@ function readCursor(payload: unknown): { nextCursor: string | null; hasMore: boo
  * no `next_cursor`/`has_more` the loop stops after the first page.
  */
 export async function getPosts(): Promise<Post[]> {
+  const dir = postFilesDir();
+  if (dir) {
+    return archiveOf(
+      readPostFiles(dir)
+        .map(normalizePost)
+        .filter((p): p is Post => p !== null)
+        .filter(isVisible),
+    );
+  }
   if (!hasLetterbraceKey) return samplePosts;
   try {
     // Enough pages to fill postsLimit (≤1000), with margin for any filtered rows.
@@ -174,10 +194,7 @@ export async function getPosts(): Promise<Post[]> {
       cursor = nextCursor;
     }
 
-    const posts = dedupeById(collected)
-      .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
-      .slice(0, env.postsLimit);
-    return ensureUniqueSlugs(posts);
+    return archiveOf(collected);
   } catch (err) {
     console.error("[letterbrace] failed to list published posts:", err);
     return [];
@@ -193,7 +210,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   const posts = await getPosts();
   const match = posts.find((p) => p.slug === slug || p.id === slug);
   if (match) return match;
-  if (!hasLetterbraceKey) return null;
+  // Post files are all read already: a slug not among them isn't a post.
+  if (postFilesDir() || !hasLetterbraceKey) return null;
   try {
     const payload = await apiGet(publishedPath({ slug }));
     const raw = extractOne(payload);

@@ -19,9 +19,11 @@
  * empty slug list — as "do nothing", so a bad manifest can only ever fall back
  * to today's plain 404; it can never redirect a valid post.
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync, statSync } from "node:fs";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse as parseYaml } from "yaml";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_FILE = path.join(ROOT, "src", "generated", "redirect-manifest.json");
@@ -30,7 +32,11 @@ const OUT_FILE = path.join(ROOT, "src", "generated", "redirect-manifest.json");
 const API_URL = (process.env.LETTERBRACE_API_URL ?? "https://app.letterbrace.com/api/integrations").replace(/\/$/, "");
 const API_KEY = process.env.LETTERBRACE_API_KEY ?? "";
 const COLLECTION_ID = process.env.LETTERBRACE_COLLECTION_ID ?? "";
-const POSTS_LIMIT = Math.min(Math.max(Number(process.env.POSTS_LIMIT ?? 50) || 50, 1), 100);
+// The archive ceiling, as src/env.ts reads it (default 500, at most 1000). This once
+// stayed at 50 / 100 after the app's went up: every post past the 100th was built,
+// listed in the sitemap, then 308-redirected to the home page by the proxy.
+const POSTS_LIMIT = Math.min(Math.max(Number(process.env.POSTS_LIMIT || 500) || 500, 1), 1000);
+const CONTENT_DIR = path.join(ROOT, process.env.LETTER_CONTENT_DIR || "content/posts");
 const SHOW_DRAFTS = /^(1|true|yes|on)$/i.test(process.env.SHOW_DRAFTS ?? "");
 
 // --- copied verbatim from the app (keep in sync) --------------------------
@@ -117,6 +123,27 @@ function ensureUniqueSlugs(posts) {
 }
 const isVisible = (p) => SHOW_DRAFTS || p.status !== "draft";
 
+// --- post files (mirrors src/lib/letterbrace/files.ts) --------------------
+const FRONTMATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+function rawFromPostFile(text, fileName) {
+	const match = FRONTMATTER.exec(text.replace(/^\uFEFF/, ""));
+	const parsed = match ? parseYaml(match[1]) : null;
+	const data = parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+	const stem = path.basename(fileName).replace(/\.(md|markdown)$/i, "");
+	return { ...data, slug: data.slug ?? stem, article_id: data.article_id ?? data.id ?? `file:${stem}` };
+}
+const hasPostFiles = () => {
+	try {
+		return existsSync(CONTENT_DIR) && statSync(CONTENT_DIR).isDirectory();
+	} catch {
+		return false;
+	}
+};
+async function readPostFiles() {
+	const names = (await readdir(CONTENT_DIR)).filter((n) => /\.(md|markdown)$/i.test(n) && !/^readme\./i.test(n)).sort();
+	return Promise.all(names.map(async (n) => rawFromPostFile(await readFile(path.join(CONTENT_DIR, n), "utf8"), n)));
+}
+
 // --------------------------------------------------------------------------
 async function writeInert(reason) {
 	console.warn(`[redirect-manifest] ${reason} — writing inert manifest`);
@@ -124,7 +151,37 @@ async function writeInert(reason) {
 	await writeFile(OUT_FILE, JSON.stringify({ ok: false, postSlugs: [], sectionSlugs: [] }, null, 2));
 }
 
+/** The archive the build serves, from its raw articles (as getPosts orders and caps it). */
+function archiveOf(raws) {
+	return ensureUniqueSlugs(
+		dedupeById(
+			raws
+				.map(normalize)
+				.filter((p) => p !== null)
+				.filter(isVisible)
+		)
+			.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+			.slice(0, POSTS_LIMIT)
+	);
+}
+
+async function writeManifest(posts) {
+	if (posts.length === 0) return writeInert("zero posts");
+
+	const postSlugs = [...new Set(posts.map((p) => p.slug))];
+	const sectionSlugs = [...new Set(posts.map((p) => slugify(p.tags[0] || FALLBACK_SECTION)))];
+
+	await mkdir(path.dirname(OUT_FILE), { recursive: true });
+	await writeFile(
+		OUT_FILE,
+		JSON.stringify({ ok: true, postSlugs, sectionSlugs, generatedAt: new Date().toISOString() }, null, 2)
+	);
+	console.log(`[redirect-manifest] wrote ${postSlugs.length} post + ${sectionSlugs.length} section slugs`);
+}
+
 async function main() {
+	// A site that keeps its posts as files serves exactly those (src/lib/letterbrace/files.ts).
+	if (hasPostFiles()) return writeManifest(archiveOf(await readPostFiles()));
 	if (!API_KEY) return writeInert("no LETTERBRACE_API_KEY");
 
 	const search = new URLSearchParams();
@@ -139,31 +196,12 @@ async function main() {
 		});
 		if (!res.ok) throw new Error(`API responded ${res.status} ${res.statusText}`);
 		const payload = await res.json();
-		posts = ensureUniqueSlugs(
-			dedupeById(
-				extractArray(payload)
-					.map(normalize)
-					.filter((p) => p !== null)
-					.filter(isVisible)
-			)
-				.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
-				.slice(0, POSTS_LIMIT)
-		);
+		posts = archiveOf(extractArray(payload));
 	} catch (err) {
 		return writeInert(`fetch failed: ${err instanceof Error ? err.message : String(err)}`);
 	}
 
-	if (posts.length === 0) return writeInert("zero posts");
-
-	const postSlugs = [...new Set(posts.map((p) => p.slug))];
-	const sectionSlugs = [...new Set(posts.map((p) => slugify(p.tags[0] || FALLBACK_SECTION)))];
-
-	await mkdir(path.dirname(OUT_FILE), { recursive: true });
-	await writeFile(
-		OUT_FILE,
-		JSON.stringify({ ok: true, postSlugs, sectionSlugs, generatedAt: new Date().toISOString() }, null, 2)
-	);
-	console.log(`[redirect-manifest] wrote ${postSlugs.length} post + ${sectionSlugs.length} section slugs`);
+	return writeManifest(posts);
 }
 
 main().catch(async (err) => {
