@@ -196,6 +196,13 @@ export const env = {
    */
   fixtureFile: str("LETTERBRACE_FIXTURE"),
   /**
+   * Where a site that keeps its posts as Markdown files has them (relative to
+   * the app root). When the directory exists the posts are read from it and
+   * never from the API (`src/lib/letterbrace/files.ts`); the shared template has
+   * none, so it reads the API.
+   */
+  contentDir: str("LETTER_CONTENT_DIR", "content/posts"),
+  /**
    * Make the redesign THE design of this site: the home, posts and section
    * pages render it at their normal URLs. Off (the default) leaves the current
    * design untouched — the per-site rollout switch.

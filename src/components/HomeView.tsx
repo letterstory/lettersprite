@@ -1,4 +1,5 @@
 import { env, hasLetterbraceKey } from "@/env";
+import { hasContentSource } from "@/lib/letterbrace/files";
 import { blogListingLd } from "@/lib/seo";
 import { getActiveTheme } from "@/themes";
 import type { Post } from "@/lib/letterbrace/types";
@@ -46,7 +47,7 @@ export function HomeView({
         {env.siteTagline ? ` — ${env.siteTagline}` : ""}
         {page > 1 ? ` — Page ${page}` : ""}
       </h1>
-      {!hasLetterbraceKey && <PreviewBanner />}
+      {!hasContentSource(hasLetterbraceKey) && <PreviewBanner />}
       <Home posts={items} />
       {totalPages > 1 && (
         <div className="container-wide px-6 pb-16">

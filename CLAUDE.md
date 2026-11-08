@@ -9,6 +9,14 @@ is configured entirely by environment variables. **No database, no admin panel.*
   the frozen published title + content) in `src/lib/letterbrace/`. `normalize.ts`
   is deliberately defensive — adjust the field mapping there if the real payload
   differs. Read-only; the blog never writes to Letterbrace.
+- **Posts as files** (`src/lib/letterbrace/files.ts`): a site with a
+  `content/posts/` directory reads its posts from there and never calls the API.
+  That is a phantom Letter moved to code (Letter's docs/architecture/phantom-code.md):
+  its own copy of this repo, every post a `<slug>.md` whose frontmatter is the
+  `/published` item's fields and whose body is Markdown (or the HTML it was, marked
+  `format: html`), rendered by `src/lib/letterbrace/markdown.ts` (Letter's
+  renderer, byte for byte: keep the two the same) in the style kept in
+  `content/posts.json`. The template itself must never have a `content/posts/`.
 - **Theming**: `src/themes/` — each theme (`Theme` in `types.ts`) is a full
   publication look: a color *palette* (primary/secondary/accent + hero gradient),
   display/heading/body/mono fonts, a `home` layout (`broadsheet|feed|mosaic|

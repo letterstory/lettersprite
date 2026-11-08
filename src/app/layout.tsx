@@ -6,6 +6,7 @@ import { env, hasLetterbraceKey } from "@/env";
 import { siteFavicon } from "@/lib/favicon";
 import { prefixed, siteDisclosure } from "@/lib/disclosure";
 import { getPosts } from "@/lib/letterbrace/client";
+import { hasContentSource } from "@/lib/letterbrace/files";
 import { siteGraphLd } from "@/lib/seo";
 import { getActiveTheme } from "@/themes";
 import { googleFontsHref, themeToCssVars } from "@/themes/css";
@@ -27,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.
   // Demo builds (the design switch) are copies of live sites: never index.
-  const indexable = hasLetterbraceKey && !env.designCompare;
+  const indexable = hasContentSource(hasLetterbraceKey) && !env.designCompare;
   return {
     metadataBase: new URL(env.siteUrl),
     title: { default: title, template: `%s · ${title}` },
