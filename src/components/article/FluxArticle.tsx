@@ -4,12 +4,7 @@ import type { Post } from "@/lib/letterbrace/types";
 import type { Byline } from "@/lib/author";
 import type { Heading } from "@/lib/toc";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
-import {
-  isLongread,
-  publishDate,
-  readingTimeLabel,
-  sectionHref,
-} from "@/lib/editorial";
+import { isLongread, readingTimeLabel } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { postUrl } from "@/lib/url";
 import { articleLd, breadcrumbLd } from "@/lib/seo";

@@ -1,12 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+type Mode = "dark" | "light";
+
+function subscribe(onChange: () => void) {
+  window.addEventListener("ls-modechange", onChange);
+  return () => window.removeEventListener("ls-modechange", onChange);
+}
+
+const readMode = (): Mode =>
+  document.documentElement.getAttribute("data-mode") === "light" ? "light" : "dark";
 
 /**
  * Reader dark/light toggle. The palette swap + persistence live in the inline
  * boot script (see `modeBootScript`), which exposes `window.__applyMode`; this
- * button just calls it and mirrors the current mode in its icon. Rendering it
- * without the boot script (a theme without `colorsLight`) is a harmless no-op.
+ * button just calls it and mirrors `data-mode` (which `__applyMode` sets, then
+ * announces with `ls-modechange`) in its icon. Rendering it without the boot script (a theme
+ * without `colorsLight`) is a harmless no-op.
  */
 export function ModeToggle({
   className = "",
@@ -16,29 +27,12 @@ export function ModeToggle({
   /** "onDark" gives a white icon for placement on a dark/black masthead bar. */
   tone?: "default" | "onDark";
 }) {
-  const [mode, setMode] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    const current =
-      (document.documentElement.getAttribute("data-mode") as
-        | "dark"
-        | "light"
-        | null) ?? "dark";
-    setMode(current);
-    const onChange = (e: Event) => {
-      const detail = (e as CustomEvent<"dark" | "light">).detail;
-      if (detail) setMode(detail);
-    };
-    window.addEventListener("ls-modechange", onChange);
-    return () => window.removeEventListener("ls-modechange", onChange);
-  }, []);
+  const mode = useSyncExternalStore(subscribe, readMode, (): Mode => "dark");
 
   const toggle = () => {
-    const next = mode === "dark" ? "light" : "dark";
     (window as unknown as { __applyMode?: (m: string) => void }).__applyMode?.(
-      next,
+      mode === "dark" ? "light" : "dark",
     );
-    setMode(next);
   };
 
   return (

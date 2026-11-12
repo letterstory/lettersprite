@@ -125,11 +125,6 @@ export function SiteSearch({
   const rows = query ? preview : trend;
   const showDropdown = open && (query ? true : trend.length > 0);
 
-  // Re-typing re-ranks the list, so any prior highlight is stale — reset it.
-  useEffect(() => {
-    setActiveIndex(-1);
-  }, [query]);
-
   function goToResults() {
     if (!query) return;
     setOpen(false);
@@ -236,7 +231,10 @@ export function SiteSearch({
           aria-autocomplete="list"
           value={q}
           onChange={(e) => {
-            setQ(e.target.value);
+            const next = e.target.value;
+            // Re-typing re-ranks the list, so any prior highlight is stale.
+            if (next.trim() !== query) setActiveIndex(-1);
+            setQ(next);
             setOpen(true);
           }}
           onFocus={() => {

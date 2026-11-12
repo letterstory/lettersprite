@@ -28,10 +28,10 @@ import { CircuitHome } from "./CircuitHome";
 import { CanvasHome } from "./CanvasHome";
 import { CodexHome } from "./CodexHome";
 
-type HomeLayout = ComponentType<{ posts: Post[] }>;
+type HomeRenderer = ComponentType<{ posts: Post[] }>;
 
 /** Theme `home` key → its front-page renderer (see the Theme type). */
-const HOME_LAYOUTS: Record<string, HomeLayout> = {
+const HOME_LAYOUTS: Record<string, HomeRenderer> = {
   broadsheet: BroadsheetHome,
   feed: FeedHome,
   mosaic: MosaicHome,
@@ -61,7 +61,12 @@ const HOME_LAYOUTS: Record<string, HomeLayout> = {
   codex: CodexHome,
 };
 
-/** Resolve a theme's home layout, falling back to the default grid. */
-export function homeLayoutFor(key: string): HomeLayout {
-  return HOME_LAYOUTS[key] ?? GridHome;
+/**
+ * Render a theme's front page through its layout, falling back to the default
+ * grid. The renderer is a module-level component looked up by key, so its
+ * identity is stable across renders.
+ */
+export function HomeLayout({ layout, posts }: { layout: string; posts: Post[] }) {
+  const Home = HOME_LAYOUTS[layout] ?? GridHome;
+  return <Home posts={posts} />;
 }

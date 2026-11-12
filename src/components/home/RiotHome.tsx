@@ -7,7 +7,6 @@ import {
   sectionHref,
 } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
-import { bylineFor } from "@/lib/author";
 import { coverAltFor, coverImageFor } from "@/lib/covers";
 import { FakeAd } from "@/components/FakeAd";
 
