@@ -53,6 +53,10 @@ function navSections(posts: Post[]): string[] {
   return topSections(posts, 9);
 }
 
+function QuartoRule({ ink }: { ink: string }) {
+  return <div aria-hidden style={{ borderTop: `1.5px solid ${ink}` }} />;
+}
+
 function SubscribeButton({ compact = false }: { compact?: boolean }) {
   if (!env.newsletterEnabled) return null;
   return (
@@ -779,9 +783,6 @@ export async function SiteHeader() {
       .join("")
       .slice(0, 3)
       .toUpperCase();
-    const Rule = () => (
-      <div aria-hidden style={{ borderTop: `1.5px solid ${ink}` }} />
-    );
     return (
       <header data-quarto-masthead className="no-print bg-background">
         {/* Emblem — the deployment logo (SITE_LOGO_SVG, in lockstep with the
@@ -804,7 +805,7 @@ export async function SiteHeader() {
             )}
           </Link>
         </div>
-        <Rule />
+        <QuartoRule ink={ink} />
         {/* Big centered wordmark, flanked by Vol. / Est. (the configured
             founding year, SITE_ESTABLISHED; nothing when unset). */}
         <div className="mx-auto max-w-5xl px-6">
@@ -826,7 +827,7 @@ export async function SiteHeader() {
             )}
           </div>
         </div>
-        <Rule />
+        <QuartoRule ink={ink} />
         {/* Dotted section nav — spans the full width, evenly spread. */}
         {sections.length > 0 && (
           <nav
@@ -851,7 +852,7 @@ export async function SiteHeader() {
             ))}
           </nav>
         )}
-        <Rule />
+        <QuartoRule ink={ink} />
       </header>
     );
   }

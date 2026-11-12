@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 /**
  * Reader "Following" list — a personal feed with no accounts and no database.
@@ -15,11 +15,10 @@ const CHANGE_EVENT = "ls-followchange";
 export type FollowKind = "section" | "author";
 export type FollowEntry = { kind: FollowKind; slug: string; name: string };
 
-/** Read + validate the persisted follow list (safe on the server → []). */
-export function readFollowing(): FollowEntry[] {
-  if (typeof window === "undefined") return [];
+/** Validate a raw stored follow list (anything malformed → []). */
+export function parseFollowing(raw: string | null): FollowEntry[] {
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(FOLLOW_STORAGE_KEY) || "[]");
+    const parsed = JSON.parse(raw || "[]");
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
       (e): e is FollowEntry =>
@@ -31,6 +30,20 @@ export function readFollowing(): FollowEntry[] {
   } catch {
     return [];
   }
+}
+
+function readRaw(): string {
+  try {
+    return window.localStorage.getItem(FOLLOW_STORAGE_KEY) ?? "[]";
+  } catch {
+    return "[]";
+  }
+}
+
+/** Read + validate the persisted follow list (safe on the server → []). */
+export function readFollowing(): FollowEntry[] {
+  if (typeof window === "undefined") return [];
+  return parseFollowing(readRaw());
 }
 
 function writeFollowing(list: FollowEntry[]) {
@@ -60,27 +73,27 @@ export function toggleFollow(entry: FollowEntry): FollowEntry[] {
   return next;
 }
 
+function subscribe(onChange: () => void) {
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === FOLLOW_STORAGE_KEY) onChange();
+  };
+  window.addEventListener(CHANGE_EVENT, onChange);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
 /**
  * Subscribe to the reader's follow list. Returns `[list, mounted]`: `mounted`
- * is false until the first client effect runs, so callers can avoid a hydration
- * flash of the "not following anything" state for readers who do follow things.
+ * is false on the server and during hydration (the server snapshot is `null`),
+ * so callers can avoid a hydration flash of the "not following anything" state
+ * for readers who do follow things. The snapshot is the raw stored string, so
+ * it is stable between changes and only re-parsed when it actually changes.
  */
 export function useFollowing(): [FollowEntry[], boolean] {
-  const [list, setList] = useState<FollowEntry[]>([]);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const sync = () => setList(readFollowing());
-    sync();
-    setMounted(true);
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === FOLLOW_STORAGE_KEY) sync();
-    };
-    window.addEventListener(CHANGE_EVENT, sync);
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, sync);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
-  return [list, mounted];
+  const raw = useSyncExternalStore<string | null>(subscribe, readRaw, () => null);
+  const list = useMemo(() => parseFollowing(raw), [raw]);
+  return [list, raw !== null];
 }

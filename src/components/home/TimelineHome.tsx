@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { publishDate } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
-import { Cover, LeadStory } from "@/components/Story";
+import { Cover } from "@/components/Story";
 import { Kicker } from "@/components/Kicker";
 import { PostMeta } from "@/components/PostMeta";
 

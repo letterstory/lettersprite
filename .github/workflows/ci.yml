@@ -26,5 +26,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
+      # Every phantom is a copy of this repo, so a lint error here is a lint
+      # error on every site built from it. Zero warnings keeps the template clean.
+      - run: npm run lint -- --max-warnings=0
       - run: npm test
       - run: npm run build

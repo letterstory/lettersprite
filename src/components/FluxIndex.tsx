@@ -1,7 +1,7 @@
 import Link from "@/components/Link";
 import { env } from "@/env";
 import type { Post } from "@/lib/letterbrace/types";
-import { publishDate, sectionFor } from "@/lib/editorial";
+import { publishDate } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { bylineFor } from "@/lib/author";
 import { coverAltFor, coverImageFor } from "@/lib/covers";

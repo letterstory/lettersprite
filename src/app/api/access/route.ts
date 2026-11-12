@@ -47,7 +47,6 @@ function normalizePath(raw: unknown): string | null {
 	if (path.length > 1) path = path.replace(/\/+$/, "");
 	if (path === "") path = "/";
 	if (path.length > 512) return null;
-	// eslint-disable-next-line no-control-regex
 	if (/[\x00-\x1f\x7f]/.test(path)) return null;
 	return path;
 }

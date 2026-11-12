@@ -2,7 +2,7 @@ import Link from "@/components/Link";
 import type { Post } from "@/lib/letterbrace/types";
 import { AdSlot } from "@/components/AdSlot";
 import { env } from "@/env";
-import { publishDate, sectionFor, sectionHref } from "@/lib/editorial";
+import { publishDate, sectionFor } from "@/lib/editorial";
 import { formatDate } from "@/lib/format";
 import { makeCovers } from "@/lib/stock-covers";
 

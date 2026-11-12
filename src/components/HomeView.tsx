@@ -5,7 +5,7 @@ import { getActiveTheme } from "@/themes";
 import type { Post } from "@/lib/letterbrace/types";
 import { JsonLd } from "@/components/JsonLd";
 import { Pagination } from "@/components/Pagination";
-import { homeLayoutFor } from "@/components/home";
+import { HomeLayout } from "@/components/home";
 
 function PreviewBanner() {
   return (
@@ -36,7 +36,6 @@ export function HomeView({
   totalPages: number;
 }) {
   const theme = getActiveTheme();
-  const Home = homeLayoutFor(theme.home);
 
   return (
     <>
@@ -48,7 +47,7 @@ export function HomeView({
         {page > 1 ? ` — Page ${page}` : ""}
       </h1>
       {!hasContentSource(hasLetterbraceKey) && <PreviewBanner />}
-      <Home posts={items} />
+      <HomeLayout layout={theme.home} posts={items} />
       {totalPages > 1 && (
         <div className="container-wide px-6 pb-16">
           <Pagination page={page} totalPages={totalPages} />
