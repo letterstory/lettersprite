@@ -8,6 +8,7 @@ import { prefixed, siteDisclosure } from "@/lib/disclosure";
 import { getPosts } from "@/lib/letterbrace/client";
 import { hasContentSource } from "@/lib/letterbrace/files";
 import { siteGraphLd } from "@/lib/seo";
+import { describeFromSections, topSections } from "@/lib/editorial";
 import { getActiveTheme } from "@/themes";
 import { googleFontsHref, themeToCssVars } from "@/themes/css";
 import { modeBootScript } from "@/lib/mode";
@@ -20,10 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = env.siteTitle;
   // The site statement leads the site's description (the home page's, and any
   // page's that sets none of its own), verbatim.
-  const disclosure = siteDisclosure(await getPosts());
+  const posts = await getPosts();
+  const disclosure = siteDisclosure(posts);
+  const siteDescription = env.siteDescription || describeFromSections(title, topSections(posts, 3));
   const description = disclosure
-    ? prefixed(disclosure.siteText, env.siteDescription)
-    : env.siteDescription || undefined;
+    ? prefixed(disclosure.siteText, siteDescription)
+    : siteDescription || undefined;
   const favicon = siteFavicon();
   // Sample/preview builds (no Letterbrace key) should not be indexed so they
   // don't dilute the real production domain.

@@ -57,21 +57,23 @@ export async function SiteFooter() {
             )}
           </div>
 
-          <nav aria-label="Sections">
-            <h2 className="kicker mb-4">Sections</h2>
-            <ul className="flex flex-col gap-2.5 text-sm">
-              {sections.map((s) => (
-                <li key={s}>
-                  <Link
-                    href={sectionHref(s)}
-                    className="text-muted ul-link hover:text-foreground"
-                  >
-                    {s}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {sections.length > 0 && (
+            <nav aria-label="Sections">
+              <h2 className="kicker mb-4">Sections</h2>
+              <ul className="flex flex-col gap-2.5 text-sm">
+                {sections.map((s) => (
+                  <li key={s}>
+                    <Link
+                      href={sectionHref(s)}
+                      className="text-muted ul-link hover:text-foreground"
+                    >
+                      {s}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           <nav aria-label="More">
             <h2 className="kicker mb-4">{env.siteTitle}</h2>

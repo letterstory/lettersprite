@@ -198,3 +198,16 @@ export function topSections(posts: Post[], limit = 6): string[] {
     .slice(0, limit)
     .map(([s]) => s);
 }
+
+/**
+ * A site with no description of its own (SITE_DESCRIPTION unset) still gets one for search results, from what it
+ * covers: "Contextual Radar covers AI Web Scraping, AI Developer Tooling and Agentic Workflows." None without tagged
+ * posts: the catch-all section says nothing.
+ */
+export function describeFromSections(title: string, all: string[]): string {
+  const sections = all.filter((s) => s !== FALLBACK_SECTION);
+  if (!sections.length) return "";
+  const list =
+    sections.length === 1 ? sections[0] : `${sections.slice(0, -1).join(", ")} and ${sections[sections.length - 1]}`;
+  return `${title} covers ${list}.`;
+}

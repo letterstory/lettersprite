@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  describeFromSections,
   editionDate,
   isUpdated,
   latestDate,
@@ -55,5 +56,18 @@ describe("dates are never invented", () => {
     expect(editionDate([post("a", null)])).toBeNull();
     expect(latestDate([])).toBeNull();
     expect(editionDate([post("a", null), post("b", "2026-02-01T00:00:00.000Z")])).toBe("2026-02-01T00:00:00.000Z");
+  });
+});
+
+describe("describeFromSections", () => {
+  it("names what the site covers", () => {
+    expect(describeFromSections("Radar", ["Scraping", "Tooling", "Agents"])).toBe(
+      "Radar covers Scraping, Tooling and Agents."
+    );
+    expect(describeFromSections("Radar", ["Scraping"])).toBe("Radar covers Scraping.");
+  });
+  it("says nothing without real sections", () => {
+    expect(describeFromSections("Radar", [])).toBe("");
+    expect(describeFromSections("Radar", ["Features"])).toBe("");
   });
 });
