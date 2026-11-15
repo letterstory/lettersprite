@@ -18,7 +18,7 @@ const SIZE: Record<Size, string> = {
   sm: "text-xl",
   md: "text-2xl",
   lg: "text-4xl",
-  xl: "text-5xl sm:text-6xl",
+  xl: "text-3xl sm:text-6xl",
 };
 
 /** Rendered pixel height of the logo SVG, per size — matches the wordmark. */
@@ -26,7 +26,7 @@ const SVG_HEIGHT: Record<Size, string> = {
   sm: "h-6",
   md: "h-8",
   lg: "h-11",
-  xl: "h-14 sm:h-16",
+  xl: "h-10 sm:h-16",
 };
 
 /**

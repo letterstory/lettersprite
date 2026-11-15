@@ -246,9 +246,11 @@ export async function SiteHeader() {
             <span className="hidden font-heading uppercase tracking-widest sm:inline">
               {edition}
             </span>
-            <span className="font-heading uppercase tracking-widest sm:hidden">
-              {env.siteTagline || "Est."}
-            </span>
+            {env.established && (
+              <span className="font-heading uppercase tracking-widest sm:hidden">
+                Est.&nbsp;{env.established}
+              </span>
+            )}
             <SubscribeButton compact />
           </div>
           {/* The flag */}

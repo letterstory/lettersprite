@@ -70,7 +70,6 @@ function SectionBlock({ name, lead, rest }: { name: string; lead: Post; rest: Po
       <Link href={sectionHref(name)} className="block border-t-[3px] border-primary pt-3 transition-colors hover:text-primary">
         <h2 className="font-display text-2xl font-extrabold leading-tight text-heading">
           {name}
-          {lead.dek && <span className="font-normal text-muted"> / {lead.dek}</span>}
         </h2>
       </Link>
       <div className="mt-6 grid gap-8 lg:grid-cols-[1.25fr_1fr]">
@@ -81,6 +80,7 @@ function SectionBlock({ name, lead, rest }: { name: string; lead: Post; rest: Po
           <Link href={`/posts/${lead.slug}`}>
             <h3 className="mt-3 font-display text-2xl font-extrabold leading-tight text-heading transition-colors group-hover:text-primary">{lead.title}</h3>
           </Link>
+          {lead.dek && <p className="mt-2 line-clamp-2 text-sm leading-snug text-fg-soft">{lead.dek}</p>}
           <Byline post={lead} className="mt-2" />
         </article>
         <div className="divide-y divide-border">
